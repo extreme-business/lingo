@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14.4-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
+    ports:
+      - "5431:5432"
+    restart: unless-stopped
+    volumes:
+      - ./provision/postgres/01-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql
+    networks:
+      - lingo-network
+
+  relay-migration:
+    image: arigaio/atlas:0.21.1
+    container_name: lingo-relay-migrate
+    command: migrate apply --url "postgres://postgres:postgres@db:5432/relay?sslmode=disable"
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - lingo-network
+    depends_on:
+      - db
+
+  relay:
+    image: lingo
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["--", "serve", "relay"]
+    environment:
+      LINGO_DB_URL: postgres://postgres:postgres@db:5432/relay?sslmode=disable
+      LINGO_PORT: 8080
+      LINGO_TLS_CERT_FILE: /src/lingo/certs/lingo.crt
+      LINGO_TLS_KEY_FILE: /src/lingo/certs/lingo.key
+      LINGO_SIGNING_KEY_REGISTRATION: ${LINGO_SIGNING_KEY_REGISTRATION:-}
+      LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
+    volumes:
+      - ./certs:/src/lingo/certs
+    ports:
+      - "8091:8080"
+      - "2345:2345"
+    restart: unless-stopped
+    depends_on:
+      - db
+      - relay-migration
+    networks:
+      - lingo-network
+
+  gateway:
+    image: lingo
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["--", "serve", "gateway"]
+    environment:
+      LINGO_PORT: 8080
+      LINGO_RELAY_URL: relay:8080
+      LINGO_TLS_CERT_FILE: /src/lingo/certs/lingo.crt
+      LINGO_TLS_KEY_FILE: /src/lingo/certs/lingo.key
+    volumes:
+      - ./certs:/src/lingo/certs
+    ports:
+      - "8092:8080"
+      - "2346:2345"
+    restart: unless-stopped
+    depends_on:
+      - relay
+    networks:
+      - lingo-network
+
+networks:
+  lingo-network:
+    driver: bridge

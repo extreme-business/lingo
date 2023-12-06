@@ -1,0 +1,11 @@
+syntax = "proto3";
+package proto.account.v1;
+option go_package = "github.com/dwethmar/lingo/proto/account/v1;account";
+
+import "google/protobuf/timestamp.proto";
+
+message Account {
+    string id = 1;
+    string email_hash = 2;
+    google.protobuf.Timestamp created_time = 3;
+}
