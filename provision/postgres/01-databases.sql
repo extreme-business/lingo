@@ -1,0 +1,3 @@
+CREATE DATABASE "relay";
+
+GRANT ALL PRIVILEGES ON DATABASE "relay" TO postgres;

@@ -1,0 +1,18 @@
+.PHONY: all proto
+
+all: server
+
+GOVER=1.21
+BIN=bin
+
+GOCMD=go1.21
+GOBUILD=$(GOCMD) build
+GOCLEAN=$(GOCMD) clean
+GOTEST=$(GOCMD) test
+GOGET=$(GOCMD) get
+GOMOD=$(GOCMD) mod
+GORUN=$(GOCMD) run
+GOGEN=$(GOCMD) generate
+GOWORK=$(GOCMD) work
+GOINSTALL=$(GOCMD) install
+

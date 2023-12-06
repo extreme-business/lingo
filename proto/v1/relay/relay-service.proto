@@ -1,0 +1,13 @@
+syntax = "proto3";
+package user;
+option go_package = "github.com/dwethmar/lingo/proto/v1/relay";
+
+import "google/protobuf/empty.proto";
+
+service RelayService {
+    rpc CreateMessage(CreateMessageRequest) returns (google.protobuf.Empty) {}
+}
+
+message CreateMessageRequest {
+    string message = 1;
+}

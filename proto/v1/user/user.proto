@@ -1,0 +1,14 @@
+syntax = "proto3";
+package user;
+option go_package = "github.com/dwethmar/lingo/proto/v1/user";
+
+import "google/protobuf/timestamp.proto";
+
+message User {
+    string id = 1;
+    string username = 2;
+    string password = 3;
+    string email = 4;
+    google.protobuf.Timestamp created_time = 5;
+    google.protobuf.Timestamp updated_time = 6;
+}

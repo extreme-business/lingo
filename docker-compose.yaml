@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14.4-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
+    ports:
+      - "5431:5432"
+    restart: unless-stopped
+    volumes:
+      - ./provision/postgres/01-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql
+    networks:
+      - lingo-network
+
+  relay:
+    image: lingo
+    container_name: lingo-relay
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["relay"]
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - lingo-network
+
+networks:
+  lingo-network:
+    driver: bridge
