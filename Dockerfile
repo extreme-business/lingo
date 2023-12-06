@@ -17,7 +17,6 @@ COPY . /src/lingo
 WORKDIR /src/lingo
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
 RUN go generate ./...
-RUN /src/lingo/provision/protoc/run.sh
 
 FROM base AS debug
 WORKDIR /src/apps/lingo

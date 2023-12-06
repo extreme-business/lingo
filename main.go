@@ -1,6 +1,8 @@
 package main
 
-import "lingo/cmd"
+import (
+	"github.com/dwethmar/lingo/cmd"
+)
 
 func main() {
 	cmd.Execute()

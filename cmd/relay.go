@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"lingo/cmd/relay"
+	"github.com/dwethmar/lingo/cmd/relay"
 
 	"github.com/spf13/cobra"
 )
