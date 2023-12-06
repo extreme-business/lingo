@@ -1,0 +1,4 @@
+certs
+.env
+bin
+node_modules

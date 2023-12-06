@@ -1,0 +1,4 @@
+.vscode
+scripts
+docker-compose.yml
+Dockerfile
