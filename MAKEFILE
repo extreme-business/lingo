@@ -1,0 +1,11 @@
+.PHONY: all
+
+all: build
+
+BIN=bin
+
+GOCMD=go
+GOBUILD=$(GOCMD) build
+
+build:
+	$(GOBUILD) -o $(BIN)/lingo main.go

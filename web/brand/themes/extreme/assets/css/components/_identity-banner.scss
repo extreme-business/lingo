@@ -1,0 +1,68 @@
+@import "../variables";
+
+// Banner base styles using class
+.identity-banner {
+    height: 100vh;
+    max-height: 420px;
+    background-color: #FFFFFF;
+    color: #1A1A2E;
+    text-align: left;
+    padding-left: 5%;
+    font-size: 2em;
+    overflow: hidden;
+    background-image: url(https://cdn.midjourney.com/625de172-e6d6-4c61-a756-d42ff61fa782/0_2.webp);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+
+    // Nested h1 for specific banner header styling if needed
+    h1 {
+        margin: 0; // Example of resetting margin for banner headline
+    }
+
+    // Styles specifically for the dynamic word within the banner
+    .dynamic-word {
+        display: inline-block;
+        position: relative;
+        transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        color: $secondary-color;
+        text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1), 2px 2px 0px rgba(0, 0, 0, 0.1), 3px 3px 0px rgba(0, 0, 0, 0.1);
+    }
+}
+
+
+// Animation effects
+.fade-out-up,
+.fade-in-up {
+    transform: translateY(-100%);
+    opacity: 0;
+
+    // Nested animation specific styles
+    &.fade-in-up {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+}
+
+// Keyframe animations for the fadeInUp effect
+@keyframes fadeInUp {
+    from {
+        transform: translateY(20%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+// Responsive design adjustments
+@media (max-width: 768px) {
+    .banner {
+        padding: 10px;
+        font-size: 2em; // Smaller font size for mobile devices
+    }
+}

@@ -1,0 +1,12 @@
+@import "../variables";
+
+// Mixins
+@mixin link-style($color, $hover-color) {
+  color: $color;
+  text-decoration: none;
+
+  &:hover {
+    color: $hover-color;
+    text-decoration: underline;
+  }
+}

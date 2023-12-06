@@ -1,0 +1,11 @@
+@mixin typography($font-size, $font-weight, $line-height, $letter-spacing) {
+    font-size: $font-size;
+    font-weight: $font-weight;
+    line-height: $line-height;
+    letter-spacing: $letter-spacing;
+}
+
+@mixin default-typography {
+    @include typography(16px, 400, 1.6, 0.05em);
+    font-family: "Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif";
+}

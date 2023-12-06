@@ -1,0 +1,19 @@
+// Footer styling
+footer {
+    background: $footer-background;
+    color: $footer-text;
+    padding: 10px 5%;
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    p {
+        margin: 0;
+    }
+
+    .copyright {
+        font-size: 0.8em;
+    }
+}

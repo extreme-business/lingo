@@ -1,0 +1,40 @@
+@import "../variables";
+@import "../mixins/link-style";
+
+header {
+    background: #1A1A2E;
+    display: flex;
+    height: 70px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .logo-link {
+        margin-left: 20px;
+        img {
+            width: 60px;
+            height: 60px;
+        }
+    }
+
+    // Navigation styling
+    nav {
+        margin-right: 20px;
+        display: flex;
+        width: 100%;
+        justify-content: flex-end;
+        align-items: center;
+        ul {
+            list-style: none;
+            padding: 0;
+
+            li {
+                display: inline;
+                margin-right: 10px;
+
+                a {
+                    @include link-style($white, $secondary-color);
+                }
+            }
+        }
+    }
+}

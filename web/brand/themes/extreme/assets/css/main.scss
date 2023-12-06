@@ -1,0 +1,20 @@
+@import "components/header";
+@import "components/footer";
+@import "components/main";
+@import "components/identity-banner";
+
+@import "mixins/link-style";
+@import"mixins/typography";
+
+// Base styles
+body {
+  @include default-typography();
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background: $background-color;
+  color: $text-color;
+}
+
+p:empty {display:none;}

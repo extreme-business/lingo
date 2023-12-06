@@ -1,0 +1,23 @@
+// Colors
+$hot-pink: #F652A0;
+$tiffany-Blue: #BCECE0;
+$cyan: #36EEE0;
+$cornflower: #4C5270;
+$navy: #1A1A2E;
+$white: #FFFFFF;
+$black: #333;
+
+
+// Variables
+$primary-color: $navy; // Primary color for text
+$secondary-color: $hot-pink; // Secondary color, good for highlights or links
+$background-color: $white; // Light background for the main content area
+$text-color: $black; // Main text color
+$footer-background: $cornflower; // Dark background for footer
+$footer-text: $white; // Text color for footer
+
+// Breakpoints
+$screen-sm-min: 576px; // Small tablets and large smartphones (landscape view)
+$screen-md-min: 768px; // Small tablets (portrait view)
+$screen-lg-min: 992px; // Tablets and small desktops
+$screen-xl-min: 1200px; // Large tablets and desktops

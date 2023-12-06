@@ -1,0 +1,100 @@
+version: "3.9"
+
+services:
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./provision/swagger-ui/swagger-config.json:/swagger-config.json
+      - ./proto/gen/openapiv2/public/auth/v1/auth_service.swagger.yaml:/auth_service.swagger.yaml
+    environment:
+      CONFIG_URL: /swagger-config.json
+      SWAGGER_JSON: /auth_service.swagger.yaml
+
+  db:
+    image: postgres:14.4-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
+    ports:
+      - 5422:5432
+    restart: unless-stopped
+    volumes:
+      - ./provision/postgres/01-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql
+    networks:
+      - lingo-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-migration:
+    image: arigaio/atlas:0.21.1
+    command: migrate apply --url "postgres://postgres:postgres@db:5432/organization?sslmode=disable"
+    volumes:
+      - ./cmd/auth/migrations:/migrations
+    networks:
+      - lingo-network
+    depends_on:
+      - db
+
+  auth:
+    image: lingo
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["--", "serve", "auth"]
+    environment:
+      LINGO_DB_URL: postgres://postgres:postgres@db:5432/organization?sslmode=disable
+      LINGO_GRPC_PORT: 8080
+      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+      LINGO_GRPC_TLS_KEY_FILE: /src/lingo/certs/grpc-lingo.key
+      LINGO_SIGNING_KEY_REGISTRATION: ${LINGO_SIGNING_KEY_REGISTRATION:-}
+      LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
+      LINGO_SYSTEM_USER_ID: af67170c-092d-439a-9015-aefaf5b5a9d8
+      LINGO_SYSTEM_USER_EMAIL: system
+      LINGO_SYSTEM_USER_PASSWORD: ${LINGO_SYSTEM_USER_PASSWORD:-}
+      LINGO_SYSTEM_ORGANIZATION_ID: f79c9967-2766-4b19-9ef6-e10f3d000c98
+      LINGO_SYSTEM_ORGANIZATION_LEGAL_NAME: system
+    volumes:
+      - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
+      - ./certs/grpc-lingo.key:/src/lingo/certs/grpc-lingo.key
+    ports:
+      - 8070:8080 # grpc
+      - 2101:2345 # delve
+    restart: unless-stopped
+    depends_on:
+      - db
+      - auth-migration
+    networks:
+      - lingo-network
+
+  auth-gateway:
+    image: lingo
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["--", "serve", "auth-gateway"]
+    environment:
+      LINGO_HTTP_PORT: 8081
+      LINGO_AUTH_URL: auth:8080
+      LINGO_HTTP_TLS_CERT_FILE: /src/lingo/certs/http-lingo.crt
+      LINGO_HTTP_TLS_KEY_FILE: /src/lingo/certs/http-lingo.key
+      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+    volumes:
+      - ./certs/http-lingo.crt:/src/lingo/certs/http-lingo.crt
+      - ./certs/http-lingo.key:/src/lingo/certs/http-lingo.key
+      - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
+    ports:
+      - 8092:8081
+    depends_on:
+      - auth
+    networks:
+      - lingo-network
+
+networks:
+  lingo-network:
+    driver: bridge

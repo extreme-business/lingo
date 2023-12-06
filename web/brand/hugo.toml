@@ -1,0 +1,4 @@
+baseURL = 'https://extreme.business'
+languageCode = 'en-us'
+title = 'Extreme business'
+theme = 'extreme'
