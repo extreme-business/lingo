@@ -1,9 +1,14 @@
 package cmd
 
 import (
+	"database/sql"
+	"fmt"
+
 	"github.com/dwethmar/lingo/cmd/relay"
+	"github.com/dwethmar/lingo/database"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // relayCmd represents the relay command
@@ -17,19 +22,22 @@ var relayCmd = &cobra.Command{
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	return relay.Start()
+	db, err := sql.Open("postgres", viper.GetString("db_url"))
+	if err != nil {
+		return fmt.Errorf("could not open db: %w", err)
+	}
+
+	if err := db.Ping(); err != nil {
+		return fmt.Errorf("could not ping db: %w", err)
+	}
+
+	defer db.Close()
+
+	return relay.Start(relay.Options{
+		Transactor: database.New(db),
+	})
 }
 
 func init() {
 	rootCmd.AddCommand(relayCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// relayCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// relayCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

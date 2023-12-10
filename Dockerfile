@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/go/pkg/mod go mod download
 RUN go generate ./...
 
 FROM base AS debug
-WORKDIR /src/apps/lingo
+WORKDIR /src/lingo
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.21.0
 EXPOSE 8080
 EXPOSE 2345

@@ -10,26 +10,35 @@ An address of a user is the sha256 hash of the email address of the user. Email 
 protip: use a + in your email address to create a unique email address: its-a-me+askdasd@gmail.com
 
 ## domain
+
+A event is a message that is sent from one user to another user. Commonly referred to as a message, but it can also be a notification or something else, like:
+- changing the name of a chat
+- sending a file
+
 ```mermaid
 erDiagram
-    MESSAGE {
+    EVENT {
         UUID id
         string sender_user_id
-        string recipient_user_id
         string content
+    }
+    EVENT_RECIPIENT {
+        UUID event_id
+        string recipient_user_id
+        string decryption_key
     }
     USER {
         string email_hash
     }
-    ACCOUNT ||--o{ MESSAGE : sent
-    ACCOUNT ||--o{ MESSAGE : received
+    EVENT ||--o{ MESSAGE : sent
+    EVENT ||--o{ MESSAGE : received
 ```
 
-Having an account model gives the following benefits:
-- users can delete their account
-- users can only send messages to other users that have an account
+Having an user model gives the following benefits:
+- users can be soft deleted
+- users can only send events to other users that have an account
 
->>>>>>> dd21906 (init)
+
 ## login
 ```mermaid
 sequenceDiagram

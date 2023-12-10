@@ -15,16 +15,31 @@ services:
     networks:
       - lingo-network
 
+  relay-migration:
+    image: arigaio/atlas:0.15.0
+    container_name: lingo-relay-migrate
+    command: migrate apply --url "postgres://postgres:postgres@db:5432/relay?sslmode=disable"
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      - db
+
   relay:
     image: lingo
     container_name: lingo-relay
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["relay"]
+    command: ["--", "relay"]
+    environment:
+      LINGO_DB_URL: postgres://postgres:postgres@db:5432/relay?sslmode=disable
     ports:
       - "8080:8080"
+      - "2345:2345"
     restart: unless-stopped
+    depends_on:
+      - db
+      - relay-migration
     networks:
       - lingo-network
 
