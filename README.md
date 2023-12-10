@@ -30,8 +30,8 @@ erDiagram
     USER {
         string email_hash
     }
-    EVENT ||--o{ MESSAGE : sent
-    EVENT ||--o{ MESSAGE : received
+    USER ||--o{ EVENT : sent
+    USER ||--o{ EVENT_RECIPIENT : received
 ```
 
 Having an user model gives the following benefits:
