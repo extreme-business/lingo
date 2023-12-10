@@ -1,5 +1,5 @@
 # Lingo
-Lingo is a chat application that allows users to chat with each other in real time. 
+Lingo is a chat application that allows users to chat with each other in real time without having to create an account. Events (messages) are encrypted with a key that is only known to the sender and the recipient. This means that the server can not read the messages that are sent between users.
 
 Having access to an email address also means you can have access to messages sent to you by other users. 
 You will be granted a JWT by login in with a token send to your email. 
@@ -31,6 +31,7 @@ erDiagram
         string email_hash
     }
     USER ||--o{ EVENT : sent
+    EVENT ||--|{ EVENT_RECIPIENT : has
     USER ||--o{ EVENT_RECIPIENT : received
 ```
 
