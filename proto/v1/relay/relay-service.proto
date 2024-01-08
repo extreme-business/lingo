@@ -5,7 +5,17 @@ option go_package = "github.com/dwethmar/lingo/proto/v1/relay";
 import "google/protobuf/empty.proto";
 
 service RelayService {
+    rpc CreateAccountToken(AccountTokenRequest) returns (google.protobuf.Empty) {}
+    rpc CreateAccount(CreateAccountRequest) returns (google.protobuf.Empty) {}
     rpc CreateMessage(CreateMessageRequest) returns (google.protobuf.Empty) {}
+}
+
+message AccountTokenRequest {
+    string email = 1;
+}
+
+message CreateAccountRequest {
+    string token = 1;
 }
 
 message CreateMessageRequest {

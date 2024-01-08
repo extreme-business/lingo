@@ -15,12 +15,36 @@ services:
     networks:
       - lingo-network
 
+  # web:
+  #   image: lingo
+  #   container_name: lingo-web
+  #   build:
+  #     dockerfile: Dockerfile
+  #     target: debug
+  #   command: ["--", "web"]
+  #   environment:
+  #     LINGO_DB_URL: postgres://postgres:postgres@db:5432/relay?sslmode=disable
+  #     LINGO_PORT: 8080
+  #     LINGO_AES_256_KEY: ${LINGO_AES_256_KEY:-}
+  #   volumes:
+  #     - ./certs:/src/lingo/certs
+  #   ports:
+  #     - "8090:8080"
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - db
+  #     - relay-migration
+  #   networks:
+  #     - lingo-network
+
   relay-migration:
-    image: arigaio/atlas:0.15.0
+    image: arigaio/atlas:0.17.0
     container_name: lingo-relay-migrate
     command: migrate apply --url "postgres://postgres:postgres@db:5432/relay?sslmode=disable"
     volumes:
       - ./migrations:/migrations
+    networks:
+      - lingo-network
     depends_on:
       - db
 
@@ -33,8 +57,14 @@ services:
     command: ["--", "relay"]
     environment:
       LINGO_DB_URL: postgres://postgres:postgres@db:5432/relay?sslmode=disable
+      LINGO_PORT: 8080
+      LINGO_TLS_CERT_FILE: /src/lingo/certs/lingo.crt
+      LINGO_TLS_KEY_FILE: /src/lingo/certs/lingo.key
+      LINGO_AES_256_KEY: ${LINGO_AES_256_KEY:-}
+    volumes:
+      - ./certs:/src/lingo/certs
     ports:
-      - "8080:8080"
+      - "8091:8080"
       - "2345:2345"
     restart: unless-stopped
     depends_on:

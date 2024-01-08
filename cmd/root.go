@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log/slog"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -25,8 +24,5 @@ func Execute() {
 
 func init() {
 	viper.SetEnvPrefix("lingo")
-	logger := slog.Default()
-	if err := viper.BindEnv("db_url"); err != nil {
-		logger.Error("could not bind db_url", err)
-	}
+	viper.AutomaticEnv()
 }
