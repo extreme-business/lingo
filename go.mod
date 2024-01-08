@@ -3,7 +3,8 @@ module github.com/dwethmar/lingo
 go 1.21.0
 
 require (
-	github.com/google/go-cmp v0.5.9
+	github.com/google/uuid v1.4.0
+	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.0
 	google.golang.org/grpc v1.59.0
