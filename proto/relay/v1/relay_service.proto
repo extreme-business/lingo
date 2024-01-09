@@ -1,0 +1,41 @@
+syntax = "proto3";
+package relay.v1;
+option go_package = "github.com/dwethmar/lingo/proto/v1/relay";
+
+import "google/api/annotations.proto";
+
+service RelayService {
+    rpc CreateRegisterToken(CreateRegisterTokenRequest) returns (CreateRegisterTokenResponse) {
+        option (google.api.http) = {
+            post: "/v1/relay/register"
+            body: "*"
+        };
+    }
+    rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {}
+    rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse) {}
+}
+
+message CreateRegisterTokenRequest {
+    string email = 1;
+}
+
+message CreateRegisterTokenResponse {
+    string token = 1;
+}
+
+message CreateAccountRequest {
+    string token = 1;
+}
+
+message CreateAccountResponse {
+    string token = 1;
+}
+
+message CreateMessageRequest {
+    string message = 1;
+}
+
+message CreateMessageResponse {
+    string message = 1;
+}
+

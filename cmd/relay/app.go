@@ -7,10 +7,9 @@ import (
 
 	"github.com/dwethmar/lingo/cmd/relay/rpc"
 	"github.com/dwethmar/lingo/cmd/relay/token"
+	"github.com/dwethmar/lingo/proto/gen/go/proto/relay/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	relayProto "github.com/dwethmar/lingo/proto/v1/relay"
 )
 
 // Options options for the relay server
@@ -37,7 +36,7 @@ func Start(opt Options) error {
 	}
 
 	// Register the service with the server
-	relayProto.RegisterRelayServiceServer(opt.Server, rpc.New(opt.Logger, opt.RegistrationTokenManager, opt.AuthenticationTokenManager))
+	relay.RegisterRelayServiceServer(opt.Server, rpc.New(opt.Logger, opt.RegistrationTokenManager, opt.AuthenticationTokenManager))
 
 	// Register reflection service on gRPC server.
 	reflection.Register(opt.Server)

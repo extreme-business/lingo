@@ -13,7 +13,9 @@ protip: use a + in your email address to create a unique email address: its-a-me
 - install [docker](https://docs.docker.com/get-docker/)
 - install openssl (for generating certificates and keys)
 - run `./scripts/certs.sh` to generate certificates for the relay server
-- run `./scripts/proto.sh` to generate the protobuf files (this runs in docker)
+- run `./scripts/proto.sh` to generate the protobuf files (this runs [buf](https://buf.build/) in docker)
+  - Specified deps in the `buf.yaml` need to be covered in your buf.lock file. If you get an error, run `./scripts/proto-buf-mod-update.sh` to generate the buf.lock file.
+  - resulting generated files are in `./proto/gen`
 - run `./scripts/env.sh` to generate the .env file
 
 ## domain

@@ -6,12 +6,12 @@ import (
 	"log/slog"
 
 	"github.com/dwethmar/lingo/cmd/relay/token"
-	relayProto "github.com/dwethmar/lingo/proto/v1/relay"
-	"google.golang.org/protobuf/types/known/emptypb"
+
+	"github.com/dwethmar/lingo/proto/gen/go/proto/relay/v1"
 )
 
 type Server struct {
-	relayProto.UnimplementedRelayServiceServer
+	relay.UnimplementedRelayServiceServer
 	logger                     *slog.Logger
 	RegistrationTokenManager   *token.Manager
 	AuthenticationTokenManager *token.Manager
@@ -29,18 +29,18 @@ func New(
 	}
 }
 
-func (s *Server) CreateRegistrationToken(ctx context.Context, req *relayProto.RegistrationTokenRequest) (*emptypb.Empty, error) {
+func (s *Server) CreateRegistrationToken(ctx context.Context, req *relay.CreateRegisterTokenRequest) (*relay.CreateRegisterTokenResponse, error) {
 	s.logger.Info("CreateRegistrationToken")
 
 	if err := s.RegistrationTokenManager.Create(req.Email); err != nil {
 		return nil, fmt.Errorf("failed to send token: %w", err)
 	}
 
-	return &emptypb.Empty{}, nil
+	return &relay.CreateRegisterTokenResponse{}, nil
 }
 
-func (s *Server) CreateMessage(ctx context.Context, req *relayProto.CreateMessageRequest) (*emptypb.Empty, error) {
+func (s *Server) CreateMessage(ctx context.Context, req *relay.CreateMessageRequest) (*relay.CreateMessageResponse, error) {
 	s.logger.Info("CreateMessage")
 
-	return &emptypb.Empty{}, nil
+	return &relay.CreateMessageResponse{}, nil
 }
