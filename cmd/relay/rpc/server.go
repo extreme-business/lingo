@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	"github.com/dwethmar/lingo/cmd/relay/token"
-
 	"github.com/dwethmar/lingo/gen/go/proto/relay/v1"
 )
 

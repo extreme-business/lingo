@@ -50,7 +50,6 @@ services:
 
   relay:
     image: lingo
-    container_name: lingo-relay
     build:
       dockerfile: Dockerfile
       target: debug
@@ -66,12 +65,33 @@ services:
       - ./certs:/src/lingo/certs
     ports:
       - "8091:8080"
-      - "9090:9090"
       - "2345:2345"
     restart: unless-stopped
     depends_on:
       - db
       - relay-migration
+    networks:
+      - lingo-network
+
+  gateway:
+    image: lingo
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["--", "serve", "gateway"]
+    environment:
+      LINGO_PORT: 8080
+      LINGO_RELAY_URL: relay:8080
+      LINGO_TLS_CERT_FILE: /src/lingo/certs/lingo.crt
+      LINGO_TLS_KEY_FILE: /src/lingo/certs/lingo.key
+    volumes:
+      - ./certs:/src/lingo/certs
+    ports:
+      - "8092:8080"
+      - "2346:2345"
+    restart: unless-stopped
+    depends_on:
+      - relay
     networks:
       - lingo-network
 

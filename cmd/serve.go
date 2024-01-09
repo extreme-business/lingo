@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/dwethmar/lingo/cmd/gateway"
 	"github.com/dwethmar/lingo/cmd/relay"
 	"github.com/dwethmar/lingo/cmd/relay/token"
 	"google.golang.org/grpc"
@@ -49,6 +50,7 @@ var gatewayCmd = &cobra.Command{
 	RunE:  runGateway,
 }
 
+// runRelay runs the relay server
 func runRelay(cmd *cobra.Command, args []string) error {
 	logger := slog.Default()
 
@@ -145,7 +147,39 @@ func runRelay(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// runGateway runs the gateway server
 func runGateway(cmd *cobra.Command, args []string) error {
+	logger := slog.Default()
+
+	port := viper.GetInt("port")
+	if port == 0 {
+		return fmt.Errorf("port is not set")
+	}
+
+	relayUrl := viper.GetString("relay_url")
+	if relayUrl == "" {
+		return fmt.Errorf("relay_url is not set")
+	}
+
+	certFile := viper.GetString("tls_cert_file")
+	if certFile == "" {
+		return fmt.Errorf("tls_cert_file is not set")
+	}
+
+	creds, err := credentials.NewClientTLSFromFile(certFile, "lingo")
+	if err != nil {
+		return fmt.Errorf("failed to load TLS keys: %v", err)
+	}
+
+	if err := gateway.Start(cmd.Context(), &gateway.Options{
+		Logger:   logger,
+		Creds:    creds,
+		Port:     port,
+		RelayUrl: relayUrl,
+	}); err != nil {
+		return fmt.Errorf("could not start gateway: %w", err)
+	}
+
 	return nil
 }
 
@@ -166,6 +200,10 @@ func setupEnv() error {
 		return fmt.Errorf("could not bind tls_key_file: %w", err)
 	}
 
+	if err := viper.BindEnv("RELAY_URL"); err != nil {
+		return fmt.Errorf("could not bind relay_url: %w", err)
+	}
+
 	if err := viper.BindPFlags(serveCmd.Flags()); err != nil {
 		return fmt.Errorf("could not bind flags: %w", err)
 	}
@@ -181,7 +219,7 @@ func init() {
 	relayCmd.Flags().StringP("db_url", "d", "", "Database connection string")
 
 	// gateway flags
-	gatewayCmd.Flags().StringP("relay-service", "r", "", "address of the relay service")
+	gatewayCmd.Flags().StringP("relay-url", "r", "", "address of the relay service")
 
 	if err := setupEnv(); err != nil {
 		panic(err)

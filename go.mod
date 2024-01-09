@@ -5,6 +5,7 @@ go 1.21.0
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.4.0
+	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.8.0
