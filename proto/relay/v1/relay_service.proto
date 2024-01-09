@@ -1,6 +1,6 @@
 syntax = "proto3";
-package relay.v1;
-option go_package = "github.com/dwethmar/lingo/proto/v1/relay";
+package proto.relay.v1;
+option go_package = "github.com/dwethmar/lingo/proto/relay/v1;relay";
 
 import "google/api/annotations.proto";
 
@@ -19,17 +19,13 @@ message CreateRegisterTokenRequest {
     string email = 1;
 }
 
-message CreateRegisterTokenResponse {
-    string token = 1;
-}
+message CreateRegisterTokenResponse {}
 
 message CreateAccountRequest {
     string token = 1;
 }
 
-message CreateAccountResponse {
-    string token = 1;
-}
+message CreateAccountResponse {}
 
 message CreateMessageRequest {
     string message = 1;

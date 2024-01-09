@@ -14,3 +14,9 @@ plugins:
       - paths=source_relative
   - plugin: buf.build/grpc-ecosystem/openapiv2:v2.16.2
     out: gen/openapiv2
+    opt: 
+      - output_format=yaml
+  - plugin: buf.build/grpc-ecosystem/openapiv2:v2.16.2
+    out: gen/openapiv2
+    opt: 
+      - output_format=json

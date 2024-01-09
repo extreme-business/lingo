@@ -1,4 +1,4 @@
 proto/v1/**/*.go
 certs
 .env
-proto/gen/**
+gen

@@ -66,6 +66,7 @@ services:
       - ./certs:/src/lingo/certs
     ports:
       - "8091:8080"
+      - "9090:9090"
       - "2345:2345"
     restart: unless-stopped
     depends_on:

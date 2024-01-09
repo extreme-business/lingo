@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/dwethmar/lingo/cmd/relay"
@@ -96,7 +99,18 @@ func run(cmd *cobra.Command, args []string) error {
 		grpc.Creds(creds),
 	)
 
-	if err := relay.Start(relay.Options{
+	ctx := cmd.Context()
+	ctx, cancel := context.WithCancel(ctx)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	// Cancel context on interrupt signal
+	go func() {
+		<-c
+		cancel()
+	}()
+
+	if err := relay.Start(ctx, &relay.Options{
 		Server: grpcServer,
 		Lis:    lis,
 		RegistrationTokenManager: token.NewManager(
@@ -106,6 +120,7 @@ func run(cmd *cobra.Command, args []string) error {
 		),
 		Logger: logger,
 	}); err != nil {
+		logger.Error("failed to start relay server", err)
 		return fmt.Errorf("could not start relay server: %w", err)
 	}
 

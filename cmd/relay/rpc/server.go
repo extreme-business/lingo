@@ -7,7 +7,7 @@ import (
 
 	"github.com/dwethmar/lingo/cmd/relay/token"
 
-	"github.com/dwethmar/lingo/proto/gen/go/proto/relay/v1"
+	"github.com/dwethmar/lingo/gen/go/proto/relay/v1"
 )
 
 type Server struct {
@@ -29,7 +29,7 @@ func New(
 	}
 }
 
-func (s *Server) CreateRegistrationToken(ctx context.Context, req *relay.CreateRegisterTokenRequest) (*relay.CreateRegisterTokenResponse, error) {
+func (s *Server) CreateRegisterToken(ctx context.Context, req *relay.CreateRegisterTokenRequest) (*relay.CreateRegisterTokenResponse, error) {
 	s.logger.Info("CreateRegistrationToken")
 
 	if err := s.RegistrationTokenManager.Create(req.Email); err != nil {
