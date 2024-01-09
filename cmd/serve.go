@@ -26,17 +26,30 @@ const (
 	defaultPort = 8080
 )
 
-// relayCmd represents the relay command
-var relayCmd = &cobra.Command{
-	Use:   "relay",
-	Short: "Start the relay server",
-	Long: `Start the relay server. This server is responsible for
-	receiving messages from the client and forwarding them to the
-	appropriate client.`,
-	RunE: run,
+// serveCmd represents the relay command
+var serveCmd = &cobra.Command{
+	Use:   "serve",
+	Short: "serve lingo services",
+	Long:  `serve lingo services.`,
 }
 
-func run(cmd *cobra.Command, args []string) error {
+// relayCmd represents the relay command for rpc
+var relayCmd = &cobra.Command{
+	Use:   "relay",
+	Short: "Start the relay server rpc service",
+	Long:  `Start the relay server rpc service.`,
+	RunE:  runRelay,
+}
+
+// relayRpcCmd represents the relay command for rpc
+var gatewayCmd = &cobra.Command{
+	Use:   "gateway",
+	Short: "Start the gateway http service",
+	Long:  `Start the gateway http service.`,
+	RunE:  runGateway,
+}
+
+func runRelay(cmd *cobra.Command, args []string) error {
 	logger := slog.Default()
 
 	dbConn := viper.GetString("db_url")
@@ -115,6 +128,11 @@ func run(cmd *cobra.Command, args []string) error {
 		Lis:    lis,
 		RegistrationTokenManager: token.NewManager(
 			[]byte(signingKeyRegistration),
+			15*time.Minute,
+			tokenCreated,
+		),
+		AuthenticationTokenManager: token.NewManager(
+			[]byte(signingKeyAuthentication),
 			5*time.Minute,
 			tokenCreated,
 		),
@@ -127,10 +145,11 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func setupRelay() error {
-	relayCmd.Flags().StringP("db_url", "d", "", "Database connection string")
-	relayCmd.Flags().IntP("port", "p", defaultPort, "Port to listen on")
+func runGateway(cmd *cobra.Command, args []string) error {
+	return nil
+}
 
+func setupEnv() error {
 	if err := viper.BindEnv("DB_URL"); err != nil {
 		return fmt.Errorf("could not bind db_url: %w", err)
 	}
@@ -147,7 +166,7 @@ func setupRelay() error {
 		return fmt.Errorf("could not bind tls_key_file: %w", err)
 	}
 
-	if err := viper.BindPFlags(relayCmd.Flags()); err != nil {
+	if err := viper.BindPFlags(serveCmd.Flags()); err != nil {
 		return fmt.Errorf("could not bind flags: %w", err)
 	}
 
@@ -155,9 +174,20 @@ func setupRelay() error {
 }
 
 func init() {
-	if err := setupRelay(); err != nil {
+	// serve flags
+	serveCmd.Flags().IntP("port", "p", defaultPort, "Port to listen on")
+
+	// relay flags
+	relayCmd.Flags().StringP("db_url", "d", "", "Database connection string")
+
+	// gateway flags
+	gatewayCmd.Flags().StringP("relay-service", "r", "", "address of the relay service")
+
+	if err := setupEnv(); err != nil {
 		panic(err)
 	}
 
-	rootCmd.AddCommand(relayCmd)
+	serveCmd.AddCommand(relayCmd)
+	serveCmd.AddCommand(gatewayCmd)
+	rootCmd.AddCommand(serveCmd)
 }

@@ -54,7 +54,7 @@ services:
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["--", "relay"]
+    command: ["--", "serve", "relay"]
     environment:
       LINGO_DB_URL: postgres://postgres:postgres@db:5432/relay?sslmode=disable
       LINGO_PORT: 8080

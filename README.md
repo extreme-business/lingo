@@ -19,6 +19,12 @@ protip: use a + in your email address to create a unique email address: its-a-me
   - check changes with the [buf](https://buf.build/) linter: `./scripts/proto-lint.sh`
 - run `./scripts/env.sh` to generate the .env file
 
+# run
+- after setup, run `docker-compose up`
+- check `gen/openapiv2/proto/relay/v1/relay_service.swagger.yaml`
+
+# danger zone below
+
 ## domain
 
 A event is a message that is sent from one account to another account. Commonly referred to as a message, but it can also be a notification or something else, like:
