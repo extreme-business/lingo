@@ -1,4 +1,4 @@
-package register
+package token
 
 type Cipher interface {
 	Encrypt(data []byte) ([]byte, error)

@@ -60,7 +60,8 @@ services:
       LINGO_PORT: 8080
       LINGO_TLS_CERT_FILE: /src/lingo/certs/lingo.crt
       LINGO_TLS_KEY_FILE: /src/lingo/certs/lingo.key
-      LINGO_AES_256_KEY: ${LINGO_AES_256_KEY:-}
+      LINGO_SIGNING_KEY_REGISTRATION: ${LINGO_SIGNING_KEY_REGISTRATION:-}
+      LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
     volumes:
       - ./certs:/src/lingo/certs
     ports:

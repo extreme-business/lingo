@@ -2,21 +2,25 @@ package cmd
 
 import (
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"net"
+	"time"
 
-	"github.com/dwethmar/lingo/aeslib"
 	"github.com/dwethmar/lingo/cmd/relay"
-	"github.com/dwethmar/lingo/cmd/relay/register"
-	"github.com/dwethmar/lingo/database"
+	"github.com/dwethmar/lingo/cmd/relay/token"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	_ "github.com/lib/pq"
+)
+
+const (
+	// defaultPort default port to listen on
+	defaultPort = 8080
 )
 
 // relayCmd represents the relay command
@@ -69,28 +73,38 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to load TLS keys: %v", err)
 	}
 
-	keyStr := viper.GetString("AES_256_KEY")
-	if keyStr == "" {
-		return fmt.Errorf("AES_256_KEY is not set")
+	signingKeyRegistration := viper.GetString("SIGNING_KEY_REGISTRATION")
+	if signingKeyRegistration == "" {
+		return fmt.Errorf("SIGNING_KEY_REGISTRATION is not set")
 	}
 
-	key, err := hex.DecodeString(keyStr)
-	if err != nil {
-		return fmt.Errorf("could not decode AES_256_KEY: %w", err)
-	}
-
-	if len(key) != 32 {
-		return fmt.Errorf("key length must be 32 bytes (256 bits), got %d bytes", len(key))
+	signingKeyAuthentication := viper.GetString("SIGNING_KEY_AUTHENTICATION")
+	if signingKeyAuthentication == "" {
+		return fmt.Errorf("SIGNING_KEY_AUTHENTICATION is not set")
 	}
 
 	logger.Info("Starting relay server", slog.Int("port", port))
 
+	tokenCreated := make(chan token.Created)
+	go func() {
+		for created := range tokenCreated {
+			logger.Info("Token created", slog.String("email", created.Email), slog.String("token", created.Token))
+		}
+	}()
+
+	grpcServer := grpc.NewServer(
+		grpc.Creds(creds),
+	)
+
 	if err := relay.Start(relay.Options{
-		Transactor: database.New(db),
-		Lis:        lis,
-		Creds:      creds,
-		Register:   register.New(aeslib.New([]byte(key)), &register.LogRegisterHandler{Logger: logger}),
-		Logger:     logger,
+		Server: grpcServer,
+		Lis:    lis,
+		RegistrationTokenManager: token.NewManager(
+			[]byte(signingKeyRegistration),
+			5*time.Minute,
+			tokenCreated,
+		),
+		Logger: logger,
 	}); err != nil {
 		return fmt.Errorf("could not start relay server: %w", err)
 	}
@@ -100,7 +114,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 func setupRelay() error {
 	relayCmd.Flags().StringP("db_url", "d", "", "Database connection string")
-	relayCmd.Flags().IntP("port", "p", 0, "Port to listen on")
+	relayCmd.Flags().IntP("port", "p", defaultPort, "Port to listen on")
 
 	if err := viper.BindEnv("DB_URL"); err != nil {
 		return fmt.Errorf("could not bind db_url: %w", err)

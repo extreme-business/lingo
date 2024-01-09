@@ -5,28 +5,34 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/dwethmar/lingo/cmd/relay/register"
+	"github.com/dwethmar/lingo/cmd/relay/token"
 	relayProto "github.com/dwethmar/lingo/proto/v1/relay"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type Server struct {
 	relayProto.UnimplementedRelayServiceServer
-	logger   *slog.Logger
-	register *register.Registrar
+	logger                     *slog.Logger
+	RegistrationTokenManager   *token.Manager
+	AuthenticationTokenManager *token.Manager
 }
 
-func New(logger *slog.Logger, register *register.Registrar) *Server {
+func New(
+	logger *slog.Logger,
+	registrationTokenManager *token.Manager,
+	authenticationTokenManager *token.Manager,
+) *Server {
 	return &Server{
-		logger:   logger,
-		register: register,
+		logger:                     logger,
+		RegistrationTokenManager:   registrationTokenManager,
+		AuthenticationTokenManager: authenticationTokenManager,
 	}
 }
 
 func (s *Server) CreateRegistrationToken(ctx context.Context, req *relayProto.RegistrationTokenRequest) (*emptypb.Empty, error) {
 	s.logger.Info("CreateRegistrationToken")
 
-	if err := s.register.SendToken(req.Email); err != nil {
+	if err := s.RegistrationTokenManager.Create(req.Email); err != nil {
 		return nil, fmt.Errorf("failed to send token: %w", err)
 	}
 
