@@ -1,28 +1,40 @@
 package cmd
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/dwethmar/lingo/apps/gateway"
 	"github.com/dwethmar/lingo/apps/relay"
+	"github.com/dwethmar/lingo/apps/relay/server"
 	"github.com/dwethmar/lingo/apps/relay/token"
-	"github.com/dwethmar/lingo/apps/relay/transport/rpc"
 	"github.com/dwethmar/lingo/pkg/clock"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-
+	"github.com/dwethmar/lingo/pkg/grpcserver"
+	"github.com/dwethmar/lingo/pkg/httpserver"
+	protorelay "github.com/dwethmar/lingo/protogen/go/proto/relay/v1"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	_ "github.com/lib/pq"
 )
 
 const (
 	// defaultPort default port to listen on
-	defaultPort = 8080
+	defaultPort     = 8080
+	ReadTimeout     = 5 * time.Second
+	WriteTimeout    = 10 * time.Second
+	IdleTimeout     = 15 * time.Second
+	ShutdownTimeout = 5 * time.Second
 )
 
 // serveCmd represents the relay command
@@ -38,14 +50,6 @@ var relayCmd = &cobra.Command{
 	Short: "Start the relay server rpc service",
 	Long:  `Start the relay server rpc service.`,
 	RunE:  runRelay,
-}
-
-// relayRpcCmd represents the relay command for rpc
-var gatewayCmd = &cobra.Command{
-	Use:   "gateway",
-	Short: "Start the gateway http service",
-	Long:  `Start the gateway http service.`,
-	RunE:  runGateway,
 }
 
 // runRelay runs the relay server
@@ -104,78 +108,118 @@ func runRelay(cmd *cobra.Command, args []string) error {
 		),
 	)
 
-	// setup grpc tranport
-	trans, err := rpc.New(rpc.Config{
-		Relay:    relay,
-		Port:     uint(viper.GetInt("port")),
-		CertFile: viper.GetString("tls_cert_file"),
-		KeyFile:  viper.GetString("tls_key_file"),
-	})
+	grpcPort := viper.GetInt("grpc_port")
+	grpcAddress := fmt.Sprintf(":%d", grpcPort)
 
-	if err != nil {
-		return fmt.Errorf("could not create rpc transport: %w", err)
-	}
-
-	return trans.Serve(ctx)
-}
-
-// runGateway runs the gateway server
-func runGateway(cmd *cobra.Command, args []string) error {
-	logger := slog.Default()
-
-	port := viper.GetInt("port")
-	if port == 0 {
-		return fmt.Errorf("port is not set")
-	}
-
-	relayUrl := viper.GetString("relay_url")
-	if relayUrl == "" {
-		return fmt.Errorf("relay_url is not set")
-	}
+	httpPort := viper.GetInt("http_port")
+	httpAddress := fmt.Sprintf(":%d", httpPort)
 
 	certFile := viper.GetString("tls_cert_file")
-	if certFile == "" {
-		return fmt.Errorf("tls_cert_file is not set")
-	}
+	keyFile := viper.GetString("tls_key_file")
 
-	creds, err := credentials.NewClientTLSFromFile(certFile, "lingo")
-	if err != nil {
-		return fmt.Errorf("failed to load TLS keys: %v", err)
-	}
+	ctx, cancel := context.WithCancel(context.Background())
 
-	if err := gateway.Start(cmd.Context(), &gateway.Options{
-		Logger: logger,
-		GrpcDialOptions: []grpc.DialOption{
+	// Set up channel to receive signals
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		s := <-sigs
+		logger.Info("Signal received", slog.String("signal", s.String()))
+		cancel()
+	}()
+
+	g := new(errgroup.Group)
+
+	// start the grpc server
+	g.Go(func() error {
+		logger.Info("Starting grpc server", slog.String("address", grpcAddress))
+
+		creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
+		if err != nil {
+			return fmt.Errorf("failed to load TLS keys: %v", err)
+		}
+
+		lis, err := net.Listen("tcp", grpcAddress)
+		if err != nil {
+			return fmt.Errorf("failed to create listener: %w", err)
+		}
+
+		server := grpcserver.New(grpcserver.Config{
+			Logger:   logger,
+			Listener: lis,
+			ServerOptions: []grpc.ServerOption{
+				grpc.Creds(creds),
+			},
+			ServerRegisters: []func(*grpc.Server){
+				func(s *grpc.Server) { protorelay.RegisterRelayServiceServer(s, server.New(relay)) },
+			},
+			Reflection: true,
+		})
+
+		if err := server.Serve(ctx); err != nil {
+			logger.Error("error", slog.String("error", err.Error()))
+			return fmt.Errorf("failed to serve: %w", err)
+		}
+
+		return nil
+	})
+
+	// start the http gateway
+	g.Go(func() error {
+		logger.Info("Starting http gateway", slog.String("address", httpAddress))
+
+		creds, err := credentials.NewClientTLSFromFile(certFile, "lingo")
+		if err != nil {
+			return fmt.Errorf("failed to load TLS keys: %v", err)
+		}
+
+		mux := runtime.NewServeMux()
+		if err := protorelay.RegisterRelayServiceHandlerFromEndpoint(ctx, mux, grpcAddress, []grpc.DialOption{
 			grpc.WithTransportCredentials(creds),
-		},
-		Port:     port,
-		RelayUrl: relayUrl,
-	}); err != nil {
-		return fmt.Errorf("could not start gateway: %w", err)
+		}); err != nil {
+			return fmt.Errorf("failed to register gateway: %w", err)
+		}
+
+		server := httpserver.New(httpserver.Config{
+			Addr:            httpAddress,
+			Handler:         mux,
+			ReadTimeout:     ReadTimeout,
+			WriteTimeout:    WriteTimeout,
+			IdleTimeout:     IdleTimeout,
+			ShutdownTimeout: ShutdownTimeout,
+			CertFile:        certFile,
+			KeyFile:         keyFile,
+		})
+
+		if err := server.Serve(ctx); err != nil {
+			return fmt.Errorf("failed to serve: %w", err)
+		}
+
+		return nil
+	})
+
+	logger.Info("Waiting for servers to finish")
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error: %w", err)
 	}
 
 	return nil
 }
 
 func setupEnv() error {
-	if err := viper.BindEnv("DB_URL"); err != nil {
+	if err := viper.BindEnv(
+		"DB_URL",
+		"GRPC_PORT",
+		"HTTP_PORT",
+		"TLS_CERT_FILE",
+		"TLS_KEY_FILE",
+		"RELAY_URL",
+		"SIGNING_KEY_REGISTRATION",
+		"SIGNING_KEY_AUTHENTICATION",
+	); err != nil {
 		return fmt.Errorf("could not bind db_url: %w", err)
-	}
-
-	if err := viper.BindEnv("PORT"); err != nil {
-		return fmt.Errorf("could not bind port: %w", err)
-	}
-
-	if err := viper.BindEnv("TLS_CERT_FILE"); err != nil {
-		return fmt.Errorf("could not bind tls_cert_file: %w", err)
-	}
-
-	if err := viper.BindEnv("TLS_KEY_FILE"); err != nil {
-		return fmt.Errorf("could not bind tls_key_file: %w", err)
-	}
-
-	if err := viper.BindEnv("RELAY_URL"); err != nil {
-		return fmt.Errorf("could not bind relay_url: %w", err)
 	}
 
 	if err := viper.BindPFlags(serveCmd.Flags()); err != nil {
@@ -192,14 +236,10 @@ func init() {
 	// relay flags
 	relayCmd.Flags().StringP("db_url", "d", "", "Database connection string")
 
-	// gateway flags
-	gatewayCmd.Flags().StringP("relay-url", "r", "", "address of the relay service")
-
 	if err := setupEnv(); err != nil {
 		panic(err)
 	}
 
 	serveCmd.AddCommand(relayCmd)
-	serveCmd.AddCommand(gatewayCmd)
 	rootCmd.AddCommand(serveCmd)
 }

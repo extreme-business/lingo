@@ -2,47 +2,43 @@ package grpcserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
-	"os"
-	"os/signal"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-type RegisterServer func(server *grpc.Server)
+var (
+	ErrServerAlreadyRunning = errors.New("server is already running")
+	ErrListenerNotSet       = errors.New("listener is not set")
+)
 
-type Option func(config) config
+type Config struct {
+	Logger          *slog.Logger                  // Logger
+	Listener        net.Listener                  // Listener
+	ServerRegisters []func(*grpc.Server)          // Server registers
+	ServerOptions   []grpc.ServerOption           // Server options
+	Reflection      bool                          // Enable reflection
+	reflectionFunc  func(s reflection.GRPCServer) // Reflection function, mostly for testing
+}
 
-type config struct {
-	Logger        *slog.Logger        // Logger
-	ServerOptions []grpc.ServerOption // Server options
-	Reflection    bool                // Enable reflection
+// grpcServer is an interface that wraps the Serve and GracefulStop methods.
+type grpcServer interface {
+	Serve(net.Listener) error
+	GracefulStop()
 }
 
 type Server struct {
-	logger *slog.Logger
-	lis    net.Listener
-	serv   *grpc.Server
+	logger  *slog.Logger
+	lis     net.Listener
+	Serv    grpcServer
+	running bool
 }
 
-// TCPListener returns a listener on the given port.
-func TCPListener(port uint) (net.Listener, error) {
-	return net.Listen("tcp", fmt.Sprintf(":%d", port))
-}
-
-func New(
-	registerServer RegisterServer,
-	lis net.Listener,
-	opt ...Option,
-) *Server {
-	var c config
-	for _, o := range opt {
-		c = o(c)
-	}
-
+func New(c Config) *Server {
 	if c.Logger == nil {
 		c.Logger = slog.Default()
 	}
@@ -50,43 +46,56 @@ func New(
 	grpcServer := grpc.NewServer(c.ServerOptions...)
 
 	if c.Reflection {
-		reflection.Register(grpcServer)
+		if c.reflectionFunc == nil {
+			c.reflectionFunc = reflection.Register
+		}
+
+		c.reflectionFunc(grpcServer)
 	}
 
-	registerServer(grpcServer)
+	for _, register := range c.ServerRegisters {
+		register(grpcServer)
+	}
 
 	return &Server{
 		logger: c.Logger,
-		lis:    lis,
-		serv:   grpcServer,
+		lis:    c.Listener,
+		Serv:   grpcServer,
 	}
 }
 
+// Running returns true if the server is running.
+func (s *Server) Running() bool { return s.running }
+
 // Serve starts the grpc server.
-// It listens for os signals and context to gracefully shutdown the server.
 func (s *Server) Serve(ctx context.Context) error {
+	if s.running {
+		return ErrServerAlreadyRunning
+	}
+
+	s.running = true
+	defer func() {
+		s.running = false
+	}()
+
 	if s.lis == nil {
-		return fmt.Errorf("listener is not set")
+		return ErrListenerNotSet
 	}
 
 	errChan := make(chan error, 1)
 	go func() {
-		if err := s.serv.Serve(s.lis); err != nil {
-			errChan <- fmt.Errorf("failed to serve: %w", err)
-		}
+		errChan <- s.Serv.Serve(s.lis)
 	}()
-
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt)
 
 	select {
 	case <-ctx.Done():
-		s.serv.GracefulStop()
-		return nil
-	case <-sigChan:
-		s.serv.GracefulStop()
-		return nil
+		s.Serv.GracefulStop()
+		return ctx.Err()
 	case err := <-errChan:
-		return err
+		if err == nil || errors.Is(err, grpc.ErrServerStopped) {
+			return nil
+		}
+
+		return fmt.Errorf("failed to serve: %w", err)
 	}
 }

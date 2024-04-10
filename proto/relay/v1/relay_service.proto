@@ -1,6 +1,6 @@
 syntax = "proto3";
 package proto.relay.v1;
-option go_package = "github.com/dwethmar/lingo/proto/relay/v1;relay";
+option go_package = "github.com/dwethmar/lingo/protogen/relay/v1;relay";
 
 import "google/api/annotations.proto";
 

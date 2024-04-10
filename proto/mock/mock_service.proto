@@ -1,0 +1,16 @@
+syntax = "proto3";
+package proto.relay.v1;
+option go_package = "github.com/dwethmar/lingo/protogen/mock/v1;mock";
+
+// MockService is used for testing
+service MockService {
+    rpc HelloWorld(HelloWorldRequest) returns (HelloWorldResponse);
+}
+
+message HelloWorldRequest {
+    string name = 1;
+}
+
+message HelloWorldResponse {
+    string answer = 1;
+}

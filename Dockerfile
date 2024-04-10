@@ -22,8 +22,9 @@ FROM base AS debug
 WORKDIR /src/lingo
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.21.0
 EXPOSE 8080
+EXPOSE 8081
 EXPOSE 2345
-ENTRYPOINT ["dlv", "debug", "--continue", "--headless", "--listen=:2345", "--api-version=2", "--accept-multiclient", "--log"]
+ENTRYPOINT ["dlv", "debug", "--continue", "--headless", "--listen=:2345", "--api-version=2", "--accept-multiclient", "--log", "--log=true", "--log-output=debugger,debuglineerr,gdbwire,lldbout,rpc"]
 
 FROM base AS lint
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
@@ -36,4 +37,5 @@ RUN go build -o /src/bin/lingo .
 FROM gcr.io/distroless/static-debian11 as prod
 COPY --from=builder /src/bin/lingo ./
 EXPOSE 8080
+EXPOSE 8081
 ENTRYPOINT ["./lingo"]

@@ -1,4 +1,4 @@
-package rpc
+package server
 
 import (
 	"context"
@@ -10,6 +10,12 @@ import (
 type Server struct {
 	protorelay.UnimplementedRelayServiceServer
 	relay *relay.Relay
+}
+
+func New(relay *relay.Relay) *Server {
+	return &Server{
+		relay: relay,
+	}
 }
 
 func (s *Server) CreateRegisterToken(ctx context.Context, req *protorelay.CreateRegisterTokenRequest) (*protorelay.CreateRegisterTokenResponse, error) {
