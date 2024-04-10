@@ -132,15 +132,33 @@ func runRelay(cmd *cobra.Command, args []string) error {
 	g := new(errgroup.Group)
 
 	// start the grpc server
-	g.Go(func() error {
-		logger.Info("Starting grpc server", slog.String("address", grpcAddress))
+	sr := []func(*grpc.Server){
+		func(s *grpc.Server) { protorelay.RegisterRelayServiceServer(s, server.New(relay)) },
+	}
+	g.Go(grpcServerjob(ctx, logger, grpcAddress, certFile, keyFile, sr))
+
+	// start the http gateway
+	g.Go(httpGatewayJob(ctx, logger, grpcAddress, httpAddress, certFile, keyFile))
+
+	logger.Info("Waiting for servers to finish")
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
+	return nil
+}
+
+func grpcServerjob(ctx context.Context, logger *slog.Logger, address, certFile, keyFile string, serverRegisters []func(*grpc.Server)) func() error {
+	return func() error {
+		logger.Info("Starting grpc server", slog.String("address", address))
 
 		creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
 		if err != nil {
 			return fmt.Errorf("failed to load TLS keys: %v", err)
 		}
 
-		lis, err := net.Listen("tcp", grpcAddress)
+		lis, err := net.Listen("tcp", address)
 		if err != nil {
 			return fmt.Errorf("failed to create listener: %w", err)
 		}
@@ -151,10 +169,8 @@ func runRelay(cmd *cobra.Command, args []string) error {
 			ServerOptions: []grpc.ServerOption{
 				grpc.Creds(creds),
 			},
-			ServerRegisters: []func(*grpc.Server){
-				func(s *grpc.Server) { protorelay.RegisterRelayServiceServer(s, server.New(relay)) },
-			},
-			Reflection: true,
+			ServerRegisters: serverRegisters,
+			Reflection:      true,
 		})
 
 		if err := server.Serve(ctx); err != nil {
@@ -163,11 +179,12 @@ func runRelay(cmd *cobra.Command, args []string) error {
 		}
 
 		return nil
-	})
+	}
+}
 
-	// start the http gateway
-	g.Go(func() error {
-		logger.Info("Starting http gateway", slog.String("address", httpAddress))
+func httpGatewayJob(ctx context.Context, logger *slog.Logger, address, grpcAddress, certFile, keyFile string) func() error {
+	return func() error {
+		logger.Info("Starting http gateway", slog.String("address", address))
 
 		creds, err := credentials.NewClientTLSFromFile(certFile, "lingo")
 		if err != nil {
@@ -182,7 +199,7 @@ func runRelay(cmd *cobra.Command, args []string) error {
 		}
 
 		server := httpserver.New(httpserver.Config{
-			Addr:            httpAddress,
+			Addr:            address,
 			Handler:         mux,
 			ReadTimeout:     ReadTimeout,
 			WriteTimeout:    WriteTimeout,
@@ -197,15 +214,7 @@ func runRelay(cmd *cobra.Command, args []string) error {
 		}
 
 		return nil
-	})
-
-	logger.Info("Waiting for servers to finish")
-
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("error: %w", err)
 	}
-
-	return nil
 }
 
 func setupEnv() error {
