@@ -3,7 +3,6 @@ version: "3.9"
 services:
   swagger-ui:
     image: swaggerapi/swagger-ui
-    container_name: "swagger-ui-container"
     ports:
       - "8090:8080"
     volumes:
