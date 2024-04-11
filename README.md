@@ -17,7 +17,7 @@ Lingo is a web app. I don't know what it will do, but for now the goals are:
 
 # Run
 - after setup, run `docker-compose up`
-- To view the [open-api](https://en.wikipedia.org/wiki/Open_API) specs for various services, open `localhost:8090` in the browser.
+- To view the [open-api](https://en.wikipedia.org/wiki/Open_API) specs for various services, open [localhost:8090]() in the browser.
 
 # Develop
 The goal is to have a good developer experience. That means that the developer should have to read minimal setup guides en be up and running as fast as possible.
