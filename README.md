@@ -19,7 +19,11 @@ protip: use a + in your email address to create a unique email address: its-a-me
 
 # Run
 - after setup, run `docker-compose up`
-- check `gen/openapiv2/proto/relay/v1/relay_service.swagger.yaml` for the api documentation
+- To view the [open-api](https://en.wikipedia.org/wiki/Open_API) specs for various services, open `localhost:8090` in the browser.
+
+# Develop
+- to lint, run `./scripts/lint.sh`
+- to run all tests, run `go run test ./...`
 
 # Database migrations
 - to create a new migration, run `./scripts/new-migration.sh <name of migration>`.

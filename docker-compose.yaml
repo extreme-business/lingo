@@ -86,7 +86,7 @@ services:
       - relay
     networks:
       - lingo-network
-      
+
   # prometheus:
   #   image: prom/prometheus
   #   container_name: prometheus

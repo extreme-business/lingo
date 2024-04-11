@@ -1,7 +1,6 @@
-# this dockerfile is used to build the docker image for the apps in the apps folder.
 # syntax=docker/dockerfile:1.2
 
-FROM golang:1.21-alpine AS base
+FROM golang:1.22-alpine AS base
 ENV GO111MODULE="on"
 ENV GOOS="linux"
 ENV CGO_ENABLED=0
@@ -15,10 +14,9 @@ RUN apk update \
     && rm -rf /var/cache/apk/*
 COPY . /src/lingo
 WORKDIR /src/lingo
-RUN --mount=type=cache,target=/go/pkg/mod go mod download
-RUN go generate ./...
 
 FROM base AS debug
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 WORKDIR /src/lingo
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.21.0
 EXPOSE 8080
@@ -27,8 +25,8 @@ EXPOSE 2345
 ENTRYPOINT ["dlv", "debug", "--continue", "--headless", "--listen=:2345", "--api-version=2", "--accept-multiclient", "--log", "--log=true", "--log-output=debugger,debuglineerr,gdbwire,lldbout,rpc"]
 
 FROM base AS lint
-RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
-RUN golangci-lint run ./...
+RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.2
+ENTRYPOINT ["golangci-lint"]
 
 FROM base AS builder
 COPY --from=base /src /src

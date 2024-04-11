@@ -44,7 +44,11 @@ func runRelay(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to setup database: %w", err)
 	}
-	defer dbClose()
+	defer func() {
+		if err := dbClose(); err != nil {
+			logger.Error("Failed to close database", slog.String("error", err.Error()))
+		}
+	}()
 
 	relay, err := setupRelayApp(logger, db)
 	if err != nil {

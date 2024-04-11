@@ -12,3 +12,7 @@ source scripts/env.sh
 echo "Creating proto files..."
 source scripts/proto.sh
 source ./scripts/proto-buf-mod-update.sh
+
+# lint 
+echo "Linting..."
+source scripts/lint.sh
