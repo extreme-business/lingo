@@ -55,8 +55,8 @@ func (s *Server) Serve(ctx context.Context) error {
 		<-ctx.Done()
 		ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
 		defer cancel()
-		err := s.httpServer.Shutdown(ctx)
-		if err != nil {
+
+		if err := s.httpServer.Shutdown(ctx); err != nil {
 			fmt.Printf("failed to shutdown http server: %v\n", err)
 		}
 	}()

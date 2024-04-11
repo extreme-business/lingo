@@ -3,7 +3,6 @@ package grpcserver
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"net"
 	"reflect"
 	"testing"
@@ -32,18 +31,9 @@ func TestNew(t *testing.T) {
 		}
 	})
 
-	t.Run("New should set default logger if not set", func(t *testing.T) {
-		c := Config{}
-		got := New(c)
-		if got.logger == nil {
-			t.Errorf("New() = %v, want %v", got.logger, slog.Default())
-		}
-	})
-
 	t.Run("New should set reflection if set", func(t *testing.T) {
 		var reflectionCalled bool
 		New(Config{
-			Logger:     slog.Default(),
 			Reflection: true,
 			reflectionFunc: func(s reflection.GRPCServer) {
 				reflectionCalled = true
@@ -58,7 +48,6 @@ func TestNew(t *testing.T) {
 	t.Run("New should not set reflection if not set", func(t *testing.T) {
 		var reflectionCalled bool
 		New(Config{
-			Logger:     slog.Default(),
 			Reflection: false,
 			reflectionFunc: func(s reflection.GRPCServer) {
 				reflectionCalled = true
@@ -72,7 +61,6 @@ func TestNew(t *testing.T) {
 
 	t.Run("New should set reflectionFunc if not set", func(t *testing.T) {
 		c := Config{
-			Logger:     slog.Default(),
 			Reflection: true,
 		}
 		New(c)
@@ -81,7 +69,6 @@ func TestNew(t *testing.T) {
 	t.Run("New should call ServerRegisters", func(t *testing.T) {
 		var registerCalled bool
 		New(Config{
-			Logger: slog.Default(),
 			ServerRegisters: []func(*grpc.Server){
 				func(s *grpc.Server) {
 					registerCalled = true
@@ -102,9 +89,8 @@ func TestServer_Serve(t *testing.T) {
 		server := grpc.NewServer()
 
 		s := &Server{
-			logger: slog.Default(),
-			lis:    lis,
-			Serv:   server,
+			lis:  lis,
+			Serv: server,
 		}
 		ctx := context.Background()
 		ctx, cancel := context.WithCancel(ctx)
@@ -120,8 +106,7 @@ func TestServer_Serve(t *testing.T) {
 		lis := bufconn.Listen(buffer)
 
 		s := &Server{
-			logger: slog.Default(),
-			lis:    lis,
+			lis: lis,
 			Serv: &MockGrpcServer{
 				ServeFunc: func(lis net.Listener) error {
 					<-make(chan struct{})
@@ -151,8 +136,7 @@ func TestServer_Serve(t *testing.T) {
 	t.Run("Serve should return error if listener is not set", func(t *testing.T) {
 		server := grpc.NewServer()
 		s := &Server{
-			logger: slog.Default(),
-			Serv:   server,
+			Serv: server,
 		}
 		ctx := context.Background()
 
@@ -168,8 +152,7 @@ func TestServer_Serve(t *testing.T) {
 		var err = errors.New("error")
 
 		s := &Server{
-			logger: slog.Default(),
-			lis:    lis,
+			lis: lis,
 			Serv: &MockGrpcServer{
 				ServeFunc: func(lis net.Listener) error {
 					return err
@@ -189,8 +172,7 @@ func TestServer_Serve(t *testing.T) {
 		lis := bufconn.Listen(buffer)
 
 		s := &Server{
-			logger: slog.Default(),
-			lis:    lis,
+			lis: lis,
 			Serv: &MockGrpcServer{
 				ServeFunc: func(lis net.Listener) error {
 					return nil

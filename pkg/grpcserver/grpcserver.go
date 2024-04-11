@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net"
 
 	"google.golang.org/grpc"
@@ -17,7 +16,6 @@ var (
 )
 
 type Config struct {
-	Logger          *slog.Logger                  // Logger
 	Listener        net.Listener                  // Listener
 	ServerRegisters []func(*grpc.Server)          // Server registers
 	ServerOptions   []grpc.ServerOption           // Server options
@@ -32,17 +30,12 @@ type grpcServer interface {
 }
 
 type Server struct {
-	logger  *slog.Logger
 	lis     net.Listener
 	Serv    grpcServer
 	running bool
 }
 
 func New(c Config) *Server {
-	if c.Logger == nil {
-		c.Logger = slog.Default()
-	}
-
 	grpcServer := grpc.NewServer(c.ServerOptions...)
 
 	if c.Reflection {
@@ -58,9 +51,8 @@ func New(c Config) *Server {
 	}
 
 	return &Server{
-		logger: c.Logger,
-		lis:    c.Listener,
-		Serv:   grpcServer,
+		lis:  c.Listener,
+		Serv: grpcServer,
 	}
 }
 

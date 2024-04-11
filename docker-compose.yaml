@@ -26,6 +26,16 @@ services:
     depends_on:
       - db
 
+  relay-swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: "swagger-ui-container"
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./protogen/openapiv2/proto/relay/v1/relay_service.swagger.yaml:/swagger.yml
+    environment:
+      SWAGGER_JSON: /swagger.yml
+
   relay:
     image: lingo
     build:
@@ -35,16 +45,15 @@ services:
     environment:
       LINGO_DB_URL: postgres://postgres:postgres@db:5432/relay?sslmode=disable
       LINGO_GRPC_PORT: 8080
-      LINGO_HTTP_PORT: 8081
-      LINGO_TLS_CERT_FILE: /src/lingo/certs/lingo.crt
-      LINGO_TLS_KEY_FILE: /src/lingo/certs/lingo.key
+      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+      LINGO_GRPC_TLS_KEY_FILE: /src/lingo/certs/grpc-lingo.key
       LINGO_SIGNING_KEY_REGISTRATION: ${LINGO_SIGNING_KEY_REGISTRATION:-}
       LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
     volumes:
-      - ./certs:/src/lingo/certs
+      - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
+      - ./certs/grpc-lingo.key:/src/lingo/certs/grpc-lingo.key
     ports:
       - "8091:8080" # grpc
-      - "8092:8081" # http
       - "2345:2345" # delve
     restart: unless-stopped
     depends_on:
@@ -53,29 +62,52 @@ services:
     networks:
       - lingo-network
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - 9090:9090
-    restart: unless-stopped
-    volumes:
-      - ./prometheus:/etc/prometheus
-      - prom_data:/prometheus
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    ports:
-      - 3000:3000
-    restart: unless-stopped
+  gateway:
+    image: lingo
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["--", "serve", "gateway"]
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=grafana
+      LINGO_HTTP_PORT: 8081
+      LINGO_RELAY_URL: relay:8080
+      LINGO_HTTP_TLS_CERT_FILE: /src/lingo/certs/http-lingo.crt
+      LINGO_HTTP_TLS_KEY_FILE: /src/lingo/certs/http-lingo.key
+      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
     volumes:
-      - ./grafana:/etc/grafana/provisioning/datasources
+      - ./certs/http-lingo.crt:/src/lingo/certs/http-lingo.crt
+      - ./certs/http-lingo.key:/src/lingo/certs/http-lingo.key
+      - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
+    ports:
+      - "8092:8081"
+    depends_on:
+      - relay
+    networks:
+      - lingo-network
+      
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #   ports:
+  #     - 9090:9090
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  #     - prom_data:/prometheus
+
+  # grafana:
+  #   image: grafana/grafana
+  #   container_name: grafana
+  #   ports:
+  #     - 3000:3000
+  #   restart: unless-stopped
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=admin
+  #     - GF_SECURITY_ADMIN_PASSWORD=grafana
+  #   volumes:
+  #     - ./grafana:/etc/grafana/provisioning/datasources
 
 volumes:
   prom_data:
