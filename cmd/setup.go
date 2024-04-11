@@ -118,7 +118,12 @@ func setupRelayApp(logger *slog.Logger, _ database.DB) (*relay.Relay, error) {
 }
 
 // setupRelayGrpcServer sets up a gRPC server for the relay service.
-func setupRelayGrpcServer(relay *relay.Relay) (*grpcserver.Server, error) {
+func setupRelayGrpcServer(relay *relay.Relay) (*server.Server, error) {
+	return server.New(relay), nil
+}
+
+// setupGrpcServer sets up a gRPC server for the relay service.
+func setupGrpcServer(serverRegisters []func(*grpc.Server)) (*grpcserver.Server, error) {
 	grpcPort, err := getConfigInt(EnvKeyGRPCPort)
 	if err != nil {
 		return nil, err
@@ -150,10 +155,8 @@ func setupRelayGrpcServer(relay *relay.Relay) (*grpcserver.Server, error) {
 		ServerOptions: []grpc.ServerOption{
 			grpc.Creds(creds),
 		},
-		ServerRegisters: []func(*grpc.Server){
-			func(s *grpc.Server) { protorelay.RegisterRelayServiceServer(s, server.New(relay)) },
-		},
-		Reflection: true,
+		ServerRegisters: serverRegisters,
+		Reflection:      true,
 	}), nil
 }
 

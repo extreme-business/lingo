@@ -10,6 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+
+	protorelay "github.com/dwethmar/lingo/protogen/go/proto/relay/v1"
 )
 
 // relayCmd represents the relay command for rpc
@@ -47,13 +50,20 @@ func runRelay(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to setup relay app: %w", err)
 	}
 
-	server, err := setupRelayGrpcServer(relay)
+	relayServer, err := setupRelayGrpcServer(relay)
 	if err != nil {
 		return fmt.Errorf("failed to setup relay server: %w", err)
 	}
 
+	grpcServer, err := setupGrpcServer([]func(*grpc.Server){
+		func(s *grpc.Server) { protorelay.RegisterRelayServiceServer(s, relayServer) },
+	})
+	if err != nil {
+		return fmt.Errorf("failed to setup grpc server: %w", err)
+	}
+
 	g := new(errgroup.Group)
-	g.Go(func() error { return server.Serve(ctx) })
+	g.Go(func() error { return grpcServer.Serve(ctx) })
 
 	logger.Info("Waiting for servers to finish")
 
