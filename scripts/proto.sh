@@ -3,4 +3,6 @@
 # delete everything in the proto directory
 rm -rf protogen/*
 
-docker run --volume "$(pwd):/workspace" --workdir /workspace bufbuild/buf generate
+source $(dirname $0)/var_setup.sh
+
+docker run --volume "$LINGO_PROJECT_PATH:/workspace" --workdir /workspace bufbuild/buf generate

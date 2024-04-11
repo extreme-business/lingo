@@ -1,18 +1,20 @@
 #!/bin/bash
 
+cd scripts
+
 # create certificates
 echo "Creating certificates..."
-source scripts/certs.sh
+source certs.sh
 
 # create .env file
 echo "Creating .env file..."
-source scripts/env.sh
+source env.sh
 
 # create proto files
 echo "Creating proto files..."
-source scripts/proto.sh
-source ./scripts/proto-buf-mod-update.sh
+source proto.sh
+source proto-buf-mod-update.sh
 
 # lint 
 echo "Linting..."
-source scripts/lint.sh
+source lint.sh

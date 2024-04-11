@@ -20,3 +20,4 @@ plugins:
     out: protogen/openapiv2
     opt: 
       - output_format=json
+

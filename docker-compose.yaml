@@ -8,6 +8,7 @@ services:
     volumes:
       - ./provision/swagger-ui/swagger-config.json:/swagger-config.json
       - ./protogen/openapiv2/proto/private/relay/v1/relay_service.swagger.yaml:/relay_service.swagger.yaml
+      - ./protogen/openapiv2/proto/public/auth/v1/auth_service.swagger.yaml:/relay_service.swagger.yaml
     environment:
       CONFIG_URL: /swagger-config.json
       SWAGGER_JSON: /relay_service.swagger.yaml

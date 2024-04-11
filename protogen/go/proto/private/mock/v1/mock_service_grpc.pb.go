@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: proto/private/mock/mock_service.proto
+// source: proto/private/mock/v1/mock_service.proto
 
 package mock
 
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MockService_HelloWorld_FullMethodName = "/proto.relay.v1.MockService/HelloWorld"
+	MockService_HelloWorld_FullMethodName = "/proto.private.mock.v1.MockService/HelloWorld"
 )
 
 // MockServiceClient is the client API for MockService service.
@@ -96,7 +96,7 @@ func _MockService_HelloWorld_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var MockService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.relay.v1.MockService",
+	ServiceName: "proto.private.mock.v1.MockService",
 	HandlerType: (*MockServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -105,5 +105,5 @@ var MockService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/private/mock/mock_service.proto",
+	Metadata: "proto/private/mock/v1/mock_service.proto",
 }

@@ -22,10 +22,15 @@ protip: use a + in your email address to create a unique email address: its-a-me
 - To view the [open-api](https://en.wikipedia.org/wiki/Open_API) specs for various services, open `localhost:8090` in the browser.
 
 # Develop
+The goal is to have a good developer experience. That means that the developer should have to read minimal setup guides en be up and running as fast as possible.
+
+## Linting
 - to lint, run `./scripts/lint.sh`
+
+## Testing
 - to run all tests, run `go run test ./...`
 
-# Database migrations
+## Database migrations
 - to create a new migration, run `./scripts/new-migration.sh <name of migration>`.
 - after you have writen you migration, run `./scripts/hash-migration.sh`.
 

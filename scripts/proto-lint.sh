@@ -1,3 +1,5 @@
 #! /bin/bash
 
-docker run --volume "$(pwd):/workspace" --workdir /workspace bufbuild/buf lint
+source $(dirname $0)/var_setup.sh
+
+docker run --volume "$LINGO_PROJECT_PATH:/workspace" --workdir /workspace bufbuild/buf lint

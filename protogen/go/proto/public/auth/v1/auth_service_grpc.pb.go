@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	AuthService_Register_FullMethodName = "/proto.relay.v1.AuthService/Register"
+	AuthService_Register_FullMethodName = "/proto.public.auth.v1.AuthService/Register"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -96,7 +96,7 @@ func _AuthService_Register_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AuthService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.relay.v1.AuthService",
+	ServiceName: "proto.public.auth.v1.AuthService",
 	HandlerType: (*AuthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
