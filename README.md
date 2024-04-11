@@ -1,9 +1,9 @@
 # Lingo
 Lingo is a web app. I don't know what it will do, but for now the goals are:
 - single binary, many commands with different functionality, like: serving grpc, http and jobs.
-- use proto as the main way to design api's
-- use proto to generate https gateways for the grpc servers
-- add all https service to swagger ui so they can be easily tested
+- use proto as the main way to design api's.
+- use proto to generate https gateways for the grpc servers.
+- add all https services to swagger ui so they can be easily tested.
 
 # Setup
 - install [docker](https://docs.docker.com/get-docker/).
@@ -17,7 +17,7 @@ Lingo is a web app. I don't know what it will do, but for now the goals are:
 
 # Run
 - after setup, run `docker-compose up`
-- To view the [open-api](https://en.wikipedia.org/wiki/Open_API) specs for various services, open [localhost:8090]() in the browser.
+- To view the [open-api](https://en.wikipedia.org/wiki/Open_API) specs for various services, open [localhost:8090](localhost:8090) in the browser.
 
 # Develop
 The goal is to have a good developer experience. That means that the developer should have to read minimal setup guides en be up and running as fast as possible.
@@ -33,4 +33,4 @@ The goal is to have a good developer experience. That means that the developer s
 
 ## Database migrations
 - to create a new migration, run `./scripts/new-migration.sh <name of migration>`.
-- after you have written you migration, run `./scripts/hash-migration.sh`.
+- after you have written your migration, run `./scripts/hash-migration.sh`.
