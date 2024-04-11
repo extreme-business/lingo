@@ -51,23 +51,24 @@ func (s *Server) Serve(ctx context.Context) error {
 		return ErrCertFilesNotSet
 	}
 
+	errCh := make(chan error, 1)
 	go func() {
-		<-ctx.Done()
-		ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
-		defer cancel()
-
-		if err := s.httpServer.Shutdown(ctx); err != nil {
-			fmt.Printf("failed to shutdown http server: %v\n", err)
-		}
+		errCh <- s.httpServer.ListenAndServeTLS(s.certFile, s.keyFile)
 	}()
 
-	if err := s.httpServer.ListenAndServeTLS(s.certFile, s.keyFile); err != nil {
-		if err == http.ErrServerClosed || errors.Is(err, context.Canceled) {
+	select {
+	case <-ctx.Done():
+		ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
+		defer cancel()
+		if err := s.httpServer.Shutdown(ctx); err != nil {
+			return fmt.Errorf("failed to shutdown server: %w", err)
+		}
+		return ctx.Err()
+	case err := <-errCh:
+		if err == nil || errors.Is(err, http.ErrServerClosed) {
 			return nil
 		}
 
 		return fmt.Errorf("failed to serve: %w", err)
 	}
-
-	return nil
 }
