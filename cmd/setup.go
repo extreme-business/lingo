@@ -206,5 +206,6 @@ func setupRelayHttpServer(ctx context.Context) (*httpserver.Server, error) {
 		Handler:  mux,
 		CertFile: certFile,
 		KeyFile:  keyFile,
+		Cors:     true,
 	}), nil
 }

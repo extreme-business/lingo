@@ -1,30 +1,23 @@
 swagger: "2.0"
 info:
-  title: A Bit of Everything
+  title: Lingo Auth API
   version: "1.0"
   contact:
     name: lingo
     url: https://github.com/DWethmar/lingo
     email: denniswethmar@gmail.com
   license:
-    name: BSD 3-Clause License
-    url: https://github.com/grpc-ecosystem/grpc-gateway/blob/main/LICENSE
-  x-something-something: yadda
+    name: MIT License
+    url: https://github.com/DWethmar/lingo/blob/main/LICENSE
 tags:
-  - name: echo rpc
-    description: Echo Rpc description
-    x-traitTag: true
   - name: AuthService
+host: localhost:8092
 schemes:
-  - http
   - https
-  - wss
 consumes:
   - application/json
-  - application/x-foo-mime
 produces:
   - application/json
-  - application/x-foo-mime
 paths:
   /v1/auth/register:
     post:
@@ -34,22 +27,6 @@ paths:
           description: A successful response.
           schema:
             $ref: '#/definitions/v1RegisterResponse'
-        "403":
-          description: Returned when the user does not have permission to access the resource.
-          schema: {}
-        "404":
-          description: Returned when the resource does not exist.
-          schema:
-            type: string
-            format: string
-        "418":
-          description: I'm a teapot.
-          schema:
-            $ref: .grpc.gateway.examples.internal.proto.examplepb.NumericEnum
-        "500":
-          description: Server error
-          schema:
-            $ref: .grpc.gateway.examples.internal.proto.examplepb.ErrorResponse
         default:
           description: An unexpected error response.
           schema:
@@ -97,36 +74,10 @@ definitions:
   v1RegisterResponse:
     type: object
 securityDefinitions:
-  ApiKeyAuth:
-    type: apiKey
-    name: X-API-Key
-    in: header
-    x-amazon-apigateway-authorizer:
-      authorizerResultTtlInSeconds: 60
-      type: token
-    x-amazon-apigateway-authtype: oauth2
   BasicAuth:
     type: basic
-  OAuth2:
-    type: oauth2
-    flow: accessCode
-    authorizationUrl: https://example.com/oauth/authorize
-    tokenUrl: https://example.com/oauth/token
-    scopes:
-      admin: Grants read and write access to administrative information
-      read: Grants read access
-      write: Grants write access
-security:
-  - ApiKeyAuth: []
-    BasicAuth: []
-  - ApiKeyAuth: []
-    OAuth2:
-      - read
-      - write
-externalDocs:
-  description: More about gRPC-Gateway
-  url: https://github.com/grpc-ecosystem/grpc-gateway
-x-grpc-gateway-baz-list:
-  - one
-  - true
-x-grpc-gateway-foo: bar
+  Bearer:
+    type: apiKey
+    description: 'Enter the token with the `Bearer: ` prefix, e.g. Bearer abcde12345'
+    name: Authorization
+    in: header

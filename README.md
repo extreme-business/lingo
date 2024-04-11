@@ -1,13 +1,9 @@
 # Lingo
-Lingo is a chat application that allows accounts to chat with each other in real time without having to create an account. Events (messages) are encrypted with a key that is only known to the sender and the recipient. This means that the server can not read the messages that are sent between accounts.
-
-Having access to an email address also means you can have access to messages sent to you by other accounts. 
-You will be granted a JWT by login in with a token send to your email. 
-This JWT will be used to authenticate you when you want to send or receive messages.
-
-An address of a account is the sha256 hash of the email address of the account. Email address hashes are used to protect the privacy of accounts, although 100% privacy is not guaranteed this way and although stored as a hash, a plain text email address is still needed to send a login token to.
-
-protip: use a + in your email address to create a unique email address: its-a-me+askdasd@gmail.com
+Lingo is a web app. I don't know what it will do, but for now the goals are:
+- single binary, many commands with different functionality, like: serving grpc, http and jobs.
+- use proto as the main way to design api's
+- use proto to generate https gateways for the grpc servers
+- add all https service to swagger ui so they can be easily tested
 
 # Setup
 - install [docker](https://docs.docker.com/get-docker/).

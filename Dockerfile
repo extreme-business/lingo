@@ -18,7 +18,7 @@ WORKDIR /src/lingo
 FROM base AS debug
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
 WORKDIR /src/lingo
-RUN go install github.com/go-delve/delve/cmd/dlv@v1.21.0
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.22.0
 EXPOSE 8080
 EXPOSE 8081
 EXPOSE 2345
