@@ -1,0 +1,11 @@
+{
+    "urls": [
+      {
+        "url": "relay_service.swagger.yaml",
+        "name": "relay_service"
+      }
+    ],
+    "plugins": [
+      "topbar"
+    ]
+  }

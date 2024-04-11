@@ -1,6 +1,18 @@
 version: "3.9"
 
 services:
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: "swagger-ui-container"
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./provision/swagger-ui/swagger-config.json:/swagger-config.json
+      - ./protogen/openapiv2/proto/private/relay/v1/relay_service.swagger.yaml:/relay_service.swagger.yaml
+    environment:
+      CONFIG_URL: /swagger-config.json
+      SWAGGER_JSON: /relay_service.swagger.yaml
+
   db:
     image: postgres:14.4-alpine
     environment:
@@ -25,16 +37,6 @@ services:
       - lingo-network
     depends_on:
       - db
-
-  relay-swagger-ui:
-    image: swaggerapi/swagger-ui
-    container_name: "swagger-ui-container"
-    ports:
-      - "8090:8080"
-    volumes:
-      - ./protogen/openapiv2/proto/relay/v1/relay_service.swagger.yaml:/swagger.yml
-    environment:
-      SWAGGER_JSON: /swagger.yml
 
   relay:
     image: lingo

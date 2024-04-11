@@ -15,7 +15,7 @@ import (
 	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/dwethmar/lingo/pkg/grpcserver"
 	"github.com/dwethmar/lingo/pkg/httpserver"
-	protorelay "github.com/dwethmar/lingo/protogen/go/proto/relay/v1"
+	protorelay "github.com/dwethmar/lingo/protogen/go/proto/private/relay/v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
