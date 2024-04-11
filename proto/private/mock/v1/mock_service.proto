@@ -1,5 +1,5 @@
 syntax = "proto3";
-package proto.relay.v1;
+package proto.private.mock.v1;
 option go_package = "github.com/dwethmar/lingo/protogen/private/mock/v1;mock";
 
 // MockService is used for testing

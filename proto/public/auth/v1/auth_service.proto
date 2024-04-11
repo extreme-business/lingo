@@ -1,5 +1,5 @@
 syntax = "proto3";
-package proto.relay.v1;
+package proto.public.auth.v1;
 option go_package = "github.com/dwethmar/lingo/protogen/private/auth/v1;auth";
 
 import "google/api/annotations.proto";
@@ -16,7 +16,12 @@ service AuthService {
 }
 
 message RegisterRequest {
-    string Username = 1 [
+    string username = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The username of a user"},
+        (google.api.field_behavior) = REQUIRED
+    ];
+
+    string password = 2 [
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The username of a user"},
         (google.api.field_behavior) = REQUIRED
     ];

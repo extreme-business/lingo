@@ -1,5 +1,5 @@
 syntax = "proto3";
-package proto.account.v1;
+package proto.private.account.v1;
 option go_package = "github.com/dwethmar/lingo/protogen/private/account/v1;account";
 
 import "google/protobuf/timestamp.proto";

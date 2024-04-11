@@ -2,7 +2,8 @@
     "urls": [
       {
         "url": "relay_service.swagger.yaml",
-        "name": "relay_service"
+        "name": "relay_service",
+        "description": "Relay Service API"
       }
     ],
     "plugins": [
