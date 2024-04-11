@@ -1,5 +1,7 @@
 #! /bin/bash
 
+source $(dirname $0)/var_setup.sh
+
 # get the name of the migration
 name="$1"
 
@@ -9,12 +11,7 @@ if [ -z "$name" ]; then
     exit 1
 fi
 
-# Get the directory of the script
-script_dir="$(dirname "$BASH_SOURCE")"
-
 # Read the .atlas-version file relative to the script's location
-atlasVersion=$(cat "${script_dir}/.atlas-version")
+atlasVersion=$(cat "$LINGO_PROJECT_PATH/scripts/.atlas-version")
 
-echo "creating migration... with atlas version $atlasVersion"
-
-docker run --rm -v ./migrations:/migrations arigaio/atlas:$atlasVersion migrate new $name
+docker run --rm -v $LINGO_PROJECT_PATH/migrations:/migrations arigaio/atlas:$atlasVersion migrate new $name
