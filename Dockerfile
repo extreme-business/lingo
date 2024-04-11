@@ -14,9 +14,9 @@ RUN apk update \
     && rm -rf /var/cache/apk/*
 COPY . /src/lingo
 WORKDIR /src/lingo
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 
 FROM base AS debug
-RUN --mount=type=cache,target=/go/pkg/mod go mod download
 WORKDIR /src/lingo
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.22.0
 EXPOSE 8080

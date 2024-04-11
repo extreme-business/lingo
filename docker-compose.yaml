@@ -15,6 +15,7 @@ services:
 
   db:
     image: postgres:14.4-alpine
+    container_name: lingo-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -27,9 +28,44 @@ services:
     networks:
       - lingo-network
 
+  auth-migration:
+    image: arigaio/atlas:0.21.1
+    command: migrate apply --url "postgres://postgres:postgres@db:5432/organization?sslmode=disable"
+    volumes:
+      - ./apps/auth/migrations:/migrations
+    networks:
+      - lingo-network
+    depends_on:
+      - db
+
+  auth:
+    image: lingo
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["--", "serve", "auth"]
+    environment:
+      LINGO_DB_URL: postgres://postgres:postgres@db:5432/organization?sslmode=disable
+      LINGO_GRPC_PORT: 8080
+      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+      LINGO_GRPC_TLS_KEY_FILE: /src/lingo/certs/grpc-lingo.key
+      LINGO_SIGNING_KEY_REGISTRATION: ${LINGO_SIGNING_KEY_REGISTRATION:-}
+      LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
+    volumes:
+      - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
+      - ./certs/grpc-lingo.key:/src/lingo/certs/grpc-lingo.key
+    ports:
+      - "8070:8080" # grpc
+      - "2101:2345" # delve
+    restart: unless-stopped
+    depends_on:
+      - db
+      - auth-migration
+    networks:
+      - lingo-network
+
   relay-migration:
     image: arigaio/atlas:0.21.1
-    container_name: lingo-relay-migrate
     command: migrate apply --url "postgres://postgres:postgres@db:5432/relay?sslmode=disable"
     volumes:
       - ./migrations:/migrations
@@ -56,7 +92,7 @@ services:
       - ./certs/grpc-lingo.key:/src/lingo/certs/grpc-lingo.key
     ports:
       - "8091:8080" # grpc
-      - "2345:2345" # delve
+      - "2102:2345" # delve
     restart: unless-stopped
     depends_on:
       - db
@@ -64,12 +100,12 @@ services:
     networks:
       - lingo-network
 
-  gateway:
+  relay-gateway:
     image: lingo
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["--", "serve", "gateway"]
+    command: ["--", "serve", "relay-gateway"]
     environment:
       LINGO_HTTP_PORT: 8081
       LINGO_RELAY_URL: relay:8080

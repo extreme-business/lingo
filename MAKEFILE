@@ -1,18 +1,11 @@
-.PHONY: all proto
+.PHONY: all
 
-all: server
+all: build
 
-GOVER=1.21
 BIN=bin
 
-GOCMD=go1.21
+GOCMD=go
 GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
-GOMOD=$(GOCMD) mod
-GORUN=$(GOCMD) run
-GOGEN=$(GOCMD) generate
-GOWORK=$(GOCMD) work
-GOINSTALL=$(GOCMD) install
 
+build:
+	$(GOBUILD) -o $(BIN)/lingo main.go

@@ -1,4 +1,4 @@
-package cmd
+package relay
 
 import (
 	"context"
@@ -11,14 +11,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var gatewayCmd = &cobra.Command{
-	Use:   "gateway",
-	Short: "Start the gateway http service",
-	Long:  `Start the gateway http service.`,
-	RunE:  runGateway,
-}
-
-func runGateway(cmd *cobra.Command, args []string) error {
+func runGateway(_ *cobra.Command, _ []string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Set up channel to receive signals
@@ -31,7 +24,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		cancel()
 	}()
 
-	s, err := setupRelayHttpServer(ctx)
+	s, err := setupHttpServer(ctx)
 	if err != nil {
 		return err
 	}
@@ -42,7 +35,10 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	return g.Wait()
 }
 
-func init() {
-	gatewayCmd.Flags().StringP("relay-url", "r", "", "address of the relay service")
-	serveCmd.AddCommand(gatewayCmd)
+func NewGatewayCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "relay-gateway",
+		Short: "Start the relay http service",
+		RunE:  runGateway,
+	}
 }

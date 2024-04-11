@@ -1,4 +1,4 @@
-package cmd
+package relay
 
 import (
 	"context"
@@ -13,19 +13,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
 
+	"github.com/dwethmar/lingo/cmd/config"
+	"github.com/dwethmar/lingo/pkg/database"
 	protorelay "github.com/dwethmar/lingo/protogen/go/proto/private/relay/v1"
 )
 
-// relayCmd represents the relay command for rpc
-var relayCmd = &cobra.Command{
-	Use:   "relay",
-	Short: "Start the relay server rpc service",
-	Long:  `Start the relay server rpc service.`,
-	RunE:  runRelay,
-}
-
 // runRelay runs the relay server
-func runRelay(cmd *cobra.Command, args []string) error {
+func runRelay(_ *cobra.Command, _ []string) error {
 	logger := slog.Default()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -40,22 +34,28 @@ func runRelay(cmd *cobra.Command, args []string) error {
 		cancel()
 	}()
 
-	db, dbClose, err := setupDatabase()
+	dbUrl, err := config.DatabaseURL()
+	if err != nil {
+		return fmt.Errorf("failed to get database url: %w", err)
+	}
+
+	db, dbClose, err := database.Connect(dbUrl)
 	if err != nil {
 		return fmt.Errorf("failed to setup database: %w", err)
 	}
+
 	defer func() {
 		if err := dbClose(); err != nil {
 			logger.Error("Failed to close database", slog.String("error", err.Error()))
 		}
 	}()
 
-	relay, err := setupRelayApp(logger, db)
+	relay, err := setupRelay(logger, db)
 	if err != nil {
 		return fmt.Errorf("failed to setup relay app: %w", err)
 	}
 
-	relayServer, err := setupRelayGrpcServer(relay)
+	relayServer, err := setupGrpcService(relay)
 	if err != nil {
 		return fmt.Errorf("failed to setup relay server: %w", err)
 	}
@@ -76,7 +76,10 @@ func runRelay(cmd *cobra.Command, args []string) error {
 	return g.Wait()
 }
 
-func init() {
-	relayCmd.Flags().StringP("db_url", "d", "", "Database connection string")
-	serveCmd.AddCommand(relayCmd)
+func NewGrpcCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "relay",
+		Short: "Start the relay service",
+		RunE:  runRelay,
+	}
 }

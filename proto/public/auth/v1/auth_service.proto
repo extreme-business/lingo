@@ -53,13 +53,16 @@ service AuthService {
 }
 
 message RegisterRequest {
-    string username = 1 [
+    string email = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The email of a user"},
+        (google.api.field_behavior) = REQUIRED
+    ];
+    string username = 2 [
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The username of a user"},
         (google.api.field_behavior) = REQUIRED
     ];
-
-    string password = 2 [
-        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The username of a user"},
+    string password = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The password of a user"},
         (google.api.field_behavior) = REQUIRED
     ];
 }

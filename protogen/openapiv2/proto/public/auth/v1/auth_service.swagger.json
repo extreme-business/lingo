@@ -94,16 +94,21 @@
     "v1RegisterRequest": {
       "type": "object",
       "properties": {
+        "email": {
+          "type": "string",
+          "description": "The email of a user"
+        },
         "username": {
           "type": "string",
           "description": "The username of a user"
         },
         "password": {
           "type": "string",
-          "description": "The username of a user"
+          "description": "The password of a user"
         }
       },
       "required": [
+        "email",
         "username",
         "password"
       ]

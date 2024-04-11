@@ -13,7 +13,7 @@ Lingo is a web app. I don't know what it will do, but for now the goals are:
   - resulting generated files are in the `protogen` folder.
   - check changes with the [buf](https://buf.build/) linter: `scripts/proto-lint.sh`.
 - run `scripts/certs.sh` (this is not part of the setup, because you may choose to add the cert to you computer so you can use swagger-ui).
-    - trust self signed for [mac](https://tosbourn.com/getting-os-x-to-trust-self-signed-ssl-certificates/)
+    - trust self signed certificates for [mac](https://tosbourn.com/getting-os-x-to-trust-self-signed-ssl-certificates/)
 
 # Run
 - after setup, run `docker-compose up`
@@ -32,5 +32,5 @@ The goal is to have a good developer experience. That means that the developer s
 - to run all tests, run `go run test ./...`
 
 ## Database migrations
-- to create a new migration, run `./scripts/new-migration.sh <name of migration>`.
-- after you have written your migration, run `./scripts/hash-migration.sh`.
+- to create a new migration, run `./scripts/new-migration.sh <app> <name of migration>`.
+- after you have written your migration, run `./scripts/hash-migration.sh <app>`.

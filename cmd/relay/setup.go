@@ -1,8 +1,7 @@
-package cmd
+package relay
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"net"
@@ -11,13 +10,13 @@ import (
 	"github.com/dwethmar/lingo/apps/relay"
 	"github.com/dwethmar/lingo/apps/relay/server"
 	"github.com/dwethmar/lingo/apps/relay/token"
+	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/dwethmar/lingo/pkg/clock"
 	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/dwethmar/lingo/pkg/grpcserver"
 	"github.com/dwethmar/lingo/pkg/httpserver"
 	protorelay "github.com/dwethmar/lingo/protogen/go/proto/private/relay/v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -29,69 +28,14 @@ const (
 	ShutdownTimeout = 5 * time.Second
 )
 
-var ( // env keys
-	EnvKeyDatabaseURL              = "DB_URL"
-	EnvKeySigningKeyRegistration   = "SIGNING_KEY_REGISTRATION"
-	EnvKeySigningKeyAuthentication = "SIGNING_KEY_AUTHENTICATION"
-	EnvKeyHTTPPort                 = "HTTP_PORT"
-	EnvKeyGRPCPort                 = "GRPC_PORT"
-	EnvKeyGrpcTLSCertFile          = "GRPC_TLS_CERT_FILE"
-	EnvKeyGrpcTLSKeyFile           = "GRPC_TLS_KEY_FILE"
-	EnvKeyHTTPTLSKeyFile           = "HTTP_TLS_KEY_FILE"
-	EnvKeyHTTPTLSCertFile          = "HTTP_TLS_CERT_FILE"
-	EnvKeyRelayUrl                 = "RELAY_URL"
-)
-
-// getConfigString returns the value of the key as a string.
-func getConfigString(key string) (string, error) {
-	if !viper.IsSet(key) {
-		return "", fmt.Errorf("%s is not set", key)
-	}
-
-	value := viper.GetString(key)
-	if value == "" {
-		return "", fmt.Errorf("%s is empty", key)
-	}
-
-	return value, nil
-}
-
-// getConfigInt returns the value of the key as an integer.
-func getConfigInt(key string) (int, error) {
-	if !viper.IsSet(key) {
-		return 0, fmt.Errorf("%s is not set", key)
-	}
-
-	return viper.GetInt(key), nil
-}
-
-// setupDatabase sets up the database connection.
-func setupDatabase() (database.DB, func() error, error) {
-	dbConn, err := getConfigString(EnvKeyDatabaseURL)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	db, err := sql.Open("postgres", dbConn)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not open db: %w", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		return nil, nil, fmt.Errorf("could not ping db: %w", err)
-	}
-
-	return db, db.Close, nil
-}
-
-// setupRelayApp sets up the relay application.
-func setupRelayApp(logger *slog.Logger, _ database.DB) (*relay.Relay, error) {
-	signingKeyRegistration, err := getConfigString(EnvKeySigningKeyRegistration)
+// setupRelay sets up the relay application.
+func setupRelay(logger *slog.Logger, _ database.DB) (*relay.Relay, error) {
+	signingKeyRegistration, err := config.SigningKeyRegistration()
 	if err != nil {
 		return nil, err
 	}
 
-	signingKeyAuthentication, err := getConfigString(EnvKeySigningKeyAuthentication)
+	signingKeyAuthentication, err := config.SigningKeyAuthentication()
 	if err != nil {
 		return nil, err
 	}
@@ -124,24 +68,24 @@ func setupRelayApp(logger *slog.Logger, _ database.DB) (*relay.Relay, error) {
 	return relay, nil
 }
 
-// setupRelayGrpcServer sets up a gRPC server for the relay service.
-func setupRelayGrpcServer(relay *relay.Relay) (*server.Server, error) {
+// setupGrpcService sets up a gRPC server for the relay service.
+func setupGrpcService(relay *relay.Relay) (*server.Service, error) {
 	return server.New(relay), nil
 }
 
 // setupGrpcServer sets up a gRPC server for the relay service.
 func setupGrpcServer(serverRegisters []func(*grpc.Server)) (*grpcserver.Server, error) {
-	grpcPort, err := getConfigInt(EnvKeyGRPCPort)
+	grpcPort, err := config.GRPCPort()
 	if err != nil {
 		return nil, err
 	}
 
-	certFile, err := getConfigString(EnvKeyGrpcTLSCertFile)
+	certFile, err := config.GrpcTLSCertFile()
 	if err != nil {
 		return nil, err
 	}
 
-	keyFile, err := getConfigString(EnvKeyGrpcTLSKeyFile)
+	keyFile, err := config.GrpcTLSKeyFile()
 	if err != nil {
 		return nil, err
 	}
@@ -167,29 +111,29 @@ func setupGrpcServer(serverRegisters []func(*grpc.Server)) (*grpcserver.Server, 
 	}), nil
 }
 
-// setupRelayHttpServer
-func setupRelayHttpServer(ctx context.Context) (*httpserver.Server, error) {
-	port, err := getConfigInt(EnvKeyHTTPPort)
+// setupHttpServer
+func setupHttpServer(ctx context.Context) (*httpserver.Server, error) {
+	port, err := config.HTTPPort()
 	if err != nil {
 		return nil, err
 	}
 
-	relayUrl, err := getConfigString(EnvKeyRelayUrl)
+	relayUrl, err := config.RelayUrl()
 	if err != nil {
 		return nil, err
 	}
 
-	certFile, err := getConfigString(EnvKeyHTTPTLSCertFile)
+	certFile, err := config.HTTPTLSCertFile()
 	if err != nil {
 		return nil, err
 	}
 
-	keyFile, err := getConfigString(EnvKeyHTTPTLSKeyFile)
+	keyFile, err := config.HTTPTLSKeyFile()
 	if err != nil {
 		return nil, err
 	}
 
-	grpcCertFile, err := getConfigString(EnvKeyGrpcTLSCertFile)
+	grpcCertFile, err := config.GrpcTLSCertFile()
 	if err != nil {
 		return nil, err
 	}
