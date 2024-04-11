@@ -22,6 +22,13 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+const (
+	ReadTimeout     = 5 * time.Second
+	WriteTimeout    = 10 * time.Second
+	IdleTimeout     = 15 * time.Second
+	ShutdownTimeout = 5 * time.Second
+)
+
 var ( // env keys
 	EnvKeyDatabaseURL              = "DB_URL"
 	EnvKeySigningKeyRegistration   = "SIGNING_KEY_REGISTRATION"
@@ -202,10 +209,14 @@ func setupRelayHttpServer(ctx context.Context) (*httpserver.Server, error) {
 	}
 
 	return httpserver.New(httpserver.Config{
-		Addr:     fmt.Sprintf(":%d", port),
-		Handler:  mux,
-		CertFile: certFile,
-		KeyFile:  keyFile,
-		Cors:     true,
+		Addr:            fmt.Sprintf(":%d", port),
+		Handler:         mux,
+		ReadTimeout:     ReadTimeout,
+		WriteTimeout:    WriteTimeout,
+		IdleTimeout:     IdleTimeout,
+		ShutdownTimeout: ShutdownTimeout,
+		CertFile:        certFile,
+		KeyFile:         keyFile,
+		Cors:            true,
 	}), nil
 }

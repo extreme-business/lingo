@@ -2,10 +2,6 @@
 
 cd scripts
 
-# create certificates
-echo "Creating certificates..."
-source certs.sh
-
 # create .env file
 echo "Creating .env file..."
 source env.sh

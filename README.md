@@ -12,6 +12,8 @@ Lingo is a web app. I don't know what it will do, but for now the goals are:
   - Specified deps in the `buf.yaml` need to be covered in your `buf.lock` file. If you get an error, run `scripts/proto-buf-mod-update.sh` to generate the `buf.lock` file.
   - resulting generated files are in the `protogen` folder.
   - check changes with the [buf](https://buf.build/) linter: `scripts/proto-lint.sh`.
+- run `scripts/certs.sh` (this is not part of the setup, because you may choose to add the cert to you computer so you can use swagger-ui).
+    - trust self signed for [mac](https://tosbourn.com/getting-os-x-to-trust-self-signed-ssl-certificates/)
 
 # Run
 - after setup, run `docker-compose up`
@@ -19,6 +21,9 @@ Lingo is a web app. I don't know what it will do, but for now the goals are:
 
 # Develop
 The goal is to have a good developer experience. That means that the developer should have to read minimal setup guides en be up and running as fast as possible.
+
+## Debug
+- See the [launch.json](.vscode/launch.json) to debug with vscode
 
 ## Linting
 - to lint, run `./scripts/lint.sh`
