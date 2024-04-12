@@ -10,9 +10,10 @@ The goal with the setup is that minimal tools are needed to run the project.
 
 ## prerequisites 
 - install [docker](https://docs.docker.com/get-docker/).
-- install openssl (for generating certificates and keys).
+- install openssl, version 3 (for generating certificates and keys).
+  - install with [brew](https://formulae.brew.sh/formula/openssl@3.0).
 
-## local enviroment
+## local environment
 - run `setup.sh`. you should be able to run the setup as many times as you want.
   - Specified deps in the `buf.yaml` need to be covered in your `buf.lock` file. If you get an error, run `scripts/proto-buf-mod-update.sh` to generate the `buf.lock` file.
   - resulting generated files are in the `protogen` folder.
@@ -44,7 +45,7 @@ Migrations are managed by [atlas](https://atlasgo.io).
 
 ## Proto
 Proto files are generated to go server and client code with [buf](https://buf.build). 
-Buf also genereates [Openapiv2](https://swagger.io/specification/v2/) files in yaml and json for every service. 
+Buf also generates [Openapiv2](https://swagger.io/specification/v2/) files in yaml and json for every service. 
 - build the proto files with `./scripts/proto.sh`. 
 - resulting go files are in `proto/gen/go/**/*.go`.
 - resulting Openapiv2 files are in `proto/gen/Openapiv2/**/*{json,yaml}`
