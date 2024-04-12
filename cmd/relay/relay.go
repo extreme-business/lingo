@@ -15,7 +15,7 @@ import (
 
 	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/dwethmar/lingo/pkg/database"
-	protorelay "github.com/dwethmar/lingo/protogen/go/proto/private/relay/v1"
+	protorelay "github.com/dwethmar/lingo/proto/gen/go/private/relay/v1"
 )
 
 // runRelay runs the relay server

@@ -10,7 +10,7 @@ import (
 
 	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/dwethmar/lingo/pkg/database"
-	protoauth "github.com/dwethmar/lingo/protogen/go/proto/public/auth/v1"
+	protoauth "github.com/dwethmar/lingo/proto/gen/go/public/auth/v1"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"

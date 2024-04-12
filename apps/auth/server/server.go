@@ -5,7 +5,7 @@ import (
 
 	"github.com/dwethmar/lingo/apps/auth"
 
-	protoauth "github.com/dwethmar/lingo/protogen/go/proto/public/auth/v1"
+	protoauth "github.com/dwethmar/lingo/proto/gen/go/public/auth/v1"
 )
 
 type Service struct {

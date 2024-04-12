@@ -34,3 +34,8 @@ The goal is to have a good developer experience. That means that the developer s
 ## Database migrations
 - to create a new migration, run `./scripts/new-migration.sh <app> <name of migration>`.
 - after you have written your migration, run `./scripts/hash-migration.sh <app>`.
+
+# Guidelines
+
+## API's
+- follow: https://cloud.google.com/apis/design

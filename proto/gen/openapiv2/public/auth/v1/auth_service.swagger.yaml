@@ -1,0 +1,98 @@
+swagger: "2.0"
+info:
+  title: Lingo Auth API
+  version: "1.0"
+  contact:
+    name: lingo
+    url: https://github.com/DWethmar/lingo
+    email: denniswethmar@gmail.com
+  license:
+    name: MIT License
+    url: https://github.com/DWethmar/lingo/blob/main/LICENSE
+tags:
+  - name: AuthService
+host: localhost:8092
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /v1/auth/register:
+    post:
+      operationId: AuthService_Register
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1RegisterResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1RegisterRequest'
+      tags:
+        - AuthService
+definitions:
+  protobufAny:
+    type: object
+    properties:
+      '@type':
+        type: string
+    additionalProperties: {}
+  rpcStatus:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      details:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/protobufAny'
+  v1RegisterRequest:
+    type: object
+    properties:
+      email:
+        type: string
+        description: The email of a user
+      username:
+        type: string
+        description: The username of a user
+      password:
+        type: string
+        description: The password of a user
+    required:
+      - email
+      - username
+      - password
+  v1RegisterResponse:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/v1User'
+        description: The user that was registered
+    required:
+      - user
+  v1User:
+    type: object
+    properties:
+      id:
+        type: string
+      email:
+        type: string
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    description: 'Enter the token with the `Bearer: ` prefix, e.g. Bearer abcde12345'
+    name: Authorization
+    in: header

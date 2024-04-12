@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/dwethmar/lingo/apps/relay"
-	protorelay "github.com/dwethmar/lingo/protogen/go/proto/private/relay/v1"
+	protorelay "github.com/dwethmar/lingo/proto/gen/go/private/relay/v1"
 )
 
 type Service struct {
