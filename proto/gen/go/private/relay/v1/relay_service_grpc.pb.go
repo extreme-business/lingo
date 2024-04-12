@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	RelayService_CreateRegisterToken_FullMethodName = "/proto.private.relay.v1.RelayService/CreateRegisterToken"
-	RelayService_CreateAccount_FullMethodName       = "/proto.private.relay.v1.RelayService/CreateAccount"
-	RelayService_CreateMessage_FullMethodName       = "/proto.private.relay.v1.RelayService/CreateMessage"
+	RelayService_CreateRegisterToken_FullMethodName = "/private.relay.v1.RelayService/CreateRegisterToken"
+	RelayService_CreateAccount_FullMethodName       = "/private.relay.v1.RelayService/CreateAccount"
+	RelayService_CreateMessage_FullMethodName       = "/private.relay.v1.RelayService/CreateMessage"
 )
 
 // RelayServiceClient is the client API for RelayService service.
@@ -162,7 +162,7 @@ func _RelayService_CreateMessage_Handler(srv interface{}, ctx context.Context, d
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var RelayService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.private.relay.v1.RelayService",
+	ServiceName: "private.relay.v1.RelayService",
 	HandlerType: (*RelayServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

@@ -25,6 +25,7 @@ The goal with the setup is that minimal tools are needed to run the project.
 - setup should have completed.
 - run `docker-compose up`.
 - To view the [open-api](https://en.wikipedia.org/wiki/Open_API) specs for various services, open [localhost:8090](localhost:8090) in the browser.
+- List the services: `docker compose config | yq '.services[]|key + " | " + .image'`
 
 # Develop
 The goal is to have a good developer experience. That means that the developer should have to read minimal setup guides en be up and running as fast as possible.
@@ -48,7 +49,7 @@ Proto files are generated to go server and client code with [buf](https://buf.bu
 Buf also generates [Openapiv2](https://swagger.io/specification/v2/) files in yaml and json for every service. 
 - build the proto files with `./scripts/proto.sh`. 
 - resulting go files are in `proto/gen/go/**/*.go`.
-- resulting Openapiv2 files are in `proto/gen/Openapiv2/**/*{json,yaml}`
+- resulting Openapiv2 files are in `proto/gen/openapiv2/**/*{json,yaml}`
 - lint the proto files with `./scipts/proto-lint.sh`.
 
 # Guidelines.

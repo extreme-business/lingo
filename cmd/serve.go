@@ -16,12 +16,12 @@ var ServeCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(ServeCmd)
-
 	// auth
 	ServeCmd.AddCommand(auth.NewGrpcCmd())
 
 	// relay
 	ServeCmd.AddCommand(relay.NewGrpcCmd())
 	ServeCmd.AddCommand(relay.NewGatewayCmd())
+
+	rootCmd.AddCommand(ServeCmd)
 }

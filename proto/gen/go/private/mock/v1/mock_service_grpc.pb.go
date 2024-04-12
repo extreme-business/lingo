@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MockService_HelloWorld_FullMethodName = "/proto.private.mock.v1.MockService/HelloWorld"
+	MockService_HelloWorld_FullMethodName = "/private.mock.v1.MockService/HelloWorld"
 )
 
 // MockServiceClient is the client API for MockService service.
@@ -96,7 +96,7 @@ func _MockService_HelloWorld_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var MockService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.private.mock.v1.MockService",
+	ServiceName: "private.mock.v1.MockService",
 	HandlerType: (*MockServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

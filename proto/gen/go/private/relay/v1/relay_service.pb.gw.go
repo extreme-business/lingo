@@ -71,7 +71,7 @@ func RegisterRelayServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/proto.private.relay.v1.RelayService/CreateRegisterToken", runtime.WithHTTPPathPattern("/v1/relay/register"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/private.relay.v1.RelayService/CreateRegisterToken", runtime.WithHTTPPathPattern("/v1/relay/register"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -135,7 +135,7 @@ func RegisterRelayServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/proto.private.relay.v1.RelayService/CreateRegisterToken", runtime.WithHTTPPathPattern("/v1/relay/register"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/private.relay.v1.RelayService/CreateRegisterToken", runtime.WithHTTPPathPattern("/v1/relay/register"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

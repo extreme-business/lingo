@@ -7,21 +7,20 @@ services:
       - "8090:8080"
     volumes:
       - ./provision/swagger-ui/swagger-config.json:/swagger-config.json
-      - ./protogen/openapiv2/proto/private/relay/v1/relay_service.swagger.yaml:/relay_service.swagger.yaml
-      - ./protogen/openapiv2/proto/public/auth/v1/auth_service.swagger.yaml:/auth_service.swagger.yaml
+      - ./proto/gen/openapiv2/public/auth/v1/auth_service.swagger.yaml:/auth_service.swagger.yaml
+      - ./proto/gen/openapiv2/private/relay/v1/relay_service.swagger.yaml:/relay_service.swagger.yaml
     environment:
       CONFIG_URL: /swagger-config.json
       SWAGGER_JSON: /relay_service.swagger.yaml
 
   db:
     image: postgres:14.4-alpine
-    container_name: lingo-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
     ports:
-      - "5431:5432"
+      - 5431:5432
     restart: unless-stopped
     volumes:
       - ./provision/postgres/01-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql
@@ -55,8 +54,8 @@ services:
       - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
       - ./certs/grpc-lingo.key:/src/lingo/certs/grpc-lingo.key
     ports:
-      - "8070:8080" # grpc
-      - "2101:2345" # delve
+      - 8070:8080 # grpc
+      - 2101:2345 # delve
     restart: unless-stopped
     depends_on:
       - db
@@ -91,8 +90,8 @@ services:
       - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
       - ./certs/grpc-lingo.key:/src/lingo/certs/grpc-lingo.key
     ports:
-      - "8091:8080" # grpc
-      - "2102:2345" # delve
+      - 8091:8080 # grpc
+      - 2102:2345 # delve
     restart: unless-stopped
     depends_on:
       - db
@@ -117,7 +116,7 @@ services:
       - ./certs/http-lingo.key:/src/lingo/certs/http-lingo.key
       - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
     ports:
-      - "8092:8081"
+      - 8092:8081
     depends_on:
       - relay
     networks:
