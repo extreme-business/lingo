@@ -32,10 +32,19 @@ The goal is to have a good developer experience. That means that the developer s
 - to run all tests, run `go run test ./...`
 
 ## Database migrations
+Migrations are managed by [atlas](https://atlasgo.io).
 - to create a new migration, run `./scripts/new-migration.sh <app> <name of migration>`.
 - after you have written your migration, run `./scripts/hash-migration.sh <app>`.
 
-# Guidelines
+## Proto
+Proto files are generated to go server and client code with [buf](https://buf.build). 
+Buf also genereates [Openapiv2](https://swagger.io/specification/v2/) files in yaml and json for every service. 
+- build the proto files with `./scripts/proto.sh`. 
+- resulting go files are in `proto/gen/go/**/*.go`.
+- resulting Openapiv2 files are in `proto/gen/Openapiv2/**/*{json,yaml}`
+- lint the proto files with `./scipts/proto-lint.sh`.
+
+# Guidelines.
 
 ## API's
 - follow: https://cloud.google.com/apis/design
