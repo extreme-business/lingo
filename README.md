@@ -18,7 +18,7 @@ The goal with the setup is that minimal tools are needed to run the project.
   - Specified deps in the `buf.yaml` need to be covered in your `buf.lock` file. If you get an error, run `scripts/proto-buf-mod-update.sh` to generate the `buf.lock` file.
   - resulting generated files are in the `protogen` folder.
   - check changes with the [buf](https://buf.build/) linter: `scripts/proto-lint.sh`.
-- run `scripts/certs.sh` (this is not part of the setup, because you may choose to add the cert to you computer so you can use swagger-ui).
+- run `scripts/certs.sh` (this is not part of the setup, because you may want to choose to add the cert to you computer so you can use swagger-ui without getting self signing ssl errors).
     - trust self signed certificates for [mac](https://tosbourn.com/getting-os-x-to-trust-self-signed-ssl-certificates/).
 
 # Run locally
