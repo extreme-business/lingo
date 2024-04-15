@@ -1,7 +1,6 @@
 package token
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -31,12 +30,8 @@ func NewManager(
 	}
 }
 
-func (m *Manager) Create(email string) (string, error) {
-	h := sha256.New()
-	h.Write([]byte(email))
-	emailhash := h.Sum(nil)
-
-	token, err := m.Tokenizer.Create(string(emailhash))
+func (m *Manager) New(id string) (string, error) {
+	token, err := m.Tokenizer.Create(id)
 	if err != nil {
 		return "", err
 	}

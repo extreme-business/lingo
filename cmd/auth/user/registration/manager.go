@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/dwethmar/lingo/cmd/auth/domain"
+	"github.com/dwethmar/lingo/cmd/auth/password"
 	"github.com/dwethmar/lingo/cmd/auth/storage/user"
 	"github.com/dwethmar/lingo/pkg/clock"
 	"github.com/dwethmar/lingo/pkg/uuidgen"
@@ -14,7 +15,7 @@ type Manager struct {
 	uuidgen               *uuidgen.Generator
 	clock                 *clock.Clock
 	userRepo              user.Repository
-	registrationValidator *RegistrationValidator
+	registrationValidator *registrationValidator
 }
 
 // Config is the configuration for the manager
@@ -46,7 +47,7 @@ func (m *Manager) Register(ctx context.Context, r Registration) (*domain.User, e
 		return nil, err
 	}
 
-	hashedPassword, err := HashPassword(r.Password)
+	hashedPassword, err := password.Hash(r.Password)
 	if err != nil {
 		return nil, err
 	}

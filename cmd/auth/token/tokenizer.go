@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// Dispatcher sends a token to the user
+// Tokenizer creates a token
 type Tokenizer struct {
 	clock     *clock.Clock
 	secretKey []byte

@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/dwethmar/lingo/cmd/auth/authentication"
 	"github.com/dwethmar/lingo/cmd/auth/domain"
-	"github.com/dwethmar/lingo/cmd/auth/registration"
+	"github.com/dwethmar/lingo/cmd/auth/user/authentication"
+	"github.com/dwethmar/lingo/cmd/auth/user/registration"
 )
 
 type Auth struct {

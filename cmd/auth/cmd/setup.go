@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/dwethmar/lingo/cmd/auth/app"
-	"github.com/dwethmar/lingo/cmd/auth/authentication"
-	"github.com/dwethmar/lingo/cmd/auth/registration"
 	"github.com/dwethmar/lingo/cmd/auth/server"
 	"github.com/dwethmar/lingo/cmd/auth/storage/user/postgres"
 	"github.com/dwethmar/lingo/cmd/auth/token"
+	"github.com/dwethmar/lingo/cmd/auth/user/authentication"
+	"github.com/dwethmar/lingo/cmd/auth/user/registration"
 	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/dwethmar/lingo/pkg/clock"
 	"github.com/dwethmar/lingo/pkg/database"
@@ -27,10 +27,10 @@ import (
 )
 
 const (
-	ReadTimeout     = 5 * time.Second
-	WriteTimeout    = 10 * time.Second
-	IdleTimeout     = 15 * time.Second
-	ShutdownTimeout = 5 * time.Second
+	readTimeout     = 5 * time.Second
+	writeTimeout    = 10 * time.Second
+	idleTimeout     = 15 * time.Second
+	shutdownTimeout = 5 * time.Second
 )
 
 // setupAuth sets up the auth application.
@@ -161,10 +161,10 @@ func setupHttpServer(ctx context.Context) (*httpserver.Server, error) {
 	return httpserver.New(httpserver.Config{
 		Addr:            fmt.Sprintf(":%d", port),
 		Handler:         mux,
-		ReadTimeout:     ReadTimeout,
-		WriteTimeout:    WriteTimeout,
-		IdleTimeout:     IdleTimeout,
-		ShutdownTimeout: ShutdownTimeout,
+		ReadTimeout:     readTimeout,
+		WriteTimeout:    writeTimeout,
+		IdleTimeout:     idleTimeout,
+		ShutdownTimeout: shutdownTimeout,
 		CertFile:        certFile,
 		KeyFile:         keyFile,
 		Headers:         httpserver.CorsHeaders(),

@@ -22,7 +22,7 @@ func NewRepository(db database.DB) *Repository {
 	}
 }
 
-var createQuery = `INSERT INTO users (id, username, email, password, create_time, update_time)
+const createQuery = `INSERT INTO users (id, username, email, password, create_time, update_time)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, username, email, create_time, update_time
 `
@@ -54,7 +54,7 @@ func (r *Repository) Create(ctx context.Context, u *user.User) (*user.User, erro
 	return &n, nil
 }
 
-var getByIDQuery = `SELECT id, username, email, create_time
+const getByIDQuery = `SELECT id, username, email, create_time, update_time
 FROM users
 WHERE id = $1
 `
@@ -64,17 +64,32 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*user.User, error) 
 	row := r.db.QueryRowContext(ctx, getByIDQuery, id)
 
 	var user user.User
-	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreateTime); err != nil {
+	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreateTime, &user.UpdateTime); err != nil {
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-var updateQueryTemplate = `UPDATE users u
+const getByUsernameQuery = `SELECT id, username, email, create_time, update_time
+FROM users
+WHERE username = $1`
+
+func (r *Repository) GetByUsername(ctx context.Context, username string) (*user.User, error) {
+	row := r.db.QueryRowContext(ctx, getByUsernameQuery, username)
+
+	var user user.User
+	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreateTime, &user.UpdateTime); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+const updateQueryTemplate = `UPDATE users u
 SET %s
 WHERE u.id = $%d
-RETURNING u.id, u.username, u.email, u.create_time`
+RETURNING u.id, u.username, u.email, u.create_time, u.update_time`
 
 func (r *Repository) Update(ctx context.Context, u *user.User, fields ...user.Field) (*user.User, error) {
 	set := make([]string, 0, len(fields))
@@ -119,7 +134,7 @@ func (r *Repository) Update(ctx context.Context, u *user.User, fields ...user.Fi
 	return &user, nil
 }
 
-var deleteQuery = `DELETE FROM users WHERE id = $1`
+const deleteQuery = `DELETE FROM users WHERE id = $1`
 
 func (r *Repository) Delete(ctx context.Context, id uuid.UUID) error {
 	_, err := r.db.ExecContext(ctx, deleteQuery, id)

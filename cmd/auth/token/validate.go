@@ -13,6 +13,7 @@ var (
 	ErrInvalidTokenClaims = errors.New("invalid claims")
 )
 
+// Validator validates a token.
 type Validator struct {
 	secretKey []byte
 }
