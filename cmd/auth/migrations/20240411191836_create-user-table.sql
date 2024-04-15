@@ -8,9 +8,11 @@ CREATE TABLE organizations (
 -- Table: users
 CREATE TABLE users (
     id UUID PRIMARY KEY,
-    email VARCHAR(64) NOT NULL UNIQUE,
+    username VARCHAR(16) NOT NULL UNIQUE,
+    email VARCHAR(128) NOT NULL UNIQUE,
     password text NOT NULL,
-    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table: user_organizations

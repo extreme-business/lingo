@@ -22,4 +22,4 @@ fi
 # Read the .atlas-version file relative to the script's location
 atlasVersion=$(cat "$LINGO_PROJECT_PATH/scripts/.atlas-version")
 
-docker run --rm -v $LINGO_PROJECT_PATH/apps/$app/migrations:/migrations arigaio/atlas:$atlasVersion migrate new $name
+docker run --rm -v $LINGO_PROJECT_PATH/cmd/$app/migrations:/migrations arigaio/atlas:$atlasVersion migrate new $name

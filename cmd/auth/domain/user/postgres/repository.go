@@ -21,9 +21,9 @@ func NewRepository(db database.DB) *Repository {
 	}
 }
 
-var createQuery = `INSERT INTO users (id, username, email, password, create_time)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, username, email, create_time
+var createQuery = `INSERT INTO users (id, username, email, password, create_time, update_time)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, username, email, create_time, update_time
 `
 
 // Create a new user
@@ -36,14 +36,21 @@ func (r *Repository) Create(ctx context.Context, u *user.User) (*user.User, erro
 		u.Email,
 		u.Password,
 		u.CreateTime,
+		u.UpdateTime,
 	)
 
-	var user user.User
-	if err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreateTime); err != nil {
-		return nil, err
+	var n user.User
+	if err := row.Scan(
+		&n.ID,
+		&n.Username,
+		&n.Email,
+		&n.CreateTime,
+		&n.UpdateTime,
+	); err != nil {
+		return nil, fmt.Errorf("could not create user: %w", err)
 	}
 
-	return &user, nil
+	return &n, nil
 }
 
 var getByIDQuery = `SELECT id, username, email, create_time

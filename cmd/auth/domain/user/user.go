@@ -16,7 +16,7 @@ const (
 	UpdateTime Field = "update_time"
 )
 
-type ID uuid.UUID
+type ID = uuid.UUID
 
 type User struct {
 	ID         ID

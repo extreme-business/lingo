@@ -37,6 +37,7 @@ The goal is to have a good developer experience. That means that the developer s
 - to lint, run `./scripts/lint.sh`.
 
 ## Testing
+Test that require a database can use [testcontainers](https://golang.testcontainers.org/modules/postgres/).
 - to run all tests, run `go run test ./...`.
 
 ## Database migrations
