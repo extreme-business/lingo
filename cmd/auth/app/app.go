@@ -1,11 +1,11 @@
-package auth
+package app
 
 import (
 	"context"
 	"log/slog"
 
-	"github.com/dwethmar/lingo/apps/auth/domain"
 	"github.com/dwethmar/lingo/apps/relay/token"
+	"github.com/dwethmar/lingo/cmd/auth/app/domain"
 )
 
 type Auth struct {

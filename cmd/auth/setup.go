@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/dwethmar/lingo/apps/auth"
-	"github.com/dwethmar/lingo/apps/auth/server"
+	"github.com/dwethmar/lingo/apps/relay/server"
 	"github.com/dwethmar/lingo/apps/relay/token"
 	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/dwethmar/lingo/pkg/clock"
