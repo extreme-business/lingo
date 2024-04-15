@@ -71,7 +71,11 @@ func TestRepository_Create(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer close()
+		defer func() {
+			if err := close(); err != nil {
+				t.Fatal(err)
+			}
+		}()
 
 		repo := NewRepository(db)
 		user, err := repo.Create(context.Background(), &user.User{

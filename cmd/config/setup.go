@@ -16,7 +16,6 @@ var ( // env keys
 	envKeyGrpcTLSKeyFile           = "GRPC_TLS_KEY_FILE"
 	envKeyHTTPTLSKeyFile           = "HTTP_TLS_KEY_FILE"
 	envKeyHTTPTLSCertFile          = "HTTP_TLS_CERT_FILE"
-	envKeyRelayUrl                 = "RELAY_URL"
 	envKeyAuthUrl                  = "AUTH_URL"
 )
 

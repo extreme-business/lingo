@@ -4,6 +4,30 @@ import (
 	"github.com/dwethmar/lingo/pkg/validate"
 )
 
+const (
+	// maxUsernameLength is the maximum length of a username
+	maxUsernameLength = 50
+	// minUsernameLength is the minimum length of a username
+	minUsernameLength = 3
+	// maxEmailLength is the maximum length of an email
+	maxEmailLength = 50
+	// minEmailLength is the minimum length of an email
+	minEmailLength = 3
+	// maxPasswordLength is the maximum length of a password
+	maxPasswordLength = 50
+	// minPasswordLength is the minimum length of a password
+	minPasswordLength = 8
+	// minPasswordSpecialChars is the minimum amount of special characters in a password
+	minPasswordSpecialChars = 1
+	// minPasswordDigits is the minimum amount of digits in a password
+	minPasswordDigits = 1
+)
+
+var (
+	// usernameSpecialChars is a list of special characters that are allowed in a username
+	usernameSpecialChars = []rune{'_', '-'}
+)
+
 type RegistrationValidator struct {
 	usernameValidator validate.StringValidator
 	emailValidator    validate.StringValidator
@@ -13,19 +37,19 @@ type RegistrationValidator struct {
 func NewRegistrationValidator() *RegistrationValidator {
 	return &RegistrationValidator{
 		usernameValidator: validate.StringValidator{
-			validate.MaxLength("username", 50),
-			validate.MinLength("username", 3),
-			validate.SpecialCharWhitelist("username", '_', '-'),
+			validate.MaxLength("username", maxUsernameLength),
+			validate.MinLength("username", minUsernameLength),
+			validate.SpecialCharWhitelist("username", usernameSpecialChars...),
 		},
 		emailValidator: validate.StringValidator{
-			validate.MaxLength("email", 50),
-			validate.MinLength("email", 3),
+			validate.MaxLength("email", maxEmailLength),
+			validate.MinLength("email", minEmailLength),
 		},
 		passwordValidator: validate.StringValidator{
-			validate.MinLength("password", 8),
-			validate.MaxLength("password", 50),
-			validate.ContainsSpecialChars("password", 1),
-			validate.ContainsDigits("password", 1),
+			validate.MinLength("password", minPasswordLength),
+			validate.MaxLength("password", maxPasswordLength),
+			validate.ContainsSpecialChars("password", minPasswordSpecialChars),
+			validate.ContainsDigits("password", minPasswordDigits),
 		},
 	}
 }
