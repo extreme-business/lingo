@@ -79,10 +79,6 @@ func HTTPTLSCertFile() (string, error) {
 	return GetConfigString(envKeyHTTPTLSCertFile)
 }
 
-func RelayUrl() (string, error) {
-	return GetConfigString(envKeyRelayUrl)
-}
-
 func AuthUrl() (string, error) {
 	return GetConfigString(envKeyAuthUrl)
 }

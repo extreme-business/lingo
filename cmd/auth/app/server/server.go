@@ -3,27 +3,31 @@ package server
 import (
 	"context"
 
-	"github.com/dwethmar/lingo/apps/auth"
-
+	"github.com/dwethmar/lingo/cmd/auth/app"
 	protoauth "github.com/dwethmar/lingo/proto/gen/go/public/auth/v1"
 )
 
 type Service struct {
 	protoauth.UnimplementedAuthServiceServer
-	auth *auth.Auth
+	auth *app.Auth
 }
 
-func New(auth *auth.Auth) *Service {
+func New(auth *app.Auth) *Service {
 	return &Service{
 		auth: auth,
 	}
 }
 
-func (s *Service) Register(ctx context.Context, req *protoauth.RegisterRequest) (*protoauth.RegisterResponse, error) {
-	_, err := s.auth.Register(ctx, "", req.Email, req.Password)
+func (s *Service) CreateUser(ctx context.Context, req *protoauth.CreateUserRequest) (*protoauth.CreateUserResponse, error) {
+	user, err := s.auth.CreateUser(ctx, req.Username, req.Email, req.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	return &protoauth.RegisterResponse{}, nil
+	return &protoauth.CreateUserResponse{
+		User: &protoauth.User{
+			Id:    user.ID.String(),
+			Email: user.Email,
+		},
+	}, nil
 }

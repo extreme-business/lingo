@@ -19,14 +19,14 @@ consumes:
 produces:
   - application/json
 paths:
-  /v1/auth/register:
+  /v1/users:
     post:
-      operationId: AuthService_Register
+      operationId: AuthService_CreateUser
       responses:
         "200":
           description: A successful response.
           schema:
-            $ref: '#/definitions/v1RegisterResponse'
+            $ref: '#/definitions/v1CreateUserResponse'
         default:
           description: An unexpected error response.
           schema:
@@ -36,7 +36,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/v1RegisterRequest'
+            $ref: '#/definitions/v1CreateUserRequest'
       tags:
         - AuthService
 definitions:
@@ -59,7 +59,7 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/protobufAny'
-  v1RegisterRequest:
+  v1CreateUserRequest:
     type: object
     properties:
       email:
@@ -75,7 +75,7 @@ definitions:
       - email
       - username
       - password
-  v1RegisterResponse:
+  v1CreateUserResponse:
     type: object
     properties:
       user:
@@ -87,6 +87,8 @@ definitions:
     type: object
     properties:
       id:
+        type: string
+      username:
         type: string
       email:
         type: string

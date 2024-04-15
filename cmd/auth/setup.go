@@ -7,9 +7,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/dwethmar/lingo/apps/auth"
-	"github.com/dwethmar/lingo/apps/relay/server"
-	"github.com/dwethmar/lingo/apps/relay/token"
+	"github.com/dwethmar/lingo/cmd/auth/app"
+	"github.com/dwethmar/lingo/cmd/auth/app/server"
+	"github.com/dwethmar/lingo/cmd/auth/app/token"
 	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/dwethmar/lingo/pkg/clock"
 	"github.com/dwethmar/lingo/pkg/database"
@@ -30,7 +30,7 @@ const (
 )
 
 // setupAuth sets up the auth application.
-func setupAuth(logger *slog.Logger, _ database.DB) (*auth.Auth, error) {
+func setupAuth(logger *slog.Logger, _ database.DB) (*app.Auth, error) {
 	signingKeyRegistration, err := config.SigningKeyRegistration()
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func setupAuth(logger *slog.Logger, _ database.DB) (*auth.Auth, error) {
 
 	clock := clock.New(time.UTC)
 
-	auth := auth.New(
+	app := app.New(
 		logger,
 		token.NewManager(
 			clock,
@@ -66,11 +66,11 @@ func setupAuth(logger *slog.Logger, _ database.DB) (*auth.Auth, error) {
 		),
 	)
 
-	return auth, nil
+	return app, nil
 }
 
 // setupRelayGrpcServer sets up a gRPC server for the relay service.
-func setupService(auth *auth.Auth) (*server.Service, error) {
+func setupService(auth *app.Auth) (*server.Service, error) {
 	return server.New(auth), nil
 }
 
@@ -113,13 +113,13 @@ func setupServer(serverRegisters []func(*grpc.Server)) (*grpcserver.Server, erro
 }
 
 // setupRelayHttpServer
-func setupAuthHttpServer(ctx context.Context) (*httpserver.Server, error) {
+func setupHttpServer(ctx context.Context) (*httpserver.Server, error) {
 	port, err := config.HTTPPort()
 	if err != nil {
 		return nil, err
 	}
 
-	relayUrl, err := config.RelayUrl()
+	authUrl, err := config.AuthUrl()
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func setupAuthHttpServer(ctx context.Context) (*httpserver.Server, error) {
 	}
 
 	mux := runtime.NewServeMux()
-	if err := protoauth.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, relayUrl, dialOptions); err != nil {
+	if err := protoauth.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, authUrl, dialOptions); err != nil {
 		return nil, fmt.Errorf("failed to register gateway: %w", err)
 	}
 

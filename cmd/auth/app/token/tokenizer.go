@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dwethmar/lingo/pkg/clock"
-	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // Dispatcher sends a token to the user

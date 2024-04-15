@@ -39,15 +39,15 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 };
 
 service AuthService {
-  rpc Register(RegisterRequest) returns (RegisterResponse) {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
-      post: "/v1/auth/register"
+      post: "/v1/users"
       body: "*"
     };
   }
 }
 
-message RegisterRequest {
+message CreateUserRequest {
   string email = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The email of a user"},
     (google.api.field_behavior) = REQUIRED
@@ -62,7 +62,7 @@ message RegisterRequest {
   ];
 }
 
-message RegisterResponse {
+message CreateUserResponse {
   public.auth.v1.User user = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The user that was registered"},
     (google.api.field_behavior) = REQUIRED

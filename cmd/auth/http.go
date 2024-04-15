@@ -1,4 +1,4 @@
-package relay
+package auth
 
 import (
 	"context"
@@ -37,8 +37,8 @@ func runGateway(_ *cobra.Command, _ []string) error {
 
 func NewGatewayCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "relay-gateway",
-		Short: "Start the relay http service",
+		Use:   "auth-gateway",
+		Short: "Start the auth gateway service",
 		RunE:  runGateway,
 	}
 }

@@ -8,7 +8,6 @@ services:
     volumes:
       - ./provision/swagger-ui/swagger-config.json:/swagger-config.json
       - ./proto/gen/openapiv2/public/auth/v1/auth_service.swagger.yaml:/auth_service.swagger.yaml
-      - ./proto/gen/openapiv2/private/relay/v1/relay_service.swagger.yaml:/relay_service.swagger.yaml
     environment:
       CONFIG_URL: /swagger-config.json
       SWAGGER_JSON: /relay_service.swagger.yaml
@@ -63,48 +62,12 @@ services:
     networks:
       - lingo-network
 
-  relay-migration:
-    image: arigaio/atlas:0.21.1
-    command: migrate apply --url "postgres://postgres:postgres@db:5432/relay?sslmode=disable"
-    volumes:
-      - ./migrations:/migrations
-    networks:
-      - lingo-network
-    depends_on:
-      - db
-
-  relay:
+  auth-gateway:
     image: lingo
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["--", "serve", "relay"]
-    environment:
-      LINGO_DB_URL: postgres://postgres:postgres@db:5432/relay?sslmode=disable
-      LINGO_GRPC_PORT: 8080
-      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
-      LINGO_GRPC_TLS_KEY_FILE: /src/lingo/certs/grpc-lingo.key
-      LINGO_SIGNING_KEY_REGISTRATION: ${LINGO_SIGNING_KEY_REGISTRATION:-}
-      LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
-    volumes:
-      - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
-      - ./certs/grpc-lingo.key:/src/lingo/certs/grpc-lingo.key
-    ports:
-      - 8091:8080 # grpc
-      - 2102:2345 # delve
-    restart: unless-stopped
-    depends_on:
-      - db
-      - relay-migration
-    networks:
-      - lingo-network
-
-  relay-gateway:
-    image: lingo
-    build:
-      dockerfile: Dockerfile
-      target: debug
-    command: ["--", "serve", "relay-gateway"]
+    command: ["--", "serve", "auth-gateway"]
     environment:
       LINGO_HTTP_PORT: 8081
       LINGO_RELAY_URL: relay:8080
@@ -118,7 +81,7 @@ services:
     ports:
       - 8092:8081
     depends_on:
-      - relay
+      - auth
     networks:
       - lingo-network
 

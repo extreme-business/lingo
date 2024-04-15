@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/dwethmar/lingo/apps/relay/token"
 	"github.com/dwethmar/lingo/cmd/auth/app/domain"
+	"github.com/dwethmar/lingo/cmd/auth/app/token"
 )
 
 type Auth struct {
@@ -22,14 +22,8 @@ func New(
 	}
 }
 
-func (r *Auth) Register(ctx context.Context, username, email, password string) (*domain.User, error) {
+func (r *Auth) CreateUser(ctx context.Context, username, email, password string) (*domain.User, error) {
 	r.logger.Info("Register")
 
 	return &domain.User{}, nil
-}
-
-func (r *Auth) CreateMessage(ctx context.Context, message string) error {
-	r.logger.Info("CreateMessage")
-
-	return nil
 }
