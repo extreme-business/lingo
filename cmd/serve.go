@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"github.com/dwethmar/lingo/cmd/auth"
+	authcmd "github.com/dwethmar/lingo/cmd/auth/cmd"
 	"github.com/spf13/cobra"
 
 	_ "github.com/lib/pq"
 )
 
-// ServeCmd represents the relay command
-var ServeCmd = &cobra.Command{
+// serveCmd represents the relay command
+var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "serve lingo services",
 	Long:  `serve lingo services.`,
@@ -16,8 +16,8 @@ var ServeCmd = &cobra.Command{
 
 func init() {
 	// auth
-	ServeCmd.AddCommand(auth.NewGrpcCmd())
-	ServeCmd.AddCommand(auth.NewGatewayCmd())
+	serveCmd.AddCommand(authcmd.NewGrpcCmd())
+	serveCmd.AddCommand(authcmd.NewGatewayCmd())
 
-	rootCmd.AddCommand(ServeCmd)
+	rootCmd.AddCommand(serveCmd)
 }

@@ -10,7 +10,7 @@ services:
       - ./proto/gen/openapiv2/public/auth/v1/auth_service.swagger.yaml:/auth_service.swagger.yaml
     environment:
       CONFIG_URL: /swagger-config.json
-      SWAGGER_JSON: /relay_service.swagger.yaml
+      SWAGGER_JSON: /auth_service.swagger.yaml
 
   db:
     image: postgres:14.4-alpine
@@ -70,7 +70,7 @@ services:
     command: ["--", "serve", "auth-gateway"]
     environment:
       LINGO_HTTP_PORT: 8081
-      LINGO_RELAY_URL: relay:8080
+      LINGO_AUTH_URL: auth:8080
       LINGO_HTTP_TLS_CERT_FILE: /src/lingo/certs/http-lingo.crt
       LINGO_HTTP_TLS_KEY_FILE: /src/lingo/certs/http-lingo.key
       LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt

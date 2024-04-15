@@ -24,10 +24,12 @@ func (s *Service) CreateUser(ctx context.Context, req *protoauth.CreateUserReque
 		return nil, err
 	}
 
+	var userout protoauth.User
+	if err := user.ToProto(&userout); err != nil {
+		return nil, err
+	}
+
 	return &protoauth.CreateUserResponse{
-		User: &protoauth.User{
-			Id:    user.ID.String(),
-			Email: user.Email,
-		},
+		User: &userout,
 	}, nil
 }

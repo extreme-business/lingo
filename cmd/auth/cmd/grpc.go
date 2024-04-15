@@ -1,4 +1,4 @@
-package auth
+package cmd
 
 import (
 	"context"

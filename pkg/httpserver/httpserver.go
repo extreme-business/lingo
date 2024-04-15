@@ -21,7 +21,7 @@ type Config struct {
 	ShutdownTimeout time.Duration
 	CertFile        string // CertFile is the path to the certificate file
 	KeyFile         string // KeyFile is the path to the key file
-	Cors            bool
+	Headers         http.Header
 }
 
 type Server struct {
@@ -39,8 +39,8 @@ func New(c Config) *Server {
 		IdleTimeout:  c.IdleTimeout,
 	}
 
-	if c.Cors {
-		httpServer.Handler = CorsMiddleware(httpServer.Handler)
+	if c.Headers != nil && len(c.Headers) > 0 {
+		httpServer.Handler = headersMiddleware(httpServer.Handler, c.Headers)
 	}
 
 	return &Server{

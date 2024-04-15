@@ -16,40 +16,32 @@ type Created struct {
 
 // Manager manages the token validation and dispatching.
 type Manager struct {
-	Validator  *Validator
-	Tokenizer  *Tokenizer
-	dispatchCh chan<- Created
+	Validator *Validator
+	Tokenizer *Tokenizer
 }
 
 func NewManager(
 	clock *clock.Clock,
 	signingKey []byte,
 	tokenExpireDuration time.Duration,
-	dispatchCh chan<- Created,
 ) *Manager {
 	return &Manager{
-		Validator:  &Validator{secretKey: signingKey},
-		Tokenizer:  &Tokenizer{clock: clock, secretKey: signingKey, expiry: tokenExpireDuration},
-		dispatchCh: dispatchCh,
+		Validator: &Validator{secretKey: signingKey},
+		Tokenizer: &Tokenizer{clock: clock, secretKey: signingKey, expiry: tokenExpireDuration},
 	}
 }
 
-func (m *Manager) Create(email string) error {
+func (m *Manager) Create(email string) (string, error) {
 	h := sha256.New()
 	h.Write([]byte(email))
 	emailhash := h.Sum(nil)
 
 	token, err := m.Tokenizer.Create(string(emailhash))
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	m.dispatchCh <- Created{
-		Email: email,
-		Token: token,
-	}
-
-	return nil
+	return token, nil
 }
 
 // Validate validates the token and returns the email hash.

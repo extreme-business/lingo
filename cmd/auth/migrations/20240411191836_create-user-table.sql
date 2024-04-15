@@ -9,6 +9,15 @@ CREATE TABLE organizations (
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     email VARCHAR(64) NOT NULL UNIQUE,
-    password_hash VARCHAR(64) NOT NULL,
+    password text NOT NULL,
     create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: user_organizations
+CREATE TABLE user_organizations (
+    user_id UUID NOT NULL,
+    organization_id UUID NOT NULL,
+    PRIMARY KEY (user_id, organization_id),
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (organization_id) REFERENCES organizations (id)
 );

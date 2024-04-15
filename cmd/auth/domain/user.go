@@ -11,11 +11,12 @@ type User struct {
 	Username      string
 	Email         string
 	Password      string
-	Organisations []*Organisation
+	Organizations []*Organization
 }
 
-func (u *User) ToProto(in *protoauth.User) {
+func (u *User) ToProto(in *protoauth.User) error {
 	in.Id = u.ID.String()
 	in.Username = u.Username
 	in.Email = u.Email
+	return nil
 }

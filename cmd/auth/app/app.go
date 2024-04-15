@@ -4,21 +4,26 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/dwethmar/lingo/cmd/auth/app/domain"
-	"github.com/dwethmar/lingo/cmd/auth/app/token"
+	"github.com/dwethmar/lingo/cmd/auth/authentication"
+	"github.com/dwethmar/lingo/cmd/auth/domain"
+	"github.com/dwethmar/lingo/cmd/auth/registration"
 )
 
 type Auth struct {
-	logger *slog.Logger
+	logger                *slog.Logger
+	authenticationManager *authentication.Manager
+	registrationManager   *registration.Manager
 }
 
 func New(
 	logger *slog.Logger,
-	registrationTokenManager *token.Manager,
-	authenticationTokenManager *token.Manager,
+	authenticationManager *authentication.Manager,
+	registrationManager *registration.Manager,
 ) *Auth {
 	return &Auth{
-		logger: logger,
+		logger:                logger,
+		authenticationManager: authenticationManager,
+		registrationManager:   registrationManager,
 	}
 }
 

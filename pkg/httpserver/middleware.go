@@ -5,16 +5,26 @@ import (
 	"strings"
 )
 
-// CorsMiddleware is a middleware that adds CORS headers to the response.
-func CorsMiddleware(next http.Handler) http.Handler {
+var corsHeaders = http.Header{
+	"Access-Control-Allow-Origin":  {"*"},
+	"Access-Control-Allow-Methods": {strings.Join([]string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete}, ",")},
+	"Access-Control-Allow-Headers": {"Content-Type, Authorization"},
+}
+
+// CorsHeaders returns a copy of the default CORS headers.
+func CorsHeaders() http.Header {
+	return corsHeaders.Clone()
+}
+
+// headersMiddleware is a middleware that adds headers to the response.
+func headersMiddleware(next http.Handler, headers http.Header) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", strings.Join([]string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete}, ","))
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
+		for key, values := range headers {
+			for _, value := range values {
+				w.Header().Add(key, value)
+			}
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }

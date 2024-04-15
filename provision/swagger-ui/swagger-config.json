@@ -1,11 +1,6 @@
 {
     "urls": [
       {
-        "url": "relay_service.swagger.yaml",
-        "name": "Relay",
-        "description": "relay api"
-      },
-      {
         "url": "auth_service.swagger.yaml",
         "name": "Auth",
         "description": "authentication api for lingo users"

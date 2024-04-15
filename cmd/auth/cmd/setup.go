@@ -1,4 +1,4 @@
-package auth
+package cmd
 
 import (
 	"context"
@@ -8,8 +8,11 @@ import (
 	"time"
 
 	"github.com/dwethmar/lingo/cmd/auth/app"
-	"github.com/dwethmar/lingo/cmd/auth/app/server"
-	"github.com/dwethmar/lingo/cmd/auth/app/token"
+	"github.com/dwethmar/lingo/cmd/auth/authentication"
+	"github.com/dwethmar/lingo/cmd/auth/domain/user/postgres"
+	"github.com/dwethmar/lingo/cmd/auth/registration"
+	"github.com/dwethmar/lingo/cmd/auth/server"
+	"github.com/dwethmar/lingo/cmd/auth/token"
 	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/dwethmar/lingo/pkg/clock"
 	"github.com/dwethmar/lingo/pkg/database"
@@ -30,7 +33,7 @@ const (
 )
 
 // setupAuth sets up the auth application.
-func setupAuth(logger *slog.Logger, _ database.DB) (*app.Auth, error) {
+func setupAuth(logger *slog.Logger, db database.DB) (*app.Auth, error) {
 	signingKeyRegistration, err := config.SigningKeyRegistration()
 	if err != nil {
 		return nil, err
@@ -48,22 +51,21 @@ func setupAuth(logger *slog.Logger, _ database.DB) (*app.Auth, error) {
 		}
 	}()
 
+	userRepo := postgres.NewRepository(db)
 	clock := clock.New(time.UTC)
 
 	app := app.New(
 		logger,
-		token.NewManager(
-			clock,
-			[]byte(signingKeyRegistration),
-			15*time.Minute,
-			tokenCreated,
-		),
-		token.NewManager(
-			clock,
-			[]byte(signingKeyAuthentication),
-			5*time.Minute,
-			tokenCreated,
-		),
+		authentication.NewManager(authentication.Config{
+			Clock:                    clock,
+			SigningKeyRegistration:   []byte(signingKeyRegistration),
+			SigningKeyAuthentication: []byte(signingKeyAuthentication),
+			UserRepo:                 userRepo,
+		}),
+		registration.NewManager(registration.Config{
+			Clock:    clock,
+			UserRepo: userRepo,
+		}),
 	)
 
 	return app, nil
@@ -129,7 +131,7 @@ func setupHttpServer(ctx context.Context) (*httpserver.Server, error) {
 		return nil, err
 	}
 
-	keyFile, err := config.HTTPTLSCertFile()
+	keyFile, err := config.HTTPTLSKeyFile()
 	if err != nil {
 		return nil, err
 	}
@@ -162,6 +164,6 @@ func setupHttpServer(ctx context.Context) (*httpserver.Server, error) {
 		ShutdownTimeout: ShutdownTimeout,
 		CertFile:        certFile,
 		KeyFile:         keyFile,
-		Cors:            true,
+		Headers:         httpserver.CorsHeaders(),
 	}), nil
 }
