@@ -9,15 +9,16 @@ import (
 
 	"github.com/dwethmar/lingo/cmd/auth/app"
 	"github.com/dwethmar/lingo/cmd/auth/authentication"
-	"github.com/dwethmar/lingo/cmd/auth/domain/user/postgres"
 	"github.com/dwethmar/lingo/cmd/auth/registration"
 	"github.com/dwethmar/lingo/cmd/auth/server"
+	"github.com/dwethmar/lingo/cmd/auth/storage/user/postgres"
 	"github.com/dwethmar/lingo/cmd/auth/token"
 	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/dwethmar/lingo/pkg/clock"
 	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/dwethmar/lingo/pkg/grpcserver"
 	"github.com/dwethmar/lingo/pkg/httpserver"
+	"github.com/dwethmar/lingo/pkg/uuidgen"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -52,7 +53,8 @@ func setupAuth(logger *slog.Logger, db database.DB) (*app.Auth, error) {
 	}()
 
 	userRepo := postgres.NewRepository(db)
-	clock := clock.New(time.UTC)
+	clock := clock.Default()
+	uuidgen := uuidgen.Default()
 
 	app := app.New(
 		logger,
@@ -63,6 +65,7 @@ func setupAuth(logger *slog.Logger, db database.DB) (*app.Auth, error) {
 			UserRepo:                 userRepo,
 		}),
 		registration.NewManager(registration.Config{
+			UUIDgen:  uuidgen,
 			Clock:    clock,
 			UserRepo: userRepo,
 		}),

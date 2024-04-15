@@ -12,6 +12,7 @@ The goal with the setup is that minimal tools are needed to run the project.
 - install [docker](https://docs.docker.com/get-docker/).
 - install openssl, version 3 (for generating certificates and keys).
   - install with [brew](https://formulae.brew.sh/formula/openssl@3.0).
+- install [atlas](https://atlasgo.io/).
 
 ## local environment
 - run `setup.sh`. you should be able to run the setup as many times as you want.

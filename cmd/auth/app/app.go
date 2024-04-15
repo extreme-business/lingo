@@ -30,5 +30,14 @@ func New(
 func (r *Auth) CreateUser(ctx context.Context, username, email, password string) (*domain.User, error) {
 	r.logger.Info("Register")
 
-	return &domain.User{}, nil
+	user, err := r.registrationManager.Register(ctx, registration.Registration{
+		Username: username,
+		Email:    email,
+		Password: password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

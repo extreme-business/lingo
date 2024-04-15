@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dwethmar/lingo/cmd/auth/domain/user"
+	"github.com/dwethmar/lingo/cmd/auth/storage/user"
 	"github.com/dwethmar/lingo/pkg/database"
+	"github.com/google/uuid"
 )
 
 var _ user.Repository = &Repository{}
@@ -59,7 +60,7 @@ WHERE id = $1
 `
 
 // GetByID get a user by id
-func (r *Repository) Get(ctx context.Context, id user.ID) (*user.User, error) {
+func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*user.User, error) {
 	row := r.db.QueryRowContext(ctx, getByIDQuery, id)
 
 	var user user.User
@@ -120,7 +121,7 @@ func (r *Repository) Update(ctx context.Context, u *user.User, fields ...user.Fi
 
 var deleteQuery = `DELETE FROM users WHERE id = $1`
 
-func (r *Repository) Delete(ctx context.Context, id user.ID) error {
+func (r *Repository) Delete(ctx context.Context, id uuid.UUID) error {
 	_, err := r.db.ExecContext(ctx, deleteQuery, id)
 	return err
 }

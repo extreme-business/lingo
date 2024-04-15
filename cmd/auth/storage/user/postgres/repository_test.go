@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dwethmar/lingo/cmd/auth/domain/user"
 	"github.com/dwethmar/lingo/cmd/auth/migrations"
+	"github.com/dwethmar/lingo/cmd/auth/storage/user"
 	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/dwethmar/lingo/pkg/database/dbtesting"
 	"github.com/google/go-cmp/cmp"
@@ -59,7 +59,7 @@ func TestRepository_Create(t *testing.T) {
 		})
 
 		expect := &user.User{
-			ID:         user.ID(uuid.Must(uuid.Parse("485819f0-9e48-4d25-b07b-6de8a2076be2"))),
+			ID:         uuid.Must(uuid.Parse("485819f0-9e48-4d25-b07b-6de8a2076be2")),
 			Username:   "test",
 			Email:      "wow@test.nl",
 			Password:   "",
@@ -75,7 +75,7 @@ func TestRepository_Create(t *testing.T) {
 
 		repo := NewRepository(db)
 		user, err := repo.Create(context.Background(), &user.User{
-			ID:         user.ID(uuid.Must(uuid.Parse("485819f0-9e48-4d25-b07b-6de8a2076be2"))),
+			ID:         uuid.Must(uuid.Parse("485819f0-9e48-4d25-b07b-6de8a2076be2")),
 			Username:   "test",
 			Email:      "wow@test.nl",
 			Password:   "password",
@@ -99,7 +99,7 @@ func TestRepository_Get(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  user.ID
+		id  uuid.UUID
 	}
 	tests := []struct {
 		name    string
@@ -168,7 +168,7 @@ func TestRepository_Delete(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  user.ID
+		id  uuid.UUID
 	}
 	tests := []struct {
 		name    string

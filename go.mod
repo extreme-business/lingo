@@ -3,6 +3,7 @@ module github.com/dwethmar/lingo
 go 1.22.0
 
 require (
+	ariga.io/atlas-go-sdk v0.5.3
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
@@ -10,6 +11,9 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
+	github.com/testcontainers/testcontainers-go v0.30.0
+	github.com/testcontainers/testcontainers-go/modules/postgres v0.30.0
+	golang.org/x/crypto v0.22.0
 	golang.org/x/sync v0.7.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240401170217-c3f982113cda
 	google.golang.org/grpc v1.63.2
@@ -18,7 +22,6 @@ require (
 
 require (
 	ariga.io/atlas v0.20.1-0.20240321075817-75fd3b1accbf // indirect
-	ariga.io/atlas-go-sdk v0.5.3 // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
@@ -69,8 +72,6 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/testcontainers/testcontainers-go v0.30.0 // indirect
-	github.com/testcontainers/testcontainers-go/modules/postgres v0.30.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect

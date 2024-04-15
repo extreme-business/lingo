@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	protoauth "github.com/dwethmar/lingo/proto/gen/go/public/auth/v1"
 	"github.com/google/uuid"
 )
@@ -11,6 +13,8 @@ type User struct {
 	Username      string
 	Email         string
 	Password      string
+	CreateTime    time.Time
+	UpdateTime    time.Time
 	Organizations []*Organization
 }
 

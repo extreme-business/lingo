@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/dwethmar/lingo/cmd/auth/domain/user"
+	"github.com/dwethmar/lingo/cmd/auth/storage/user"
 	"github.com/dwethmar/lingo/cmd/auth/token"
 	"github.com/dwethmar/lingo/pkg/clock"
 )
