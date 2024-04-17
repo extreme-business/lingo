@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	_ "github.com/lib/pq"
 )
 
 // SetupDatabase sets up the database connection.
-func Connect(ctx context.Context, dataSourceName string) (DB, func() error, error) {
+func ConnectPostgres(ctx context.Context, dataSourceName string) (*sql.DB, func() error, error) {
 	db, err := sql.Open("postgres", dataSourceName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not open db: %w", err)

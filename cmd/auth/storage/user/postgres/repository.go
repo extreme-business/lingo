@@ -48,7 +48,7 @@ func (r *Repository) Create(ctx context.Context, u *user.User) (*user.User, erro
 		&n.CreateTime,
 		&n.UpdateTime,
 	); err != nil {
-		return nil, fmt.Errorf("could not create user: %w", err)
+		return nil, fmt.Errorf("failed to insert user: %w", err)
 	}
 
 	return &n, nil

@@ -14,29 +14,35 @@ import (
 	"github.com/google/uuid"
 )
 
+func NewUser(
+	id string,
+	username string,
+	email string,
+	password string,
+	createTime time.Time,
+	updateTime time.Time,
+) *user.User {
+	return &user.User{
+		ID:         uuid.Must(uuid.Parse(id)),
+		Username:   username,
+		Email:      email,
+		Password:   password,
+		CreateTime: createTime,
+		UpdateTime: updateTime,
+	}
+}
+
 func TestNewRepository(t *testing.T) {
-	type args struct {
-		db database.DB
-	}
-	tests := []struct {
-		name string
-		args args
-		want *Repository
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewRepository(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewRepository() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	t.Run("should return a new repository", func(t *testing.T) {
+		if got := NewRepository(nil); got == nil {
+			t.Error("expected repository")
+		}
+	})
 }
 
 func TestRepository_Create(t *testing.T) {
 	ctx := context.Background()
-	dbc, err := dbtesting.SetupPostgres(context.Background(), func(dbURL string) error {
+	dbc, err := dbtesting.SetupPostgresContainer(context.Background(), func(dbURL string) error {
 		return dbtesting.Migrate(dbURL, migrations.FS)
 	})
 
@@ -53,46 +59,79 @@ func TestRepository_Create(t *testing.T) {
 
 	t.Run("Create should create a new user", func(t *testing.T) {
 		t.Cleanup(func() {
-			if err = dbc.Restore(context.Background()); err != nil {
+			err = dbc.Restore(ctx)
+			if err != nil {
 				t.Fatal(err)
 			}
 		})
 
-		expect := &user.User{
-			ID:         uuid.Must(uuid.Parse("485819f0-9e48-4d25-b07b-6de8a2076be2")),
-			Username:   "test",
-			Email:      "wow@test.nl",
-			Password:   "",
-			CreateTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			UpdateTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		}
-
-		db, close, err := database.Connect(ctx, dbc.URL)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer func() {
-			if err := close(); err != nil {
-				t.Fatal(err)
-			}
-		}()
+		db, close := dbtesting.SetupTestDB(ctx, t, dbc)
+		defer close()
 
 		repo := NewRepository(db)
-		user, err := repo.Create(context.Background(), &user.User{
-			ID:         uuid.Must(uuid.Parse("485819f0-9e48-4d25-b07b-6de8a2076be2")),
-			Username:   "test",
-			Email:      "wow@test.nl",
-			Password:   "password",
-			CreateTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			UpdateTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		})
+		user, err := repo.Create(context.Background(), NewUser(
+			"485819f0-9e48-4d25-b07b-6de8a2076be2",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		))
 
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		expect := NewUser(
+			"485819f0-9e48-4d25-b07b-6de8a2076be2",
+			"test",
+			"test@test.com",
+			"",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		)
 
 		if diff := cmp.Diff(expect, user); diff != "" {
 			t.Errorf("Create() mismatch (-want +got):\n%s", diff)
+		}
+	})
+
+	t.Run("should return an error if the user id already exists", func(t *testing.T) {
+		t.Cleanup(func() {
+			err = dbc.Restore(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
+
+		db, close := dbtesting.SetupTestDB(ctx, t, dbc)
+		defer close()
+
+		repo := NewRepository(db)
+		_, err = repo.Create(context.Background(), NewUser(
+			"485819f0-9e48-4d25-b07b-6de8a2076be2",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = repo.Create(context.Background(), NewUser(
+			"485819f0-9e48-4d25-b07b-6de8a2076be2",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		))
+
+		if err.Error() != "failed to insert user: pq: duplicate key value violates unique constraint \"users_pkey\"" {
+			t.Error("expected error")
 		}
 	})
 }

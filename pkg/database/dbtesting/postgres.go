@@ -2,35 +2,28 @@ package dbtesting
 
 import (
 	"context"
+	"database/sql"
 	"log"
+	"testing"
 	"time"
 
+	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
-
-	_ "github.com/lib/pq"
 )
 
 type PostgresContainer struct {
-	URL               string
-	postgresContainer *postgres.PostgresContainer
+	*postgres.PostgresContainer
+	ConnectionString string
 }
 
-func (p *PostgresContainer) Terminate(ctx context.Context) error {
-	return p.postgresContainer.Terminate(ctx)
-}
-
-func (p *PostgresContainer) Restore(ctx context.Context) error {
-	return p.postgresContainer.Restore(ctx, postgres.WithSnapshotName("initial"))
-}
-
-func SetupPostgres(ctx context.Context, setup func(dbURL string) error) (*PostgresContainer, error) {
+func SetupPostgresContainer(ctx context.Context, setup func(connectionString string) error) (*PostgresContainer, error) {
 	dbName := "users"
 	dbUser := "user"
 	dbPassword := "password"
 
-	postgresContainer, err := postgres.RunContainer(
+	container, err := postgres.RunContainer(
 		ctx,
 		testcontainers.WithImage("docker.io/postgres:16-alpine"),
 		postgres.WithDatabase(dbName),
@@ -45,23 +38,38 @@ func SetupPostgres(ctx context.Context, setup func(dbURL string) error) (*Postgr
 		log.Fatalf("failed to start container: %s", err)
 	}
 
-	dbURL, err := postgresContainer.ConnectionString(ctx, "sslmode=disable")
+	connectionString, err := container.ConnectionString(ctx, "sslmode=disable")
 	if err != nil {
 		return nil, err
 	}
 
-	if err := setup(dbURL); err != nil {
+	if err := setup(connectionString); err != nil {
 		return nil, err
 	}
 
-	// Create a snapshot of the database to restore later
-	err = postgresContainer.Snapshot(ctx, postgres.WithSnapshotName("initial"))
+	// 2. Create a snapshot of the database to restore later
+	err = container.Snapshot(ctx, postgres.WithSnapshotName("test-snapshot"))
 	if err != nil {
 		return nil, err
 	}
 
 	return &PostgresContainer{
-		URL:               dbURL,
-		postgresContainer: postgresContainer,
+		PostgresContainer: container,
+		ConnectionString:  connectionString,
 	}, nil
+}
+
+// SetupTestDB sets up the database connection for testing and
+func SetupTestDB(ctx context.Context, t *testing.T, dbc *PostgresContainer) (*sql.DB, func()) {
+
+	db, close, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return db, func() {
+		if err := close(); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
