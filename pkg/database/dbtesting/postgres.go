@@ -2,12 +2,9 @@ package dbtesting
 
 import (
 	"context"
-	"database/sql"
 	"log"
-	"testing"
 	"time"
 
-	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -18,8 +15,7 @@ type PostgresContainer struct {
 	ConnectionString string
 }
 
-func SetupPostgresContainer(ctx context.Context, setup func(connectionString string) error) (*PostgresContainer, error) {
-	dbName := "users"
+func SetupPostgresContainer(ctx context.Context, dbName string, setup func(connectionString string) error) (*PostgresContainer, error) {
 	dbUser := "user"
 	dbPassword := "password"
 
@@ -57,19 +53,4 @@ func SetupPostgresContainer(ctx context.Context, setup func(connectionString str
 		PostgresContainer: container,
 		ConnectionString:  connectionString,
 	}, nil
-}
-
-// SetupTestDB sets up the database connection for testing and
-func SetupTestDB(ctx context.Context, t *testing.T, dbc *PostgresContainer) (*sql.DB, func()) {
-
-	db, close, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return db, func() {
-		if err := close(); err != nil {
-			t.Fatal(err)
-		}
-	}
 }

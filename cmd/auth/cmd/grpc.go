@@ -38,12 +38,12 @@ func runAuth(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get database url: %w", err)
 	}
 
-	db, dbClose, err := database.ConnectPostgres(ctx, dbUrl)
+	db, err := database.ConnectPostgres(ctx, dbUrl)
 	if err != nil {
 		return fmt.Errorf("failed to setup database: %w", err)
 	}
 	defer func() {
-		if err := dbClose(); err != nil {
+		if err := db.Close(); err != nil {
 			logger.Error("Failed to close database", slog.String("error", err.Error()))
 		}
 	}()

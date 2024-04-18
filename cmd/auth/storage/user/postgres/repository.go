@@ -2,12 +2,20 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/dwethmar/lingo/cmd/auth/storage/user"
 	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
+)
+
+const (
+	userIdConstraint       = "users_pkey"
+	userUsernameConstraint = "users_username_key"
+	userEmailConstraint    = "users_email_key"
 )
 
 var _ user.Repository = &Repository{}
@@ -48,6 +56,20 @@ func (r *Repository) Create(ctx context.Context, u *user.User) (*user.User, erro
 		&n.CreateTime,
 		&n.UpdateTime,
 	); err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code.Name() == "unique_violation" {
+				switch pqErr.Constraint {
+				case userIdConstraint:
+					return nil, user.ErrIDConflict
+				case userUsernameConstraint:
+					return nil, user.ErrUsernameConflict
+				case userEmailConstraint:
+					return nil, user.ErrEmailConflict
+				}
+			}
+		}
+
 		return nil, fmt.Errorf("failed to insert user: %w", err)
 	}
 

@@ -42,7 +42,7 @@ func TestNewRepository(t *testing.T) {
 
 func TestRepository_Create(t *testing.T) {
 	ctx := context.Background()
-	dbc, err := dbtesting.SetupPostgresContainer(context.Background(), func(dbURL string) error {
+	dbc, err := dbtesting.SetupPostgresContainer(ctx, "auth", func(dbURL string) error {
 		return dbtesting.Migrate(dbURL, migrations.FS)
 	})
 
@@ -58,19 +58,21 @@ func TestRepository_Create(t *testing.T) {
 	})
 
 	t.Run("Create should create a new user", func(t *testing.T) {
-		t.Cleanup(func() {
-			err = dbc.Restore(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		})
+		// t.Cleanup(func() {
+		// 	if err = dbc.Restore(ctx); err != nil {
+		// 		t.Fatal(err)
+		// 	}
+		// })
 
-		db, close := dbtesting.SetupTestDB(ctx, t, dbc)
-		defer close()
+		db, err := database.ConnectPostgres(context.Background(), dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
 
 		repo := NewRepository(db)
 		user, err := repo.Create(context.Background(), NewUser(
-			"485819f0-9e48-4d25-b07b-6de8a2076be2",
+			"35297169-89d8-444d-8499-c6341e3a0770",
 			"test",
 			"test@test.com",
 			"password",
@@ -83,7 +85,7 @@ func TestRepository_Create(t *testing.T) {
 		}
 
 		expect := NewUser(
-			"485819f0-9e48-4d25-b07b-6de8a2076be2",
+			"35297169-89d8-444d-8499-c6341e3a0770",
 			"test",
 			"test@test.com",
 			"",
@@ -97,21 +99,23 @@ func TestRepository_Create(t *testing.T) {
 	})
 
 	t.Run("should return an error if the user id already exists", func(t *testing.T) {
-		t.Cleanup(func() {
-			err = dbc.Restore(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		})
+		// t.Cleanup(func() {
+		// 	if err = dbc.Restore(ctx); err != nil {
+		// 		t.Fatal(err)
+		// 	}
+		// })
 
-		db, close := dbtesting.SetupTestDB(ctx, t, dbc)
-		defer close()
+		db, err := database.ConnectPostgres(context.Background(), dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
 
 		repo := NewRepository(db)
 		_, err = repo.Create(context.Background(), NewUser(
 			"485819f0-9e48-4d25-b07b-6de8a2076be2",
-			"test",
-			"test@test.com",
+			"username_300",
+			"test_300@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -123,8 +127,8 @@ func TestRepository_Create(t *testing.T) {
 
 		_, err = repo.Create(context.Background(), NewUser(
 			"485819f0-9e48-4d25-b07b-6de8a2076be2",
-			"test",
-			"test@test.com",
+			"username_301",
+			"test_3001@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -132,6 +136,47 @@ func TestRepository_Create(t *testing.T) {
 
 		if err.Error() != "failed to insert user: pq: duplicate key value violates unique constraint \"users_pkey\"" {
 			t.Error("expected error")
+		}
+	})
+
+	t.Run("should return an error if the user email already exists", func(t *testing.T) {
+		// t.Cleanup(func() {
+		// 	if err = dbc.Restore(ctx); err != nil {
+		// 		t.Fatal(err)
+		// 	}
+		// })
+
+		db, err := database.ConnectPostgres(context.Background(), dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		repo := NewRepository(db)
+		_, err = repo.Create(context.Background(), NewUser(
+			"4c3362d9-3956-4b15-b839-b5791460a518",
+			"username_400",
+			"test_400@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = repo.Create(context.Background(), NewUser(
+			"8f56d098-731f-48a3-ab19-942f7c793732",
+			"username_401",
+			"test_400@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		))
+
+		if msg := err.Error(); msg != "failed to insert user: pq: duplicate key value violates unique constraint \"users_username_key\"" {
+			t.Errorf("expected error, got %s", msg)
 		}
 	})
 }

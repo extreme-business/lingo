@@ -1,10 +1,17 @@
 package user
 
 import (
+	"errors"
 	"time"
 
 	"github.com/dwethmar/lingo/cmd/auth/domain"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrIDConflict       = errors.New("id conflict")
+	ErrUsernameConflict = errors.New("username conflict")
+	ErrEmailConflict    = errors.New("email conflict")
 )
 
 type Field string
