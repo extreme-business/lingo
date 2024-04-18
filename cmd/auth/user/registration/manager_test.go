@@ -1,4 +1,4 @@
-package registration
+package registration_test
 
 import (
 	"context"
@@ -8,34 +8,20 @@ import (
 
 	"github.com/dwethmar/lingo/cmd/auth/domain"
 	"github.com/dwethmar/lingo/cmd/auth/storage/user"
+	"github.com/dwethmar/lingo/cmd/auth/user/registration"
 	"github.com/dwethmar/lingo/pkg/clock"
 	"github.com/dwethmar/lingo/pkg/uuidgen"
+	"github.com/dwethmar/lingo/pkg/validate"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 )
 
 func TestNewManager(t *testing.T) {
 	t.Run("should create a new manager", func(t *testing.T) {
-		c := Config{
-			Clock:    clock.Default(),
-			UserRepo: nil,
-		}
-		m := NewManager(c)
+		c := registration.Config{}
+		m := registration.NewManager(c)
 		if m == nil {
 			t.Fatalf("NewManager() = nil, want a manager")
-		}
-
-		expected := &Manager{
-			clock:    c.Clock,
-			userRepo: c.UserRepo,
-		}
-
-		if m.clock != expected.clock {
-			t.Fatalf("NewManager() = %v, want %v", m.clock, expected.clock)
-		}
-
-		if m.userRepo != expected.userRepo {
-			t.Fatalf("NewManager() = %v, want %v", m.userRepo, expected.userRepo)
 		}
 	})
 }
@@ -45,7 +31,7 @@ func TestManager_Register(t *testing.T) {
 		now := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		userRepo := user.MockRepository{
-			CreateFunc: func(ctx context.Context, u *user.User) (*user.User, error) {
+			CreateFunc: func(_ context.Context, u *user.User) (*user.User, error) {
 				return &user.User{
 					ID:         u.ID,
 					Username:   u.Username,
@@ -57,18 +43,15 @@ func TestManager_Register(t *testing.T) {
 			},
 		}
 
-		m := Manager{
-			uuidgen: uuidgen.New(func() uuid.UUID {
+		m := registration.NewManager(registration.Config{
+			UserRepo: &userRepo,
+			Clock:    clock.New(time.UTC, func() time.Time { return now.Add(time.Second) }),
+			UUIDgen: uuidgen.New(func() uuid.UUID {
 				return uuid.Must(uuid.Parse("c5172a66-3dbe-4415-bbf9-9921d9798698"))
 			}),
-			clock: clock.New(time.UTC, func() time.Time {
-				return now.Add(time.Second)
-			}),
-			userRepo:              &userRepo,
-			registrationValidator: NewRegistrationValidator(),
-		}
+		})
 
-		u, err := m.Register(context.TODO(), Registration{
+		u, err := m.Register(context.TODO(), registration.Registration{
 			Username: "username",
 			Email:    "email",
 			Password: "password!1",
@@ -95,19 +78,157 @@ func TestManager_Register(t *testing.T) {
 		}
 	})
 
-	t.Run("should return an error if the registration is invalid", func(t *testing.T) {
-		m := Manager{
-			registrationValidator: NewRegistrationValidator(),
+	t.Run("should return an error if registration is invalid", func(t *testing.T) {
+		type fields struct {
+			config registration.Config
 		}
+		type args struct {
+			ctx          context.Context
+			registration registration.Registration
+		}
+		tests := []struct {
+			name   string
+			fields fields
+			args   args
+			want   *domain.User
+			want2  string
+		}{
+			{
+				name: "username too short",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "a",
+						Email:    "email",
+						Password: "password!1",
+					},
+				},
+				want:  nil,
+				want2: "username",
+			},
+			{
+				name: "username too long",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						Email:    "email",
+						Password: "password!1",
+					},
+				},
+				want:  nil,
+				want2: "username",
+			},
+			{
+				name: "username contains non allowed special char",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "username!",
+						Email:    "email",
+						Password: "password!1",
+					},
+				},
+				want:  nil,
+				want2: "username",
+			},
+			{
+				name: "email too short",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "abcdefghijklmnopqrstuvwxyz",
+						Email:    "a",
+						Password: "password!1",
+					},
+				},
+				want:  nil,
+				want2: "email",
+			},
+			{
+				name: "email too long",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "abcdefghijklmnopqrstuvwxyz",
+						Email:    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						Password: "password!1",
+					},
+				},
+				want:  nil,
+				want2: "email",
+			},
+			{
+				name: "password too short",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "abcdefghijklmnopqrstuvwxyz",
+						Email:    "email",
+						Password: "a",
+					},
+				},
+				want:  nil,
+				want2: "password",
+			},
+			{
+				name: "password too long",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "abcdefghijklmnopqrstuvwxyz",
+						Email:    "email",
+						Password: "1@Aabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+					},
+				},
+				want:  nil,
+				want2: "password",
+			},
+			{
+				name: "password does not contain special char",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "abcdefghijklmnopqrstuvwxyz",
+						Email:    "email",
+						Password: "password1",
+					},
+				},
+				want:  nil,
+				want2: "password",
+			},
+			{
+				name: "password does not contain digit",
+				args: args{
+					ctx: context.TODO(),
+					registration: registration.Registration{
+						Username: "abcdefghijklmnopqrstuvwxyz",
+						Email:    "email",
+						Password: "password!",
+					},
+				},
+				want:  nil,
+				want2: "password",
+			},
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				m := registration.NewManager(tt.fields.config)
+				user, err := m.Register(tt.args.ctx, tt.args.registration)
 
-		_, err := m.Register(context.TODO(), Registration{
-			Username: "a", // too short
-			Email:    "test@test.com",
-			Password: "test-password1",
-		})
+				if diff := cmp.Diff(tt.want, user); diff != "" {
+					t.Fatalf("Register() mismatch (-want +got):\n%s", diff)
+				}
 
-		if err == nil {
-			t.Fatalf("Register() = nil, want an error")
+				var vErr *validate.Error
+				if !errors.As(err, &vErr) {
+					t.Fatalf("Register() = %v, want a validate.Error", err)
+				}
+
+				if vErr.Field() != tt.want2 {
+					t.Errorf("Register() field = %v, want %s", vErr.Field(), tt.want2)
+				}
+			})
 		}
 	})
 
@@ -115,23 +236,20 @@ func TestManager_Register(t *testing.T) {
 		now := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		userRepo := user.MockRepository{
-			CreateFunc: func(ctx context.Context, u *user.User) (*user.User, error) {
+			CreateFunc: func(_ context.Context, _ *user.User) (*user.User, error) {
 				return nil, errors.New("error")
 			},
 		}
 
-		m := Manager{
-			uuidgen: uuidgen.New(func() uuid.UUID {
+		m := registration.NewManager(registration.Config{
+			UserRepo: &userRepo,
+			Clock:    clock.New(time.UTC, func() time.Time { return now }),
+			UUIDgen: uuidgen.New(func() uuid.UUID {
 				return uuid.Must(uuid.Parse("c5172a66-3dbe-4415-bbf9-9921d9798698"))
 			}),
-			clock: clock.New(time.UTC, func() time.Time {
-				return now.Add(time.Second)
-			}),
-			userRepo:              &userRepo,
-			registrationValidator: NewRegistrationValidator(),
-		}
+		})
 
-		u, err := m.Register(context.TODO(), Registration{
+		u, err := m.Register(context.TODO(), registration.Registration{
 			Username: "username",
 			Email:    "email",
 			Password: "password!1",

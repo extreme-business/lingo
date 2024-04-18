@@ -6,12 +6,12 @@ import (
 )
 
 // StringValidatorFunc is a function that validates a string.
-type StringValidatorFunc func(string) error
+type StringValidatorFunc func(string) *Error
 
 // StringValidator is a list of StringValidatorFunc.
 type StringValidator []StringValidatorFunc
 
-func (v StringValidator) Validate(s string) error {
+func (v StringValidator) Validate(s string) *Error {
 	for _, f := range v {
 		if err := f(s); err != nil {
 			return err
@@ -23,9 +23,12 @@ func (v StringValidator) Validate(s string) error {
 
 // MinLength returns a StringValidatorFunc that checks if a string is at least n characters long.
 func MinLength(name string, n int) StringValidatorFunc {
-	return func(s string) error {
+	return func(s string) *Error {
 		if len(s) < n {
-			return fmt.Errorf("%s should be at least %d characters long", name, n)
+			return &Error{
+				field: name,
+				err:   fmt.Errorf("%s should be at least %d characters long", name, n),
+			}
 		}
 		return nil
 	}
@@ -33,9 +36,12 @@ func MinLength(name string, n int) StringValidatorFunc {
 
 // MaxLength returns a StringValidatorFunc that checks if a string is at most n characters long.
 func MaxLength(name string, n int) StringValidatorFunc {
-	return func(s string) error {
+	return func(s string) *Error {
 		if len(s) > n {
-			return fmt.Errorf("%s should be at most %d characters long", name, n)
+			return &Error{
+				field: name,
+				err:   fmt.Errorf("%s should be at most %d characters long", name, n),
+			}
 		}
 		return nil
 	}
@@ -43,7 +49,7 @@ func MaxLength(name string, n int) StringValidatorFunc {
 
 // ContainsSpecialChars returns a StringValidatorFunc that checks if a string contains n special characters.
 func ContainsSpecialChars(name string, n int) StringValidatorFunc {
-	return func(s string) error {
+	return func(s string) *Error {
 		count := 0
 		for _, runeValue := range s {
 			if !unicode.IsLetter(runeValue) && !unicode.IsDigit(runeValue) {
@@ -54,13 +60,16 @@ func ContainsSpecialChars(name string, n int) StringValidatorFunc {
 			}
 		}
 
-		return fmt.Errorf("%s does not contain %d special characters", name, n)
+		return &Error{
+			field: name,
+			err:   fmt.Errorf("%s does not contain %d special characters", name, n),
+		}
 	}
 }
 
 // ContainsDigits returns a StringValidatorFunc that checks if a string contains n digits.
 func ContainsDigits(name string, n int) StringValidatorFunc {
-	return func(s string) error {
+	return func(s string) *Error {
 		count := 0
 		for _, runeValue := range s {
 			if unicode.IsDigit(runeValue) {
@@ -71,7 +80,10 @@ func ContainsDigits(name string, n int) StringValidatorFunc {
 			}
 		}
 
-		return fmt.Errorf("%s does not contain %d digits", name, n)
+		return &Error{
+			field: name,
+			err:   fmt.Errorf("%s does not contain %d digits", name, n),
+		}
 	}
 }
 
@@ -82,14 +94,17 @@ func SpecialCharWhitelist(name string, exceptions ...rune) StringValidatorFunc {
 		exceptionsMap[r] = struct{}{}
 	}
 
-	return func(s string) error {
+	return func(s string) *Error {
 		for _, runeValue := range s {
 			if !unicode.IsLetter(runeValue) && !unicode.IsDigit(runeValue) {
 				if _, ok := exceptionsMap[runeValue]; ok {
 					continue
 				}
 
-				return fmt.Errorf("%s contains an character that is not allowed", name)
+				return &Error{
+					field: name,
+					err:   fmt.Errorf("%s contains an invalid character: %c", name, runeValue),
+				}
 			}
 		}
 

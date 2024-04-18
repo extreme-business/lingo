@@ -12,25 +12,16 @@ var (
 	ErrCertFilesNotSet = errors.New("certFile and keyFile must be set")
 )
 
-type Config struct {
-	Addr            string
-	Handler         http.Handler
-	ReadTimeout     time.Duration
-	WriteTimeout    time.Duration
-	IdleTimeout     time.Duration
-	ShutdownTimeout time.Duration
-	CertFile        string // CertFile is the path to the certificate file
-	KeyFile         string // KeyFile is the path to the key file
-	Headers         http.Header
-}
-
 type Server struct {
 	httpServer        *http.Server
 	shutdownTimeout   time.Duration
 	certFile, keyFile string
 }
 
-func New(c Config) *Server {
+func New(options ...Option) *Server {
+	c := &Config{}
+	c.Apply(options...)
+
 	httpServer := &http.Server{
 		Addr:         c.Addr,
 		Handler:      c.Handler,
@@ -40,7 +31,7 @@ func New(c Config) *Server {
 	}
 
 	if c.Headers != nil && len(c.Headers) > 0 {
-		httpServer.Handler = headersMiddleware(httpServer.Handler, c.Headers)
+		httpServer.Handler = HeadersMiddleware(httpServer.Handler, c.Headers)
 	}
 
 	return &Server{
@@ -63,12 +54,12 @@ func (s *Server) Serve(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
+		ctxt, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
 		defer cancel()
-		if err := s.httpServer.Shutdown(ctx); err != nil {
+		if err := s.httpServer.Shutdown(ctxt); err != nil {
 			return fmt.Errorf("failed to shutdown server: %w", err)
 		}
-		return ctx.Err()
+		return ctxt.Err()
 	case err := <-errCh:
 		if err == nil || errors.Is(err, http.ErrServerClosed) {
 			return nil

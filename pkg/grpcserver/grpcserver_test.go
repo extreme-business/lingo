@@ -1,97 +1,76 @@
-package grpcserver
+package grpcserver_test
 
 import (
 	"context"
 	"errors"
 	"net"
-	"reflect"
 	"testing"
 
+	"github.com/dwethmar/lingo/pkg/grpcserver"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/test/bufconn"
 )
 
 type MockGrpcServer struct {
-	ServeFunc func(lis net.Listener) error
+	ServeFunc          func(lis net.Listener) error
+	GetServiceInfoFunc func() map[string]grpc.ServiceInfo
 }
 
 func (m *MockGrpcServer) Serve(lis net.Listener) error {
+	if m.ServeFunc == nil {
+		panic("ServeFunc is not set")
+	}
+
 	return m.ServeFunc(lis)
 }
+func (m *MockGrpcServer) RegisterService(_ *grpc.ServiceDesc, _ any) {}
+func (m *MockGrpcServer) GracefulStop()                              {}
+func (m *MockGrpcServer) GetServiceInfo() map[string]grpc.ServiceInfo {
+	if m.GetServiceInfoFunc == nil {
+		panic("GetServiceInfoFunc is not set")
+	}
 
-func (m *MockGrpcServer) GracefulStop() {}
+	return m.GetServiceInfoFunc()
+}
 
 func TestNew(t *testing.T) {
 	t.Run("New", func(t *testing.T) {
-		c := Config{}
-		got := New(c)
-		if got == nil {
-			t.Errorf("New() = %v, want %v", got, reflect.TypeOf(&Server{}))
-		}
-	})
+		buffer := 101024 * 1024
+		lis := bufconn.Listen(buffer)
+		var visited bool
 
-	t.Run("New should set reflection if set", func(t *testing.T) {
-		var reflectionCalled bool
-		New(Config{
-			Reflection: true,
-			reflectionFunc: func(s reflection.GRPCServer) {
-				reflectionCalled = true
-			},
-		})
-
-		if !reflectionCalled {
-			t.Errorf("reflectionFunc not called")
-		}
-	})
-
-	t.Run("New should not set reflection if not set", func(t *testing.T) {
-		var reflectionCalled bool
-		New(Config{
-			Reflection: false,
-			reflectionFunc: func(s reflection.GRPCServer) {
-				reflectionCalled = true
-			},
-		})
-
-		if reflectionCalled {
-			t.Errorf("reflectionFunc called")
-		}
-	})
-
-	t.Run("New should set reflectionFunc if not set", func(t *testing.T) {
-		c := Config{
-			Reflection: true,
-		}
-		New(c)
-	})
-
-	t.Run("New should call ServerRegisters", func(t *testing.T) {
-		var registerCalled bool
-		New(Config{
-			ServerRegisters: []func(*grpc.Server){
-				func(s *grpc.Server) {
-					registerCalled = true
+		s := grpcserver.New(
+			grpcserver.WithGrpcServer(&MockGrpcServer{}),
+			grpcserver.WithListener(lis),
+			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){
+				func(grpc.ServiceRegistrar) {
+					visited = true
 				},
-			},
-		})
+			}),
+			grpcserver.WithReflection(),
+		)
 
-		if !registerCalled {
-			t.Errorf("ServerRegisters not called")
+		if s == nil {
+			t.Error("expected a new server")
+		}
+
+		if !visited {
+			t.Error("expected the server to be visited")
 		}
 	})
 }
 
 func TestServer_Serve(t *testing.T) {
-	t.Run("Serve should stop if ctx is cancled", func(t *testing.T) {
+	t.Run("Serve should stop if ctx is canceled", func(t *testing.T) {
 		buffer := 101024 * 1024
 		lis := bufconn.Listen(buffer)
-		server := grpc.NewServer()
 
-		s := &Server{
-			lis:  lis,
-			Serv: server,
-		}
+		s := grpcserver.New(
+			grpcserver.WithListener(lis),
+			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){}),
+			grpcserver.WithReflection(),
+		)
+
 		ctx := context.Background()
 		ctx, cancel := context.WithCancel(ctx)
 		cancel()
@@ -105,15 +84,11 @@ func TestServer_Serve(t *testing.T) {
 		buffer := 101024 * 1024
 		lis := bufconn.Listen(buffer)
 
-		s := &Server{
-			lis: lis,
-			Serv: &MockGrpcServer{
-				ServeFunc: func(lis net.Listener) error {
-					<-make(chan struct{})
-					return nil
-				},
-			},
-		}
+		s := grpcserver.New(
+			grpcserver.WithListener(lis),
+			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){}),
+			grpcserver.WithReflection(),
+		)
 		ctx := context.Background()
 
 		go func() {
@@ -125,65 +100,47 @@ func TestServer_Serve(t *testing.T) {
 				continue
 			}
 
-			if err := s.Serve(ctx); !errors.Is(err, ErrServerAlreadyRunning) {
-				t.Errorf("Serve() = %v, want %v", err, ErrServerAlreadyRunning)
+			if err := s.Serve(ctx); !errors.Is(err, grpcserver.ErrServerAlreadyRunning) {
+				t.Errorf("Serve() = %v, want %v", err, grpcserver.ErrServerAlreadyRunning)
 			}
 
 			break
 		}
 	})
 
-	t.Run("Serve should return error if listener is not set", func(t *testing.T) {
-		server := grpc.NewServer()
-		s := &Server{
-			Serv: server,
-		}
-		ctx := context.Background()
-
-		if err := s.Serve(ctx); !errors.Is(err, ErrListenerNotSet) {
-			t.Errorf("Serve() = %v, want %v", err, ErrListenerNotSet)
-		}
-	})
-
 	t.Run("Serve should return error if Serve() returns error", func(t *testing.T) {
-		buffer := 101024 * 1024
-		lis := bufconn.Listen(buffer)
+		var expectedErr = errors.New("expected error")
 
-		var err = errors.New("error")
-
-		s := &Server{
-			lis: lis,
-			Serv: &MockGrpcServer{
-				ServeFunc: func(lis net.Listener) error {
-					return err
-				},
-			},
-		}
+		s := grpcserver.New(
+			grpcserver.WithGrpcServer(&MockGrpcServer{
+				ServeFunc: func(_ net.Listener) error { return expectedErr },
+			}),
+			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){}),
+			grpcserver.WithReflection(),
+		)
 
 		ctx := context.Background()
+		err := s.Serve(ctx)
 
-		if !errors.Is(s.Serve(ctx), err) {
-			t.Errorf("Serve() = %v, want %v", s.Serve(ctx), err)
+		if err == nil || !errors.Is(err, expectedErr) {
+			t.Errorf("Serve() = %v, want %v", err, expectedErr)
 		}
 	})
 
-	t.Run("Serve should return nil if Serve() returns nil", func(t *testing.T) {
-		buffer := 101024 * 1024
-		lis := bufconn.Listen(buffer)
-
-		s := &Server{
-			lis: lis,
-			Serv: &MockGrpcServer{
-				ServeFunc: func(lis net.Listener) error {
-					return nil
-				},
-			},
-		}
+	t.Run("Serve should return nil if server is stopped", func(t *testing.T) {
+		s := grpcserver.New(
+			grpcserver.WithGrpcServer(&MockGrpcServer{
+				ServeFunc: func(_ net.Listener) error { return grpc.ErrServerStopped },
+			}),
+			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){}),
+			grpcserver.WithReflection(),
+		)
 
 		ctx := context.Background()
+		err := s.Serve(ctx)
 
-		if err := s.Serve(ctx); err != nil {
-			t.Errorf("Serve() = %v, want %v", err, nil)
+		if err != nil {
+			t.Errorf("Serve() = %v, want nil", err)
 		}
 	})
 }

@@ -11,6 +11,11 @@ import (
 	"github.com/dwethmar/lingo/pkg/clock"
 )
 
+const (
+	authTokenDuration    = 5 * time.Minute
+	refreshTokenDuration = 30 * time.Minute
+)
+
 type Manager struct {
 	userRepo            user.Repository
 	AuthTokenManager    *token.Manager
@@ -30,12 +35,12 @@ func NewManager(c Config) *Manager {
 		AuthTokenManager: token.NewManager(
 			c.Clock,
 			c.SigningKeyRegistration,
-			5*time.Minute,
+			authTokenDuration,
 		),
 		RefreshTokenManager: token.NewManager(
 			c.Clock,
 			c.SigningKeyAuthentication,
-			30*time.Minute,
+			refreshTokenDuration,
 		),
 	}
 }

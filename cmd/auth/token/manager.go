@@ -41,10 +41,10 @@ func (m *Manager) New(id string) (string, error) {
 
 // Validate validates the token and returns the email hash.
 // Token is hex encoded.
-func (m *Manager) Validate(token string) (Claims, error) {
+func (m *Manager) Validate(token string) (*Claims, error) {
 	claims, err := m.Validator.Validate(token)
 	if err != nil {
-		return Claims{}, fmt.Errorf("failed to validate token: %w", err)
+		return nil, fmt.Errorf("failed to validate token: %w", err)
 	}
 
 	return claims, nil

@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/dwethmar/lingo/cmd/config"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
@@ -24,7 +25,8 @@ func runGateway(_ *cobra.Command, _ []string) error {
 		cancel()
 	}()
 
-	s, err := setupHttpServer(ctx)
+	config := config.New()
+	s, err := setupHTTPServer(ctx, config)
 	if err != nil {
 		return err
 	}

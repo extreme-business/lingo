@@ -1,17 +1,21 @@
-package postgres
+package postgres_test
 
 import (
 	"context"
-	"reflect"
+	"errors"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/dwethmar/lingo/cmd/auth/migrations"
 	"github.com/dwethmar/lingo/cmd/auth/storage/user"
+	"github.com/dwethmar/lingo/cmd/auth/storage/user/postgres"
 	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/dwethmar/lingo/pkg/database/dbtesting"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
+	seedPostgres "github.com/dwethmar/lingo/cmd/auth/storage/seed/postgres"
 )
 
 func NewUser(
@@ -32,46 +36,40 @@ func NewUser(
 	}
 }
 
-func TestNewRepository(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Run("should return a new repository", func(t *testing.T) {
-		if got := NewRepository(nil); got == nil {
+		if got := postgres.New(nil); got == nil {
 			t.Error("expected repository")
 		}
 	})
 }
 
 func TestRepository_Create(t *testing.T) {
-	ctx := context.Background()
-	dbc, err := dbtesting.SetupPostgresContainer(ctx, "auth", func(dbURL string) error {
+	dbc, dbErr := dbtesting.SetupPostgresContainer(context.Background(), "auth", func(dbURL string) error {
 		return dbtesting.Migrate(dbURL, migrations.FS)
 	})
 
-	if err != nil {
-		t.Fatal(err)
+	if dbErr != nil {
+		t.Fatal(dbErr)
 	}
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		if err := dbc.Terminate(ctx); err != nil {
+		if err := dbc.Terminate(context.Background()); err != nil {
 			t.Fatalf("failed to terminate container: %s", err)
 		}
 	})
 
 	t.Run("Create should create a new user", func(t *testing.T) {
-		// t.Cleanup(func() {
-		// 	if err = dbc.Restore(ctx); err != nil {
-		// 		t.Fatal(err)
-		// 	}
-		// })
-
-		db, err := database.ConnectPostgres(context.Background(), dbc.ConnectionString)
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer db.Close()
 
-		repo := NewRepository(db)
-		user, err := repo.Create(context.Background(), NewUser(
+		repo := postgres.New(db)
+		user, err := repo.Create(ctx, NewUser(
 			"35297169-89d8-444d-8499-c6341e3a0770",
 			"test",
 			"test@test.com",
@@ -99,20 +97,15 @@ func TestRepository_Create(t *testing.T) {
 	})
 
 	t.Run("should return an error if the user id already exists", func(t *testing.T) {
-		// t.Cleanup(func() {
-		// 	if err = dbc.Restore(ctx); err != nil {
-		// 		t.Fatal(err)
-		// 	}
-		// })
-
-		db, err := database.ConnectPostgres(context.Background(), dbc.ConnectionString)
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer db.Close()
 
-		repo := NewRepository(db)
-		_, err = repo.Create(context.Background(), NewUser(
+		repo := postgres.New(db)
+		_, err = repo.Create(ctx, NewUser(
 			"485819f0-9e48-4d25-b07b-6de8a2076be2",
 			"username_300",
 			"test_300@test.com",
@@ -125,7 +118,7 @@ func TestRepository_Create(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		_, err = repo.Create(context.Background(), NewUser(
+		_, err = repo.Create(ctx, NewUser(
 			"485819f0-9e48-4d25-b07b-6de8a2076be2",
 			"username_301",
 			"test_3001@test.com",
@@ -134,27 +127,58 @@ func TestRepository_Create(t *testing.T) {
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		))
 
-		if err.Error() != "failed to insert user: pq: duplicate key value violates unique constraint \"users_pkey\"" {
-			t.Error("expected error")
+		if !errors.Is(err, user.ErrUniqueIDConflict) {
+			t.Errorf("expected %q, got %q", user.ErrUniqueIDConflict, err)
 		}
 	})
 
-	t.Run("should return an error if the user email already exists", func(t *testing.T) {
-		// t.Cleanup(func() {
-		// 	if err = dbc.Restore(ctx); err != nil {
-		// 		t.Fatal(err)
-		// 	}
-		// })
-
-		db, err := database.ConnectPostgres(context.Background(), dbc.ConnectionString)
+	t.Run("should return an error if the user username already exists", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer db.Close()
 
-		repo := NewRepository(db)
-		_, err = repo.Create(context.Background(), NewUser(
+		repo := postgres.New(db)
+		_, err = repo.Create(ctx, NewUser(
 			"4c3362d9-3956-4b15-b839-b5791460a518",
+			"username",
+			"test_500@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = repo.Create(ctx, NewUser(
+			"8f56d098-731f-48a3-ab19-942f7c793732",
+			"username",
+			"test_501@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		))
+
+		if !errors.Is(err, user.ErrUniqueUsernameConflict) {
+			t.Errorf("expected %q, got %q", user.ErrUniqueUsernameConflict, err)
+		}
+	})
+
+	t.Run("should return an error if the user email already exists", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		repo := postgres.New(db)
+		_, err = repo.Create(ctx, NewUser(
+			"2e56b481-05fe-4ce3-b072-a94fbf8aeab3",
 			"username_400",
 			"test_400@test.com",
 			"password",
@@ -166,8 +190,8 @@ func TestRepository_Create(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		_, err = repo.Create(context.Background(), NewUser(
-			"8f56d098-731f-48a3-ab19-942f7c793732",
+		_, err = repo.Create(ctx, NewUser(
+			"5e6f2f35-1de1-4803-8fdd-9b67706f887e",
 			"username_401",
 			"test_400@test.com",
 			"password",
@@ -175,105 +199,344 @@ func TestRepository_Create(t *testing.T) {
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		))
 
-		if msg := err.Error(); msg != "failed to insert user: pq: duplicate key value violates unique constraint \"users_username_key\"" {
-			t.Errorf("expected error, got %s", msg)
+		if !errors.Is(err, user.ErrUniqueEmailConflict) {
+			t.Errorf("expected %q, got %q", user.ErrUniqueEmailConflict, err)
 		}
 	})
 }
 
 func TestRepository_Get(t *testing.T) {
-	type fields struct {
-		db database.DB
+	dbc, dbErr := dbtesting.SetupPostgresContainer(context.Background(), "auth", func(dbURL string) error {
+		return dbtesting.Migrate(dbURL, migrations.FS)
+	})
+
+	if dbErr != nil {
+		t.Fatal(dbErr)
 	}
-	type args struct {
-		ctx context.Context
-		id  uuid.UUID
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *user.User
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &Repository{
-				db: tt.fields.db,
-			}
-			got, err := r.Get(tt.args.ctx, tt.args.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Repository.Get() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Repository.Get() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+
+	// Clean up the container after the test is complete
+	t.Cleanup(func() {
+		if err := dbc.Terminate(context.Background()); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
+
+	t.Run("Get should get a user", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		if err = seedPostgres.User(ctx, db, NewUser(
+			"35297169-89d8-444d-8499-c6341e3a0770",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		)); err != nil {
+			t.Fatal(err)
+		}
+
+		repo := postgres.New(db)
+		user, err := repo.Get(ctx, uuid.Must(uuid.Parse("35297169-89d8-444d-8499-c6341e3a0770")))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expect := NewUser(
+			"35297169-89d8-444d-8499-c6341e3a0770",
+			"test",
+			"test@test.com",
+			"",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		)
+
+		if diff := cmp.Diff(expect, user); diff != "" {
+			t.Errorf("Create() mismatch (-want +got):\n%s", diff)
+		}
+	})
+
+	t.Run("should return an error if the user does not exist", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		repo := postgres.New(db)
+		u, err := repo.Get(ctx, uuid.Must(uuid.Parse("946adb15-195e-44df-922b-4a45b9505684")))
+
+		if !errors.Is(err, user.ErrNotFound) {
+			t.Errorf("expected %q, got %q", user.ErrNotFound, err)
+		}
+
+		if u != nil {
+			t.Errorf("expected nil, got %v", u)
+		}
+	})
 }
 
 func TestRepository_Update(t *testing.T) {
-	type fields struct {
-		db database.DB
+	dbc, dbErr := dbtesting.SetupPostgresContainer(context.Background(), "auth", func(dbURL string) error {
+		return dbtesting.Migrate(dbURL, migrations.FS)
+	})
+
+	if dbErr != nil {
+		t.Fatal(dbErr)
 	}
-	type args struct {
-		ctx    context.Context
-		u      *user.User
-		fields []user.Field
+
+	// Clean up the container after the test is complete
+	t.Cleanup(func() {
+		if err := dbc.Terminate(context.Background()); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
+
+	t.Run("should update a user", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		if err = seedPostgres.User(ctx, db, NewUser(
+			"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		)); err != nil {
+			t.Fatal(err)
+		}
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		recorder := database.NewRecorder(db)
+		repo := postgres.New(recorder)
+
+		user, err := repo.Update(ctx, NewUser(
+			"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
+			"test2", // updated username
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+		), user.Username, user.Email, user.Password, user.UpdateTime)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expect := NewUser(
+			"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
+			"test2",
+			"test@test.com",
+			"",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+		)
+
+		if diff := cmp.Diff(expect, user); diff != "" {
+			t.Errorf("Create() mismatch (-want +got):\n%s", diff)
+		}
+
+		// check if only the username was updated
+		query := `UPDATE users SET username = $1, email = $2, password = $3, update_time = $4 WHERE id = $5 RETURNING id, username, email, create_time, update_time;`
+		gotQuery := recorder.RowQueries[0].Query
+		gotQuery = strings.TrimSpace(strings.ReplaceAll(gotQuery, "\n", " "))
+
+		if gotQuery != query {
+			t.Errorf("expected %q, got %q", query, gotQuery)
+		}
+	})
+
+	t.Run("should return an error if the user does not exist", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		repo := postgres.New(db)
+		_, err = repo.Update(ctx, NewUser(
+			"f2e8b3cd-07a3-4d7c-9eef-cf02452d8332",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		), user.Username, user.UpdateTime)
+
+		if !errors.Is(err, user.ErrNotFound) {
+			t.Errorf("expected %q, got %q", user.ErrNotFound, err)
+		}
+	})
+
+	t.Run("should return an error if no fields are provided", func(t *testing.T) {
+		ctx := context.Background()
+		r, err := postgres.New(nil).Update(ctx, NewUser(
+			"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		))
+
+		if err == nil || !errors.Is(err, user.ErrNoFieldsToUpdate) {
+			t.Errorf("expected %q, got %q", user.ErrNoFieldsToUpdate, err)
+		}
+
+		if r != nil {
+			t.Errorf("expected nil, got %v", r)
+		}
+	})
+}
+
+func TestRepository_GetByUsername(t *testing.T) {
+	dbc, dbErr := dbtesting.SetupPostgresContainer(context.Background(), "auth", func(dbURL string) error {
+		return dbtesting.Migrate(dbURL, migrations.FS)
+	})
+
+	if dbErr != nil {
+		t.Fatal(dbErr)
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *user.User
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &Repository{
-				db: tt.fields.db,
-			}
-			got, err := r.Update(tt.args.ctx, tt.args.u, tt.args.fields...)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Repository.Update() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Repository.Update() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+
+	// Clean up the container after the test is complete
+	t.Cleanup(func() {
+		if err := dbc.Terminate(context.Background()); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
+
+	t.Run("GetByUsername should get a user by username", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		if err = seedPostgres.User(ctx, db, NewUser(
+			"82651da9-c2ff-4152-8eae-7555d5a42aad",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		)); err != nil {
+			t.Fatal(err)
+		}
+
+		repo := postgres.New(db)
+		user, err := repo.GetByUsername(ctx, "test")
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expect := NewUser(
+			"82651da9-c2ff-4152-8eae-7555d5a42aad",
+			"test",
+			"test@test.com",
+			"",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		)
+
+		if diff := cmp.Diff(expect, user); diff != "" {
+			t.Errorf("Create() mismatch (-want +got):\n%s", diff)
+		}
+	})
+
+	t.Run("should return an error if the user does not exist", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		repo := postgres.New(db)
+		u, err := repo.GetByUsername(ctx, "test2")
+
+		if err == nil || !errors.Is(err, user.ErrNotFound) {
+			t.Errorf("expected %q, got %q", user.ErrNotFound, err)
+		}
+
+		if u != nil {
+			t.Errorf("expected nil, got %v", u)
+		}
+	})
 }
 
 func TestRepository_Delete(t *testing.T) {
-	type fields struct {
-		db database.DB
+	dbc, dbErr := dbtesting.SetupPostgresContainer(context.Background(), "auth", func(dbURL string) error {
+		return dbtesting.Migrate(dbURL, migrations.FS)
+	})
+
+	if dbErr != nil {
+		t.Fatal(dbErr)
 	}
-	type args struct {
-		ctx context.Context
-		id  uuid.UUID
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &Repository{
-				db: tt.fields.db,
+
+	// Clean up the container after the test is complete
+	t.Cleanup(func() {
+		if err := dbc.Terminate(context.Background()); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
+
+	t.Run("Delete should delete a user", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		if err = seedPostgres.User(ctx, db, NewUser(
+			"82651da9-c2ff-4152-8eae-7555d5a42aad",
+			"test",
+			"test@test.com",
+			"password",
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		)); err != nil {
+			t.Fatal(err)
+		}
+
+		repo := postgres.New(db)
+		if err = repo.Delete(ctx, uuid.Must(uuid.Parse("82651da9-c2ff-4152-8eae-7555d5a42aad"))); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("should return an error if the user does not exist", func(t *testing.T) {
+		ctx := context.Background()
+		db, err := database.ConnectPostgres(ctx, dbc.ConnectionString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		{
+			repo := postgres.New(db)
+			err = repo.Delete(ctx, uuid.Must(uuid.Parse("82651da9-c2ff-4152-8eae-7555d5a42aad")))
+
+			if !errors.Is(err, user.ErrNotFound) {
+				t.Errorf("expected %q, got %q", user.ErrNotFound, err)
 			}
-			if err := r.Delete(tt.args.ctx, tt.args.id); (err != nil) != tt.wantErr {
-				t.Errorf("Repository.Delete() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+		}
+	})
 }

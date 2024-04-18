@@ -31,7 +31,7 @@ func NewManager(c Config) *Manager {
 		uuidgen:               c.UUIDgen,
 		clock:                 c.Clock,
 		userRepo:              c.UserRepo,
-		registrationValidator: NewRegistrationValidator(),
+		registrationValidator: newRegistrationValidator(),
 	}
 }
 
@@ -66,9 +66,7 @@ func (m *Manager) Register(ctx context.Context, r Registration) (*domain.User, e
 
 	user.Password = "" // Do not return the password
 	var u domain.User
-	if err := user.ToDomain(&u); err != nil {
-		return nil, err
-	}
+	user.ToDomain(&u)
 
 	return &u, nil
 }

@@ -3,12 +3,16 @@ package cli
 import (
 	"context"
 	"log/slog"
-
-	"github.com/spf13/cobra"
 )
 
+// Command is a command that can be executed.
+type Command interface {
+	Name() string
+	ExecuteContext(ctx context.Context) error
+}
+
 // Run executes the given command and returns the exit code.
-func Run(ctx context.Context, logger *slog.Logger, cmd *cobra.Command) int {
+func Run(ctx context.Context, logger *slog.Logger, cmd Command) int {
 	logger.Info("Running", slog.Group("command",
 		"name", cmd.Name(),
 	))

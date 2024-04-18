@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	ErrTokenMalformed     = errors.New("token is malformed")
 	ErrInvalidToken       = errors.New("invalid token")
 	ErrInvalidTokenClaims = errors.New("invalid claims")
 )
@@ -24,36 +25,44 @@ type Claims struct {
 }
 
 // Validate validates the token and returns the email hash.
-func (v *Validator) Validate(tokenStr string) (Claims, error) {
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+func (v *Validator) Validate(tokenStr string) (*Claims, error) {
+	token, err := jwt.Parse(tokenStr, func(_ *jwt.Token) (interface{}, error) {
 		return v.secretKey, nil
 	})
 
 	if err != nil {
-		return Claims{}, err
+		if errors.Is(err, jwt.ErrTokenMalformed) {
+			return nil, ErrTokenMalformed
+		}
+
+		return nil, err
 	}
 
 	if !token.Valid {
-		return Claims{}, ErrInvalidToken
+		return nil, ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return Claims{}, ErrInvalidTokenClaims
+		return nil, ErrInvalidTokenClaims
 	}
 
 	sub, ok := claims["sub"].(string)
 	if !ok {
-		return Claims{}, fmt.Errorf("sub is not a string: %w", ErrInvalidTokenClaims)
+		return nil, fmt.Errorf("sub is not a string: %w", ErrInvalidTokenClaims)
 	}
 
-	expirationTime, err := claims.GetExpirationTime()
-	if err != nil {
-		return Claims{}, fmt.Errorf("failed to get expiration time: %w", err)
+	var expirationTime time.Time
+	if numericDate, err := claims.GetExpirationTime(); err == nil {
+		if numericDate != nil {
+			expirationTime = numericDate.Time
+		}
+	} else {
+		return nil, fmt.Errorf("expiration time is not valid: %w", ErrInvalidTokenClaims)
 	}
 
-	return Claims{
-		ExpirationTime: expirationTime.Time,
+	return &Claims{
+		ExpirationTime: expirationTime,
 		Sub:            sub,
 	}, nil
 }

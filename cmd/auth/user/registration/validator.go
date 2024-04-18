@@ -23,10 +23,8 @@ const (
 	minPasswordDigits = 1
 )
 
-var (
-	// usernameSpecialChars is a list of special characters that are allowed in a username
-	usernameSpecialChars = []rune{'_', '-'}
-)
+// usernameSpecialChars returns a list of special characters that are allowed in a username
+func usernameSpecialChars() []rune { return []rune{'_', '-'} }
 
 type registrationValidator struct {
 	usernameValidator validate.StringValidator
@@ -34,12 +32,12 @@ type registrationValidator struct {
 	passwordValidator validate.StringValidator
 }
 
-func NewRegistrationValidator() *registrationValidator {
+func newRegistrationValidator() *registrationValidator {
 	return &registrationValidator{
 		usernameValidator: validate.StringValidator{
 			validate.MaxLength("username", maxUsernameLength),
 			validate.MinLength("username", minUsernameLength),
-			validate.SpecialCharWhitelist("username", usernameSpecialChars...),
+			validate.SpecialCharWhitelist("username", usernameSpecialChars()...),
 		},
 		emailValidator: validate.StringValidator{
 			validate.MaxLength("email", maxEmailLength),

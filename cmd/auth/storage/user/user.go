@@ -9,9 +9,12 @@ import (
 )
 
 var (
-	ErrIDConflict       = errors.New("id conflict")
-	ErrUsernameConflict = errors.New("username conflict")
-	ErrEmailConflict    = errors.New("email conflict")
+	ErrNotFound         = errors.New("user not found")
+	ErrNoFieldsToUpdate = errors.New("no fields to update")
+	// Unique constraint errors
+	ErrUniqueIDConflict       = errors.New("unique id conflict")
+	ErrUniqueUsernameConflict = errors.New("unique username conflict")
+	ErrUniqueEmailConflict    = errors.New("unique email conflict")
 )
 
 type Field string
@@ -34,20 +37,21 @@ type User struct {
 }
 
 // ToDomain maps a User to a domain.User
-func (u *User) ToDomain(in *domain.User) error {
+func (u *User) ToDomain(in *domain.User) {
 	in.ID = u.ID
 	in.Username = u.Username
 	in.Email = u.Email
 	in.Password = u.Password
 	in.CreateTime = u.CreateTime
 	in.UpdateTime = u.UpdateTime
-	return nil
 }
 
 // FromDomain maps a domain.User to a User
-func (u *User) FromDomain(in *domain.User) error {
+func (u *User) FromDomain(in *domain.User) {
 	u.ID = in.ID
 	u.Username = in.Username
 	u.Email = in.Email
-	return nil
+	u.Password = in.Password
+	u.CreateTime = in.CreateTime
+	u.UpdateTime = in.UpdateTime
 }

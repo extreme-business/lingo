@@ -1,16 +1,24 @@
-package httpserver
+package httpserver_test
 
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/dwethmar/lingo/pkg/httpserver"
 	"github.com/google/go-cmp/cmp"
 )
 
 func TestCorsHeaders(t *testing.T) {
 	t.Run("returns a copy of the default CORS headers", func(t *testing.T) {
-		if diff := cmp.Diff(CorsHeaders(), corsHeaders); diff != "" {
+		corsHeaders := http.Header{
+			"Access-Control-Allow-Origin":  {"*"},
+			"Access-Control-Allow-Methods": {strings.Join([]string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete}, ",")},
+			"Access-Control-Allow-Headers": {"Content-Type, Authorization"},
+		}
+
+		if diff := cmp.Diff(httpserver.CorsHeaders(), corsHeaders); diff != "" {
 			t.Errorf("CorsHeaders() mismatch (-want +got):\n%s", diff)
 		}
 	})
@@ -22,14 +30,14 @@ func Test_headersMiddleware(t *testing.T) {
 			"X-Test": {"test"},
 		}
 
-		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		headersMiddleware(handler, headers).ServeHTTP(w, r)
+		httpserver.HeadersMiddleware(handler, headers).ServeHTTP(w, r)
 
 		if diff := cmp.Diff(headers, w.Result().Header); diff != "" {
 			t.Errorf("headers mismatch (-want +got):\n%s", diff)

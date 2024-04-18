@@ -10,14 +10,19 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+const (
+	occurrenceToWaitFor = 2
+	startupTimeout      = 5 * time.Second
+)
+
 type PostgresContainer struct {
 	*postgres.PostgresContainer
 	ConnectionString string
 }
 
 func SetupPostgresContainer(ctx context.Context, dbName string, setup func(connectionString string) error) (*PostgresContainer, error) {
-	dbUser := "user"
-	dbPassword := "password"
+	dbUser := "postgres"
+	dbPassword := "postgres"
 
 	container, err := postgres.RunContainer(
 		ctx,
@@ -27,8 +32,8 @@ func SetupPostgresContainer(ctx context.Context, dbName string, setup func(conne
 		postgres.WithPassword(dbPassword),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(5*time.Second)),
+				WithOccurrence(occurrenceToWaitFor).
+				WithStartupTimeout(startupTimeout)),
 	)
 	if err != nil {
 		log.Fatalf("failed to start container: %s", err)
@@ -39,11 +44,11 @@ func SetupPostgresContainer(ctx context.Context, dbName string, setup func(conne
 		return nil, err
 	}
 
-	if err := setup(connectionString); err != nil {
+	if err = setup(connectionString); err != nil {
 		return nil, err
 	}
 
-	// 2. Create a snapshot of the database to restore later
+	// Create a snapshot of the database to restore later
 	err = container.Snapshot(ctx, postgres.WithSnapshotName("test-snapshot"))
 	if err != nil {
 		return nil, err

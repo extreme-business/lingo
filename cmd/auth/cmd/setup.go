@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net"
 	"time"
 
 	"github.com/dwethmar/lingo/cmd/auth/app"
@@ -34,7 +33,11 @@ const (
 )
 
 // setupAuth sets up the auth application.
-func setupAuth(logger *slog.Logger, db database.DB) (*app.Auth, error) {
+func setupAuth(
+	logger *slog.Logger,
+	config *config.Config,
+	db database.DB,
+) (*app.Auth, error) {
 	signingKeyRegistration, err := config.SigningKeyRegistration()
 	if err != nil {
 		return nil, err
@@ -52,7 +55,7 @@ func setupAuth(logger *slog.Logger, db database.DB) (*app.Auth, error) {
 		}
 	}()
 
-	userRepo := postgres.NewRepository(db)
+	userRepo := postgres.New(db)
 	clock := clock.Default()
 	uuidgen := uuidgen.Default()
 
@@ -75,12 +78,12 @@ func setupAuth(logger *slog.Logger, db database.DB) (*app.Auth, error) {
 }
 
 // setupRelayGrpcServer sets up a gRPC server for the relay service.
-func setupService(auth *app.Auth) (*server.Service, error) {
-	return server.New(auth), nil
+func setupService(auth *app.Auth) *server.Service {
+	return server.New(auth)
 }
 
 // setupGrpcServer sets up a gRPC server for the relay service.
-func setupServer(serverRegisters []func(*grpc.Server)) (*grpcserver.Server, error) {
+func setupServer(config *config.Config, serviceRegistrars []func(grpc.ServiceRegistrar)) (*grpcserver.Server, error) {
 	grpcPort, err := config.GRPCPort()
 	if err != nil {
 		return nil, err
@@ -98,33 +101,24 @@ func setupServer(serverRegisters []func(*grpc.Server)) (*grpcserver.Server, erro
 
 	creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load TLS keys: %v", err)
+		return nil, fmt.Errorf("failed to load TLS keys: %w", err)
 	}
 
-	grpcAddress := fmt.Sprintf(":%d", grpcPort)
-	lis, err := net.Listen("tcp", grpcAddress)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create listener: %w", err)
-	}
-
-	return grpcserver.New(grpcserver.Config{
-		Listener: lis,
-		ServerOptions: []grpc.ServerOption{
-			grpc.Creds(creds),
-		},
-		ServerRegisters: serverRegisters,
-		Reflection:      true,
-	}), nil
+	return grpcserver.New(
+		grpcserver.WithGrpcServer(grpc.NewServer(grpc.Creds(creds))),
+		grpcserver.WithAddress(fmt.Sprintf(":%d", grpcPort)),
+		grpcserver.WithServiceRegistrars(serviceRegistrars),
+	), nil
 }
 
 // setupRelayHttpServer
-func setupHttpServer(ctx context.Context) (*httpserver.Server, error) {
+func setupHTTPServer(ctx context.Context, config *config.Config) (*httpserver.Server, error) {
 	port, err := config.HTTPPort()
 	if err != nil {
 		return nil, err
 	}
 
-	authUrl, err := config.AuthUrl()
+	authURL, err := config.AuthURL()
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +140,7 @@ func setupHttpServer(ctx context.Context) (*httpserver.Server, error) {
 
 	creds, err := credentials.NewClientTLSFromFile(grpcCertFile, "lingo")
 	if err != nil {
-		return nil, fmt.Errorf("failed to load TLS keys: %v", err)
+		return nil, fmt.Errorf("failed to load TLS keys: %w", err)
 	}
 
 	dialOptions := []grpc.DialOption{
@@ -154,19 +148,18 @@ func setupHttpServer(ctx context.Context) (*httpserver.Server, error) {
 	}
 
 	mux := runtime.NewServeMux()
-	if err := protoauth.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, authUrl, dialOptions); err != nil {
+	if err = protoauth.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, authURL, dialOptions); err != nil {
 		return nil, fmt.Errorf("failed to register gateway: %w", err)
 	}
 
-	return httpserver.New(httpserver.Config{
-		Addr:            fmt.Sprintf(":%d", port),
-		Handler:         mux,
-		ReadTimeout:     readTimeout,
-		WriteTimeout:    writeTimeout,
-		IdleTimeout:     idleTimeout,
-		ShutdownTimeout: shutdownTimeout,
-		CertFile:        certFile,
-		KeyFile:         keyFile,
-		Headers:         httpserver.CorsHeaders(),
-	}), nil
+	return httpserver.New(
+		httpserver.WithAddr(fmt.Sprintf(":%d", port)),
+		httpserver.WithHandler(mux),
+		httpserver.WithReadTimeout(readTimeout),
+		httpserver.WithWriteTimeout(writeTimeout),
+		httpserver.WithIdleTimeout(idleTimeout),
+		httpserver.WithShutdownTimeout(shutdownTimeout),
+		httpserver.WithHeaders(httpserver.CorsHeaders()),
+		httpserver.WithTLS(certFile, keyFile),
+	), nil
 }

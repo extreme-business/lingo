@@ -1,16 +1,20 @@
-package password
+package password_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/dwethmar/lingo/cmd/auth/password"
+)
 
 func TestHashPassword(t *testing.T) {
 	t.Run("should hash a password", func(t *testing.T) {
-		password := "password"
-		hash, err := Hash(password)
+		pw := "password"
+		hash, err := password.Hash(pw)
 		if err != nil {
 			t.Fatalf("HashPassword() error = %v", err)
 		}
 
-		if !Check(password, hash) {
+		if !password.Check(pw, hash) {
 			t.Fatalf("CheckPasswordHash() = false, want true")
 		}
 	})

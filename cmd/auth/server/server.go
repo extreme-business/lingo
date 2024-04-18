@@ -19,13 +19,18 @@ func New(auth *app.Auth) *Service {
 }
 
 func (s *Service) CreateUser(ctx context.Context, req *protoauth.CreateUserRequest) (*protoauth.CreateUserResponse, error) {
-	user, err := s.auth.CreateUser(ctx, req.Username, req.Email, req.Password)
+	user, err := s.auth.CreateUser(
+		ctx,
+		req.GetUsername(),
+		req.GetEmail(),
+		req.GetPassword(),
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	var userout protoauth.User
-	if err := user.ToProto(&userout); err != nil {
+	if err = user.ToProto(&userout); err != nil {
 		return nil, err
 	}
 

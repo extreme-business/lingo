@@ -18,7 +18,7 @@ import (
 )
 
 // runAuth runs the relay server
-func runAuth(_ *cobra.Command, args []string) error {
+func runAuth(_ *cobra.Command, _ []string) error {
 	logger := slog.Default()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -33,34 +33,32 @@ func runAuth(_ *cobra.Command, args []string) error {
 		cancel()
 	}()
 
-	dbUrl, err := config.DatabaseURL()
+	config := config.New()
+
+	dbURL, err := config.DatabaseURL()
 	if err != nil {
 		return fmt.Errorf("failed to get database url: %w", err)
 	}
 
-	db, err := database.ConnectPostgres(ctx, dbUrl)
+	db, err := database.ConnectPostgres(ctx, dbURL)
 	if err != nil {
 		return fmt.Errorf("failed to setup database: %w", err)
 	}
 	defer func() {
-		if err := db.Close(); err != nil {
+		if err = db.Close(); err != nil {
 			logger.Error("Failed to close database", slog.String("error", err.Error()))
 		}
 	}()
 
-	auth, err := setupAuth(logger, db)
+	auth, err := setupAuth(logger, config, db)
 	if err != nil {
 		return fmt.Errorf("failed to setup relay app: %w", err)
 	}
 
-	authServer, err := setupService(auth)
-	if err != nil {
-		return fmt.Errorf("failed to setup relay server: %w", err)
-	}
-
-	grpcServer, err := setupServer([]func(*grpc.Server){
-		func(s *grpc.Server) { protoauth.RegisterAuthServiceServer(s, authServer) },
-		func(s *grpc.Server) { grpc_health_v1.RegisterHealthServer(s, authServer) },
+	authServer := setupService(auth)
+	grpcServer, err := setupServer(config, []func(grpc.ServiceRegistrar){
+		func(s grpc.ServiceRegistrar) { protoauth.RegisterAuthServiceServer(s, authServer) },
+		func(s grpc.ServiceRegistrar) { grpc_health_v1.RegisterHealthServer(s, authServer) },
 	})
 	if err != nil {
 		return fmt.Errorf("failed to setup grpc server: %w", err)

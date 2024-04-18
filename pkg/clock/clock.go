@@ -6,16 +6,19 @@ import "time"
 
 // Clock can be used to get the current time.
 type Clock struct {
-	Loc     *time.Location
+	loc     *time.Location
 	nowFunc func() time.Time
 }
 
+// Location returns the clock's location.
+func (c *Clock) Location() *time.Location { return c.loc }
+
 // Now returns the current time in the clock's location.
-func (c *Clock) Now() time.Time { return c.nowFunc().In(c.Loc) }
+func (c *Clock) Now() time.Time { return c.nowFunc().In(c.loc) }
 
 func New(loc *time.Location, nowFunc func() time.Time) *Clock {
 	return &Clock{
-		Loc:     loc,
+		loc:     loc,
 		nowFunc: nowFunc,
 	}
 }
