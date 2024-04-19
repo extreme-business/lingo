@@ -349,7 +349,7 @@ func TestRepository_Update(t *testing.T) {
 	})
 }
 
-func TestRepository_GetByUsername(t *testing.T) {
+func TestRepository_GetByEmail(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
@@ -372,7 +372,7 @@ func TestRepository_GetByUsername(t *testing.T) {
 		}
 
 		repo := postgres.New(db)
-		user, err := repo.GetByUsername(ctx, "test")
+		user, err := repo.GetByEmail(ctx, "test@test.com")
 
 		if err != nil {
 			t.Fatal(err)
@@ -397,7 +397,7 @@ func TestRepository_GetByUsername(t *testing.T) {
 		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
-		u, err := repo.GetByUsername(ctx, "test2")
+		u, err := repo.GetByEmail(ctx, "test2@test.com")
 
 		if err == nil || !errors.Is(err, user.ErrNotFound) {
 			t.Errorf("expected %q, got %q", user.ErrNotFound, err)

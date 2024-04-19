@@ -104,13 +104,13 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*user.User, error) 
 	return &u, nil
 }
 
-const getByUsernameQuery = `SELECT id, username, email, create_time, update_time
+const getByEmailQuery = `SELECT id, username, email, create_time, update_time
 FROM users
-WHERE username = $1
+WHERE email = $1
 ;`
 
-func (r *Repository) GetByUsername(ctx context.Context, username string) (*user.User, error) {
-	row := r.db.QueryRowContext(ctx, getByUsernameQuery, username)
+func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, error) {
+	row := r.db.QueryRowContext(ctx, getByEmailQuery, email)
 
 	var u user.User
 	if err := row.Scan(

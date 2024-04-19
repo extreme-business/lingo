@@ -46,17 +46,18 @@ func NewManager(c Config) *Manager {
 }
 
 type Credentials struct {
-	Username string
+	Email    string
 	Password string
 }
 
 type Authentication struct {
-	AuthToken    string
+	User         *user.User
+	Token        string
 	RefreshToken string
 }
 
 func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authentication, error) {
-	u, err := m.userRepo.GetByUsername(ctx, c.Username)
+	u, err := m.userRepo.GetByEmail(ctx, c.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,8 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 	}
 
 	return &Authentication{
-		AuthToken:    authToken,
+		User:         u,
+		Token:        authToken,
 		RefreshToken: refreshToken,
 	}, nil
 }

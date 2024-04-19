@@ -19,6 +19,26 @@ consumes:
 produces:
   - application/json
 paths:
+  /v1/login:
+    post:
+      operationId: AuthService_LoginUser
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1LoginUserResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1LoginUserRequest'
+      tags:
+        - AuthService
   /v1/users:
     post:
       operationId: AuthService_CreateUser
@@ -83,6 +103,38 @@ definitions:
         description: The user that was registered
     required:
       - user
+  v1LoginUserRequest:
+    type: object
+    properties:
+      email:
+        type: string
+        description: The email of a user
+      username:
+        type: string
+        description: The username of a user
+      password:
+        type: string
+        description: The password of a user
+    required:
+      - email
+      - username
+      - password
+  v1LoginUserResponse:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/v1User'
+        description: The user that was logged in
+      token:
+        type: string
+        description: The token that was generated
+      refreshToken:
+        type: string
+        description: The refresh token that was generated
+    required:
+      - user
+      - token
+      - refreshToken
   v1User:
     type: object
     properties:

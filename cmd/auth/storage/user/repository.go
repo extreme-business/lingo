@@ -25,7 +25,7 @@ type Sort struct {
 
 type Reader interface {
 	Get(context.Context, uuid.UUID) (*User, error)
-	GetByUsername(context.Context, string) (*User, error)
+	GetByEmail(context.Context, string) (*User, error)
 	List(context.Context, Pagination, []Sort, ...Condition) ([]*User, error)
 }
 
@@ -41,12 +41,12 @@ type Repository interface {
 }
 
 type MockRepository struct {
-	CreateFunc        func(context.Context, *User) (*User, error)
-	GetFunc           func(context.Context, uuid.UUID) (*User, error)
-	ListFunc          func(context.Context, Pagination, []Sort, ...Condition) ([]*User, error)
-	GetByUsernameFunc func(context.Context, string) (*User, error)
-	UpdateFunc        func(context.Context, *User, ...Field) (*User, error)
-	DeleteFunc        func(context.Context, uuid.UUID) error
+	CreateFunc     func(context.Context, *User) (*User, error)
+	GetFunc        func(context.Context, uuid.UUID) (*User, error)
+	ListFunc       func(context.Context, Pagination, []Sort, ...Condition) ([]*User, error)
+	GetByEmailFunc func(context.Context, string) (*User, error)
+	UpdateFunc     func(context.Context, *User, ...Field) (*User, error)
+	DeleteFunc     func(context.Context, uuid.UUID) error
 }
 
 func (m *MockRepository) Create(ctx context.Context, u *User) (*User, error) {
@@ -61,8 +61,8 @@ func (m *MockRepository) List(ctx context.Context, p Pagination, s []Sort, c ...
 	return m.ListFunc(ctx, p, s, c...)
 }
 
-func (m *MockRepository) GetByUsername(ctx context.Context, username string) (*User, error) {
-	return m.GetByUsernameFunc(ctx, username)
+func (m *MockRepository) GetByEmail(ctx context.Context, username string) (*User, error) {
+	return m.GetByEmailFunc(ctx, username)
 }
 
 func (m *MockRepository) Update(ctx context.Context, u *User, fields ...Field) (*User, error) {

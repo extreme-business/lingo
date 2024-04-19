@@ -51,3 +51,23 @@ func (s *Service) CreateUser(ctx context.Context, req *protoauth.CreateUserReque
 		User: &userout,
 	}, nil
 }
+
+func (s *Service) LoginUser(ctx context.Context, req *protoauth.LoginUserRequest) (*protoauth.LoginUserResponse, error) {
+	login, err := s.auth.LoginUser(
+		ctx,
+		req.GetEmail(),
+		req.GetPassword(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var user protoauth.User
+	login.User.ToProto(&user)
+
+	return &protoauth.LoginUserResponse{
+		User:         &user,
+		Token:        login.Token,
+		RefreshToken: login.RefreshToken,
+	}, nil
+}

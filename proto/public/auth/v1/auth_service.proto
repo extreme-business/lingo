@@ -39,12 +39,52 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 };
 
 service AuthService {
+  rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {
+    option (google.api.http) = {
+      post: "/v1/login"
+      body: "*"
+    };
+  }
+
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
       post: "/v1/users"
       body: "*"
     };
   }
+}
+
+message LoginUserRequest {
+  oneof login {
+    string email = 1 [
+      (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The email of a user"},
+      (google.api.field_behavior) = REQUIRED
+    ];
+    string username = 2 [
+      (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The username of a user"},
+      (google.api.field_behavior) = REQUIRED
+    ];
+  }
+
+  string password = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The password of a user"},
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message LoginUserResponse {
+  public.auth.v1.User user = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The user that was logged in"},
+    (google.api.field_behavior) = REQUIRED
+  ];
+  string token = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The token that was generated"},
+    (google.api.field_behavior) = REQUIRED
+  ];
+  string refresh_token = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The refresh token that was generated"},
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 message CreateUserRequest {
