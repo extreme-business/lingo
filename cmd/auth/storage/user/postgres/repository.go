@@ -104,11 +104,13 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*user.User, error) 
 	return &u, nil
 }
 
-const getByEmailQuery = `SELECT id, username, email, create_time, update_time
+const getByEmailQuery = `SELECT id, username, password, email, create_time, update_time
 FROM users
 WHERE email = $1
 ;`
 
+// GetByEmail get a user by email.
+// This is used for authentication and so it also returns the password.
 func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, error) {
 	row := r.db.QueryRowContext(ctx, getByEmailQuery, email)
 
@@ -116,6 +118,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, 
 	if err := row.Scan(
 		&u.ID,
 		&u.Username,
+		&u.Password,
 		&u.Email,
 		&u.CreateTime,
 		&u.UpdateTime,

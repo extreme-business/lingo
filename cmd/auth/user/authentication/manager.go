@@ -17,9 +17,10 @@ const (
 )
 
 type Manager struct {
-	userRepo            user.Repository
-	AuthTokenManager    *token.Manager
-	RefreshTokenManager *token.Manager
+	credentialsValidator *credentialsValidator
+	userRepo             user.Repository
+	AuthTokenManager     *token.Manager
+	RefreshTokenManager  *token.Manager
 }
 
 type Config struct {
@@ -31,7 +32,8 @@ type Config struct {
 
 func NewManager(c Config) *Manager {
 	return &Manager{
-		userRepo: c.UserRepo,
+		credentialsValidator: newCredentialsValidator(),
+		userRepo:             c.UserRepo,
 		AuthTokenManager: token.NewManager(
 			c.Clock,
 			c.SigningKeyRegistration,
@@ -50,13 +52,19 @@ type Credentials struct {
 	Password string
 }
 
+// Authentication is the process of verifying whether someone is who they claim to be when accessing a system
 type Authentication struct {
 	User         *user.User
 	Token        string
 	RefreshToken string
 }
 
+// Authenticate authenticates a user with the given credentials.
 func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authentication, error) {
+	if err := m.credentialsValidator.Validate(c); err != nil {
+		return nil, err
+	}
+
 	u, err := m.userRepo.GetByEmail(ctx, c.Email)
 	if err != nil {
 		return nil, err
