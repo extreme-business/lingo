@@ -53,6 +53,10 @@ func TestNew(t *testing.T) {
 }
 
 func TestRepository_Create(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("Create should create a new user", func(t *testing.T) {
@@ -185,6 +189,10 @@ func TestRepository_Create(t *testing.T) {
 }
 
 func TestRepository_Get(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("Get should get a user", func(t *testing.T) {
@@ -241,6 +249,10 @@ func TestRepository_Get(t *testing.T) {
 }
 
 func TestRepository_Update(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("should update a user", func(t *testing.T) {
@@ -338,6 +350,10 @@ func TestRepository_Update(t *testing.T) {
 }
 
 func TestRepository_GetByUsername(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("GetByUsername should get a user by username", func(t *testing.T) {
@@ -394,6 +410,10 @@ func TestRepository_GetByUsername(t *testing.T) {
 }
 
 func TestRepository_Delete(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("Delete should delete a user", func(t *testing.T) {

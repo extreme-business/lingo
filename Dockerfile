@@ -28,6 +28,9 @@ FROM base AS lint
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.2
 ENTRYPOINT ["golangci-lint"]
 
+FROM base AS test
+ENTRYPOINT [ "go", "test"]
+
 FROM base AS builder
 COPY --from=base /src /src
 RUN go build -o /src/bin/lingo .
