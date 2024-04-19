@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -23,10 +24,17 @@ func CorsHeaders() http.Header {
 // HeadersMiddleware is a middleware that adds headers to the response.
 func HeadersMiddleware(next http.Handler, headers http.Header) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("headers: %v\n", headers)
 		for key, values := range headers {
 			for _, value := range values {
-				w.Header().Add(key, value)
+				w.Header().Set(key, value)
 			}
+		}
+
+		// Handle preflight requests
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
 		}
 
 		next.ServeHTTP(w, r)

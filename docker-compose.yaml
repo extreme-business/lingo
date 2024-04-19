@@ -25,12 +25,17 @@ services:
       - ./provision/postgres/01-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql
     networks:
       - lingo-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   auth-migration:
     image: arigaio/atlas:0.21.1
     command: migrate apply --url "postgres://postgres:postgres@db:5432/organization?sslmode=disable"
     volumes:
-      - ./apps/auth/migrations:/migrations
+      - ./cmd/auth/migrations:/migrations
     networks:
       - lingo-network
     depends_on:

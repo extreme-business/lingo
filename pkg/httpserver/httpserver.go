@@ -30,7 +30,7 @@ func New(options ...Option) *Server {
 		IdleTimeout:  c.IdleTimeout,
 	}
 
-	if c.Headers != nil && len(c.Headers) > 0 {
+	if len(c.Headers) > 0 {
 		httpServer.Handler = HeadersMiddleware(httpServer.Handler, c.Headers)
 	}
 

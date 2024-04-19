@@ -2,8 +2,11 @@ package server
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dwethmar/lingo/cmd/auth/app"
+	"github.com/dwethmar/lingo/pkg/grpcerrors"
+	"github.com/dwethmar/lingo/pkg/validate"
 	protoauth "github.com/dwethmar/lingo/proto/gen/go/public/auth/v1"
 )
 
@@ -26,6 +29,16 @@ func (s *Service) CreateUser(ctx context.Context, req *protoauth.CreateUserReque
 		req.GetPassword(),
 	)
 	if err != nil {
+		var vErr *validate.Error
+		if errors.As(err, &vErr) {
+			return nil, grpcerrors.NewFieldViolationErr("validation error", []grpcerrors.FieldViolation{
+				{
+					Field:       vErr.Field(),
+					Description: vErr.Error(),
+				},
+			})
+		}
+
 		return nil, err
 	}
 
