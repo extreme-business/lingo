@@ -125,28 +125,35 @@ func gatewayMetadataAnnotator(_ context.Context, r *http.Request) metadata.MD {
 	return metadata.Pairs("token", cookie.Value)
 }
 
-func gatewayResponseModifier(_ context.Context, r http.ResponseWriter, m proto.Message) error {
+func gatewayResponseModifier(ctx context.Context, r http.ResponseWriter, m proto.Message) error {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil
+	}
+
 	// check if login response
-	if m, ok := m.(*protoauth.LoginUserResponse); ok {
-		tokenExp, err := token.ExtractExpirationTime(m.Token)
+	if _, ok := m.(*protoauth.LoginUserResponse); ok {
+		t := md.Get("token")[0]
+		tokenExp, err := token.ExtractExpirationTime(t)
 		if err != nil {
 			return err
 		}
 
 		http.SetCookie(r, &http.Cookie{
 			Name:    "token",
-			Value:   m.Token,
+			Value:   t,
 			Expires: tokenExp,
 		})
 
-		refreshTokenExp, err := token.ExtractExpirationTime(m.RefreshToken)
+		rt := md.Get("refresh_token")[0]
+		refreshTokenExp, err := token.ExtractExpirationTime(rt)
 		if err != nil {
 			return err
 		}
 
 		http.SetCookie(r, &http.Cookie{
 			Name:     "refresh_token",
-			Value:    m.RefreshToken,
+			Value:    rt,
 			Expires:  refreshTokenExp,
 			HttpOnly: true,
 		})
