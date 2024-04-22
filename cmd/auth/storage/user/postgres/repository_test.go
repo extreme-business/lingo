@@ -12,8 +12,7 @@ import (
 	seedPostgres "github.com/dwethmar/lingo/cmd/auth/storage/seed/postgres"
 	"github.com/dwethmar/lingo/cmd/auth/storage/user"
 	"github.com/dwethmar/lingo/cmd/auth/storage/user/postgres"
-	"github.com/dwethmar/lingo/pkg/database"
-	"github.com/dwethmar/lingo/pkg/database/dbtesting"
+	"github.com/dwethmar/lingo/pkg/database/dbtest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 )
@@ -41,7 +40,7 @@ func NewUser(
 
 // setupTestDB runs the migrations.
 func dbSetup(dbURL string) error {
-	return dbtesting.Migrate(dbURL, migrations.FS)
+	return dbtest.Migrate(dbURL, migrations.FS)
 }
 
 func TestNew(t *testing.T) {
@@ -57,11 +56,11 @@ func TestRepository_Create(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
+	dbc := dbtest.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("Create should create a new user", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
 		user, err := repo.Create(ctx, NewUser(
@@ -93,7 +92,7 @@ func TestRepository_Create(t *testing.T) {
 
 	t.Run("should return an error if the user id already exists", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
 		_, err := repo.Create(ctx, NewUser(
@@ -125,7 +124,7 @@ func TestRepository_Create(t *testing.T) {
 
 	t.Run("should return an error if the user username already exists", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
 		_, err := repo.Create(ctx, NewUser(
@@ -157,7 +156,7 @@ func TestRepository_Create(t *testing.T) {
 
 	t.Run("should return an error if the user email already exists", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
 		_, err := repo.Create(ctx, NewUser(
@@ -193,11 +192,11 @@ func TestRepository_Get(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
+	dbc := dbtest.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("Get should get a user", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		if err := seedPostgres.User(ctx, db, NewUser(
 			"35297169-89d8-444d-8499-c6341e3a0770",
@@ -233,7 +232,7 @@ func TestRepository_Get(t *testing.T) {
 
 	t.Run("should return an error if the user does not exist", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
 		u, err := repo.Get(ctx, uuid.Must(uuid.Parse("946adb15-195e-44df-922b-4a45b9505684")))
@@ -253,11 +252,11 @@ func TestRepository_Update(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
+	dbc := dbtest.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("should update a user", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		if err := seedPostgres.User(ctx, db, NewUser(
 			"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
@@ -270,7 +269,7 @@ func TestRepository_Update(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		recorder := database.NewRecorder(db)
+		recorder := dbtest.NewRecorder(db)
 		repo := postgres.New(recorder)
 
 		user, err := repo.Update(ctx, NewUser(
@@ -311,7 +310,7 @@ func TestRepository_Update(t *testing.T) {
 
 	t.Run("should return an error if the user does not exist", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
 		_, err := repo.Update(ctx, NewUser(
@@ -354,11 +353,11 @@ func TestRepository_GetByEmail(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
+	dbc := dbtest.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("GetByUsername should get a user by username", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		if err := seedPostgres.User(ctx, db, NewUser(
 			"82651da9-c2ff-4152-8eae-7555d5a42aad",
@@ -394,7 +393,7 @@ func TestRepository_GetByEmail(t *testing.T) {
 
 	t.Run("should return an error if the user does not exist", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
 		u, err := repo.GetByEmail(ctx, "test2@test.com")
@@ -414,11 +413,11 @@ func TestRepository_Delete(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtesting.SetupTestDB(t, "auth", dbSetup)
+	dbc := dbtest.SetupTestDB(t, "auth", dbSetup)
 
 	t.Run("Delete should delete a user", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		if err := seedPostgres.User(ctx, db, NewUser(
 			"82651da9-c2ff-4152-8eae-7555d5a42aad",
@@ -439,7 +438,7 @@ func TestRepository_Delete(t *testing.T) {
 
 	t.Run("should return an error if the user does not exist", func(t *testing.T) {
 		ctx := context.Background()
-		db := dbtesting.ConnectTestDB(ctx, t, dbc.ConnectionString)
+		db := dbtest.ConnectTestDB(ctx, t, dbc.ConnectionString)
 
 		repo := postgres.New(db)
 		err := repo.Delete(ctx, uuid.Must(uuid.Parse("82651da9-c2ff-4152-8eae-7555d5a42aad")))

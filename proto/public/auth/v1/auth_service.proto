@@ -83,7 +83,7 @@ message LoginUserResponse {
   ];
   string refresh_token = 3 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The refresh token that was generated"},
-    (google.api.field_behavior) = REQUIRED
+    (google.api.field_behavior) = OPTIONAL
   ];
 }
 
