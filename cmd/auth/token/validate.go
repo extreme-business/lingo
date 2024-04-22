@@ -8,12 +8,6 @@ import (
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
-var (
-	ErrTokenMalformed     = errors.New("token is malformed")
-	ErrInvalidToken       = errors.New("invalid token")
-	ErrInvalidTokenClaims = errors.New("invalid claims")
-)
-
 // Validator validates a token.
 type Validator struct {
 	secretKey []byte

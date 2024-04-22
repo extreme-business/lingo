@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"github.com/dwethmar/lingo/cmd/auth/app"
@@ -21,6 +22,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
 
 	protoauth "github.com/dwethmar/lingo/proto/gen/go/public/auth/v1"
 )
@@ -111,6 +114,47 @@ func setupServer(config *config.Config, serviceRegistrars []func(grpc.ServiceReg
 	), nil
 }
 
+// https://github.com/youngderekm/grpc-cookies-example/blob/master/cmd/gateway/gateway.go
+func gatewayMetadataAnnotator(_ context.Context, r *http.Request) metadata.MD {
+	// read token from cookie
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		return nil
+	}
+
+	return metadata.Pairs("token", cookie.Value)
+}
+
+func gatewayResponseModifier(_ context.Context, r http.ResponseWriter, m proto.Message) error {
+	// check if login response
+	if m, ok := m.(*protoauth.LoginUserResponse); ok {
+		tokenExp, err := token.ExtractExpirationTime(m.Token)
+		if err != nil {
+			return err
+		}
+
+		http.SetCookie(r, &http.Cookie{
+			Name:    "token",
+			Value:   m.Token,
+			Expires: tokenExp,
+		})
+
+		refreshTokenExp, err := token.ExtractExpirationTime(m.RefreshToken)
+		if err != nil {
+			return err
+		}
+
+		http.SetCookie(r, &http.Cookie{
+			Name:     "refresh_token",
+			Value:    m.RefreshToken,
+			Expires:  refreshTokenExp,
+			HttpOnly: true,
+		})
+	}
+
+	return nil
+}
+
 // setupRelayHttpServer sets up a HTTP server for the relay service.
 func setupHTTPServer(ctx context.Context, config *config.Config) (*httpserver.Server, error) {
 	port, err := config.HTTPPort()
@@ -147,7 +191,10 @@ func setupHTTPServer(ctx context.Context, config *config.Config) (*httpserver.Se
 		grpc.WithTransportCredentials(creds),
 	}
 
-	mux := runtime.NewServeMux()
+	mux := runtime.NewServeMux(
+		runtime.WithForwardResponseOption(gatewayResponseModifier),
+		runtime.WithMetadata(gatewayMetadataAnnotator),
+	)
 	if err = protoauth.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, authURL, dialOptions); err != nil {
 		return nil, fmt.Errorf("failed to register gateway: %w", err)
 	}
