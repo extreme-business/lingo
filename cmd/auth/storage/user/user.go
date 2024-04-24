@@ -20,12 +20,24 @@ var (
 type Field string
 
 const (
-	DisplayName Field = "display_name"
-	Email       Field = "email"
-	Password    Field = "password"
-	CreateTime  Field = "create_time"
-	UpdateTime  Field = "update_time"
+	ID             Field = "id"
+	OrganizationID Field = "organization_id"
+	DisplayName    Field = "display_name"
+	Email          Field = "email"
+	Password       Field = "password"
+	CreateTime     Field = "create_time"
+	UpdateTime     Field = "update_time"
 )
+
+func Fields() []Field {
+	return []Field{
+		DisplayName,
+		Email,
+		Password,
+		CreateTime,
+		UpdateTime,
+	}
+}
 
 type User struct {
 	ID             uuid.UUID

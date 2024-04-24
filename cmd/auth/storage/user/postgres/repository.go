@@ -6,11 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
+	"text/template"
 
 	"github.com/dwethmar/lingo/cmd/auth/storage/user"
 	"github.com/dwethmar/lingo/pkg/database"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+
+	_ "embed"
 )
 
 const (
@@ -19,10 +23,18 @@ const (
 	userEmailConstraint        = "users_email_key"
 )
 
+var (
+	ErrUpdateReadOnlyID         = errors.New("field id is read-only")
+	ErrUpdateReadOnlyCreateTime = errors.New("field create_time is read-only")
+	ErrUpdateUnknownField       = errors.New("unknown field")
+)
+
 var _ user.Repository = &Repository{}
 
 type Repository struct {
-	db database.DB
+	db               database.DB
+	listTemplateFunc sync.Once          // compile the list template only once
+	listTemplate     *template.Template // compiled list template
 }
 
 func New(db database.DB) *Repository {
@@ -162,15 +174,16 @@ func (r *Repository) Update(ctx context.Context, in *user.User, fields ...user.F
 		case user.UpdateTime:
 			set = append(set, fmt.Sprintf("update_time = $%d", len(args)+1))
 			args = append(args, in.UpdateTime)
+		case user.OrganizationID:
+			set = append(set, fmt.Sprintf("organization_id = $%d", len(args)+1))
+			args = append(args, in.OrganizationID)
+		case user.ID:
+			return nil, ErrUpdateReadOnlyID
 		case user.CreateTime:
-			fallthrough
+			return nil, ErrUpdateReadOnlyCreateTime
 		default:
-			return nil, fmt.Errorf("unknown or non allowed field: %q", f)
+			return nil, fmt.Errorf("field %s: %w", f, ErrUpdateUnknownField)
 		}
-	}
-
-	if len(set) == 0 {
-		return nil, user.ErrNoFieldsToUpdate
 	}
 
 	// Add the user ID to the end of the args slice
@@ -222,106 +235,81 @@ func (r *Repository) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func generatePredicates(argOffset int, conditions []user.Condition) (string, []interface{}, error) {
-	sw := strings.Builder{}
+// generatePredicates generates the WHERE clause predicates for the list query.
+func generatePredicates(argOffset int, conditions []user.Condition) ([]string, []interface{}, error) {
+	var predicates []string
 	var args []interface{}
 
 	for _, c := range conditions {
 		switch t := c.(type) {
 		case *user.SearchEmail:
-			sw.WriteString(fmt.Sprintf("email LIKE $%d", argOffset+len(args)+1))
+			predicates = append(predicates, fmt.Sprintf("email LIKE $%d", argOffset+len(args)+1))
 			args = append(args, "%"+t.Email+"%")
 		default:
-			return "", nil, fmt.Errorf("unknown condition type: %T", t)
+			return nil, nil, fmt.Errorf("unknown or non allowed condition: %T", c)
 		}
 	}
 
-	return sw.String(), args, nil
+	return predicates, args, nil
 }
 
-func generateSorting(sorting []user.Sort) (string, error) {
-	if len(sorting) == 0 {
-		return "", nil
-	}
+//go:embed list.tmpl.sql
+var listQueryTemplate []byte
 
-	sortFields := make([]string, 0, len(sorting))
-	for _, s := range sorting {
-		var dir string
-		switch s.Direction {
-		case user.ASC:
-			dir = "ASC"
-		case user.DESC:
-			dir = "DESC"
-		default:
-			return "", fmt.Errorf("unknown direction: %q", s.Direction)
-		}
-
-		switch s.Field {
-		case user.DisplayName:
-			sortFields = append(sortFields, fmt.Sprintf("display_name %s", dir))
-		case user.Email:
-			sortFields = append(sortFields, fmt.Sprintf("email %s", dir))
-		case user.CreateTime:
-			sortFields = append(sortFields, fmt.Sprintf("create_time %s", dir))
-		case user.UpdateTime:
-			sortFields = append(sortFields, fmt.Sprintf("update_time %s", dir))
-		case user.Password:
-			fallthrough
-		default:
-			return "", fmt.Errorf("unknown or non allowed field: %q", s.Field)
-		}
-	}
-
-	return strings.Join(sortFields, ", "), nil
+type listQueryTemplateParams struct {
+	Predicates  []string
+	Sorting     []user.Sort
+	LimitParam  string
+	OffsetParam string
 }
-
-const listQueryTemplate = `SELECT 
-    id, 
-    display_name, 
-    email, 
-    create_time, 
-    update_time
-FROM users
-%s
-ORDER BY %s
-LIMIT $%d
-OFFSET $%d;`
 
 // List implements user.Repository.
-func (r *Repository) List(ctx context.Context, pagination user.Pagination, sorting []user.Sort, conditions ...user.Condition) ([]*user.User, error) {
-	whereClause := "WHERE "
-	var args []interface{}
-
+func (r *Repository) List(ctx context.Context, pagination user.Pagination, sorting user.OrderBy, conditions ...user.Condition) ([]*user.User, error) {
 	predicates, args, err := generatePredicates(0, conditions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
 
-	if len(predicates) > 0 {
-		whereClause += predicates
-	} else {
-		whereClause = ""
+	var limitParam, offsetParam string
+	if pagination.Limit > 0 {
+		limitParam = fmt.Sprintf("$%d", len(args)+1)
+		args = append(args, pagination.Limit)
 	}
 
-	sortClause, err := generateSorting(sorting)
+	if pagination.Offset > 0 {
+		offsetParam = fmt.Sprintf("$%d", len(args)+1)
+		args = append(args, pagination.Offset)
+	}
+
+	if err = sorting.Validate(); err != nil {
+		return nil, fmt.Errorf("sorting validation failed: %w", err)
+	}
+
+	// Compile the list template only once
+	r.listTemplateFunc.Do(func() {
+		t, tErr := template.New("list").Parse(string(listQueryTemplate))
+		if err != nil {
+			err = fmt.Errorf("failed to parse list query template: %w", tErr)
+		}
+		r.listTemplate = t
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to list users: %w", err)
+		return nil, err
 	}
 
-	limitArgIndex := len(args) + 1
-	offsetArgIndex := limitArgIndex + 1
+	w := &strings.Builder{}
+	err = r.listTemplate.Execute(w, listQueryTemplateParams{
+		Predicates:  predicates,
+		Sorting:     sorting,
+		LimitParam:  limitParam,
+		OffsetParam: offsetParam,
+	})
+	if err != nil {
+		panic(err)
+	}
 
-	query := fmt.Sprintf(
-		listQueryTemplate,
-		whereClause,
-		sortClause,
-		limitArgIndex,  // Update for LIMIT
-		offsetArgIndex, // Update for OFFSET
-	)
-
-	args = append(args, pagination.Limit, pagination.Offset)
-
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	rows, err := r.db.QueryContext(ctx, w.String(), args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
@@ -337,6 +325,7 @@ func (r *Repository) List(ctx context.Context, pagination user.Pagination, sorti
 		var u user.User
 		if err = rows.Scan(
 			&u.ID,
+			&u.OrganizationID,
 			&u.DisplayName,
 			&u.Email,
 			&u.CreateTime,

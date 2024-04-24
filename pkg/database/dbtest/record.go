@@ -20,6 +20,7 @@ type Recorder struct {
 	ExecQueries []Query
 }
 
+// NewRecorder creates a new query Recorder.
 func NewRecorder(db database.DB) *Recorder {
 	return &Recorder{db: db}
 }

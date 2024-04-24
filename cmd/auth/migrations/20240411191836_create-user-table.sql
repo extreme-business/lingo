@@ -10,7 +10,7 @@ CREATE TABLE organizations (
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     organization_id UUID NOT NULL,
-    display_name VARCHAR(16) NOT NULL UNIQUE,
+    display_name VARCHAR(16) NOT NULL,
     email VARCHAR(128) NOT NULL UNIQUE,
     password text NOT NULL,
     create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -2,8 +2,14 @@ package user
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrInvalidSortField = errors.New("invalid sort field")
 )
 
 type Pagination struct {
@@ -23,10 +29,40 @@ type Sort struct {
 	Direction Direction
 }
 
+type OrderBy []Sort
+
+// Validate checks if the sort fields are valid.
+func (o OrderBy) Validate() error {
+	fields := Fields()
+	for _, s := range o {
+		if s.Field == "" {
+			return ErrInvalidSortField
+		}
+
+		var found bool
+		for _, f := range fields {
+			if s.Field == f {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("unknown field %s: %w", s.Field, ErrInvalidSortField)
+		}
+
+		if s.Direction != ASC && s.Direction != DESC {
+			return fmt.Errorf("unknown direction %s: %s", s.Direction, ErrInvalidSortField)
+		}
+	}
+
+	return nil
+}
+
 type Reader interface {
 	Get(context.Context, uuid.UUID) (*User, error)
 	GetByEmail(context.Context, string) (*User, error)
-	List(context.Context, Pagination, []Sort, ...Condition) ([]*User, error)
+	List(context.Context, Pagination, OrderBy, ...Condition) ([]*User, error)
 }
 
 type Writer interface {
@@ -43,7 +79,7 @@ type Repository interface {
 type MockRepository struct {
 	CreateFunc     func(context.Context, *User) (*User, error)
 	GetFunc        func(context.Context, uuid.UUID) (*User, error)
-	ListFunc       func(context.Context, Pagination, []Sort, ...Condition) ([]*User, error)
+	ListFunc       func(context.Context, Pagination, OrderBy, ...Condition) ([]*User, error)
 	GetByEmailFunc func(context.Context, string) (*User, error)
 	UpdateFunc     func(context.Context, *User, ...Field) (*User, error)
 	DeleteFunc     func(context.Context, uuid.UUID) error
@@ -57,7 +93,7 @@ func (m *MockRepository) Get(ctx context.Context, id uuid.UUID) (*User, error) {
 	return m.GetFunc(ctx, id)
 }
 
-func (m *MockRepository) List(ctx context.Context, p Pagination, s []Sort, c ...Condition) ([]*User, error) {
+func (m *MockRepository) List(ctx context.Context, p Pagination, s OrderBy, c ...Condition) ([]*User, error) {
 	return m.ListFunc(ctx, p, s, c...)
 }
 
