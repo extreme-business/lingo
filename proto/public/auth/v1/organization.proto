@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package public.auth.v1;
+
+option go_package = "github.com/dwethmar/lingo/protogen/public/auth/v1;auth";
+
+message Organization {
+  string name = 1;
+}

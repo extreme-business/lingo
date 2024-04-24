@@ -18,6 +18,11 @@ const (
 	envKeyHTTPTLSKeyFile           = "HTTP_TLS_KEY_FILE"
 	envKeyHTTPTLSCertFile          = "HTTP_TLS_CERT_FILE"
 	envKeyAuthURL                  = "AUTH_URL"
+	envSystemUserID                = "SYSTEM_USER_ID"
+	envSystemUserEmail             = "SYSTEM_USER_EMAIL"
+	envSystemUserPassword          = "SYSTEM_USER_PASSWORD"
+	envSystemOrganizationID        = "SYSTEM_ORGANIZATION_ID"
+	envSystemOrganizationName      = "SYSTEM_ORGANIZATION_NAME"
 )
 
 type Config struct {
@@ -90,4 +95,24 @@ func (c *Config) HTTPTLSCertFile() (string, error) {
 
 func (c *Config) AuthURL() (string, error) {
 	return c.configString(envKeyAuthURL)
+}
+
+func (c *Config) SystemUserID() (string, error) {
+	return c.configString(envSystemUserID)
+}
+
+func (c *Config) SystemUserEmail() (string, error) {
+	return c.configString(envSystemUserEmail)
+}
+
+func (c *Config) SystemUserPassword() (string, error) {
+	return c.configString(envSystemUserPassword)
+}
+
+func (c *Config) SystemOrganizationID() (string, error) {
+	return c.configString(envSystemOrganizationID)
+}
+
+func (c *Config) SystemOrganizationName() (string, error) {
+	return c.configString(envSystemOrganizationName)
 }

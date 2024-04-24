@@ -36,9 +36,9 @@ func NewManager(c Config) *Manager {
 }
 
 type Registration struct {
-	Username string
-	Email    string
-	Password string
+	DisplayName string
+	Email       string
+	Password    string
 }
 
 // CreateUser creates a new user.
@@ -53,12 +53,12 @@ func (m *Manager) Register(ctx context.Context, r Registration) (*domain.User, e
 	}
 
 	user, err := m.userRepo.Create(ctx, &user.User{
-		ID:         m.uuidgen.New(),
-		Username:   r.Username,
-		Email:      r.Email,
-		Password:   hashedPassword,
-		CreateTime: m.clock.Now(),
-		UpdateTime: m.clock.Now(),
+		ID:          m.uuidgen.New(),
+		DisplayName: r.DisplayName,
+		Email:       r.Email,
+		Password:    hashedPassword,
+		CreateTime:  m.clock.Now(),
+		UpdateTime:  m.clock.Now(),
 	})
 	if err != nil {
 		return nil, err

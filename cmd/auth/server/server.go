@@ -8,8 +8,6 @@ import (
 	"github.com/dwethmar/lingo/pkg/grpcerrors"
 	"github.com/dwethmar/lingo/pkg/validate"
 	protoauth "github.com/dwethmar/lingo/proto/gen/go/public/auth/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 )
 
 type Service struct {
@@ -26,9 +24,9 @@ func New(auth *app.Auth) *Service {
 func (s *Service) CreateUser(ctx context.Context, req *protoauth.CreateUserRequest) (*protoauth.CreateUserResponse, error) {
 	user, err := s.auth.CreateUser(
 		ctx,
-		req.GetUsername(),
-		req.GetEmail(),
-		req.GetPassword(),
+		req.User.GetDisplayName(),
+		req.User.GetEmail(),
+		req.User.GetPassword(),
 	)
 	if err != nil {
 		var vErr *validate.Error
@@ -67,12 +65,14 @@ func (s *Service) LoginUser(ctx context.Context, req *protoauth.LoginUserRequest
 	var user protoauth.User
 	login.User.ToProto(&user)
 
-	grpc.SendHeader(ctx, metadata.Pairs(
-		"token", login.Token,
-		"refresh_token", login.RefreshToken,
-	))
+	// grpc.SendHeader(ctx, metadata.Pairs(
+	// 	"token", login.Token,
+	// 	"refresh_token", login.RefreshToken,
+	// ))
 
 	return &protoauth.LoginUserResponse{
-		User: &user,
+		User:         &user,
+		Token:        login.Token,
+		RefreshToken: login.RefreshToken,
 	}, nil
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dwethmar/lingo/cmd/auth/app"
+	"github.com/dwethmar/lingo/cmd/auth/bootstrapping"
 	"github.com/dwethmar/lingo/cmd/auth/server"
 	"github.com/dwethmar/lingo/cmd/auth/storage/user/postgres"
 	"github.com/dwethmar/lingo/cmd/auth/token"
@@ -64,6 +65,13 @@ func setupAuth(
 
 	app := app.New(
 		logger,
+		bootstrapping.NewInitializer(bootstrapping.Config{
+			SystemUserID:     uuidgen.New(),
+			SystemUserEmail:  "system@system.nl",
+			OrganizationID:   uuidgen.New(),
+			OrganizationName: "system",
+			UserRepo:         userRepo,
+		}),
 		authentication.NewManager(authentication.Config{
 			Clock:                    clock,
 			SigningKeyRegistration:   []byte(signingKeyRegistration),
@@ -126,37 +134,36 @@ func gatewayMetadataAnnotator(_ context.Context, r *http.Request) metadata.MD {
 }
 
 func gatewayResponseModifier(ctx context.Context, r http.ResponseWriter, m proto.Message) error {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil
-	}
-
 	// check if login response
-	if _, ok := m.(*protoauth.LoginUserResponse); ok {
-		t := md.Get("token")[0]
-		tokenExp, err := token.ExtractExpirationTime(t)
+	if msg, ok := m.(*protoauth.LoginUserResponse); ok {
+		tokenExp, err := token.ExtractExpirationTime(msg.Token)
 		if err != nil {
 			return err
 		}
 
 		http.SetCookie(r, &http.Cookie{
-			Name:    "token",
-			Value:   t,
-			Expires: tokenExp,
+			Name:     "token",
+			Value:    msg.Token,
+			SameSite: http.SameSiteStrictMode,
+			Expires:  tokenExp,
 		})
 
-		rt := md.Get("refresh_token")[0]
-		refreshTokenExp, err := token.ExtractExpirationTime(rt)
+		refreshTokenExp, err := token.ExtractExpirationTime(msg.RefreshToken)
 		if err != nil {
 			return err
 		}
 
 		http.SetCookie(r, &http.Cookie{
 			Name:     "refresh_token",
-			Value:    rt,
+			Value:    msg.RefreshToken,
 			Expires:  refreshTokenExp,
 			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode,
+			Path:     "/v1/refresh",
 		})
+
+		msg.Token = ""
+		msg.RefreshToken = ""
 	}
 
 	return nil

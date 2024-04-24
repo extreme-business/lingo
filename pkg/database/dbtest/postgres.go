@@ -66,6 +66,8 @@ func SetupPostgresContainer(ctx context.Context, dbName string, setup func(conne
 // SetupTestDB sets up a test database and runs the provided setup function.
 // It also sets up a cleanup function to terminate the container after the test is complete.
 func SetupTestDB(t *testing.T, dbName string, setup func(connectionString string) error) *PostgresContainer {
+	t.Helper()
+
 	dbc, dbErr := SetupPostgresContainer(context.Background(), dbName, setup)
 
 	if dbErr != nil {
@@ -85,6 +87,8 @@ func SetupTestDB(t *testing.T, dbName string, setup func(connectionString string
 // ConnectTestDB connects to the test database and returns the connection.
 // It also sets up a cleanup function to close the connection after the test is complete.
 func ConnectTestDB(ctx context.Context, t *testing.T, connectionString string) *sql.DB {
+	t.Helper()
+
 	db, err := database.ConnectPostgres(ctx, connectionString)
 	if err != nil {
 		t.Fatal(err)

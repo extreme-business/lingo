@@ -2,10 +2,22 @@ syntax = "proto3";
 
 package public.auth.v1;
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "github.com/dwethmar/lingo/protogen/public/auth/v1;auth";
 
 message User {
-  string id = 1;
-  string username = 2;
+  // The user's unique identifier.
+  string name = 1;
+  // The user's display name.
+  string display_name = 2;
+  // The user's email.
   string email = 3;
+  // The user's password.
+  string password = 4;
+
+  reserved 5 to 9;
+
+  google.protobuf.Timestamp update_time = 10;
+  google.protobuf.Timestamp create_time = 11;
 }

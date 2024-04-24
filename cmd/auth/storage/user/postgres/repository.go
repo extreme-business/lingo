@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	userIDConstraint       = "users_pkey"
-	userUsernameConstraint = "users_username_key"
-	userEmailConstraint    = "users_email_key"
+	userIDConstraint           = "users_pkey"
+	userdisplay_nameConstraint = "users_display_name_key"
+	userEmailConstraint        = "users_email_key"
 )
 
 var _ user.Repository = &Repository{}
@@ -31,9 +31,9 @@ func New(db database.DB) *Repository {
 	}
 }
 
-const createQuery = `INSERT INTO users (id, username, email, password, create_time, update_time)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, username, email, create_time, update_time
+const createQuery = `INSERT INTO users (id, organization_id,  display_name, email, password, create_time, update_time)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, organization_id, display_name, email, create_time, update_time
 ;`
 
 // Create a new user.
@@ -42,7 +42,8 @@ func (r *Repository) Create(ctx context.Context, u *user.User) (*user.User, erro
 		ctx,
 		createQuery,
 		u.ID,
-		u.Username,
+		u.OrganizationID,
+		u.DisplayName,
 		u.Email,
 		u.Password,
 		u.CreateTime,
@@ -52,7 +53,8 @@ func (r *Repository) Create(ctx context.Context, u *user.User) (*user.User, erro
 	var n user.User
 	if err := row.Scan(
 		&n.ID,
-		&n.Username,
+		&n.OrganizationID,
+		&n.DisplayName,
 		&n.Email,
 		&n.CreateTime,
 		&n.UpdateTime,
@@ -63,8 +65,6 @@ func (r *Repository) Create(ctx context.Context, u *user.User) (*user.User, erro
 				switch pqErr.Constraint {
 				case userIDConstraint:
 					return nil, user.ErrUniqueIDConflict
-				case userUsernameConstraint:
-					return nil, user.ErrUniqueUsernameConflict
 				case userEmailConstraint:
 					return nil, user.ErrUniqueEmailConflict
 				}
@@ -77,7 +77,7 @@ func (r *Repository) Create(ctx context.Context, u *user.User) (*user.User, erro
 	return &n, nil
 }
 
-const getByIDQuery = `SELECT id, username, email, create_time, update_time
+const getByIDQuery = `SELECT id, organization_id, display_name, email, create_time, update_time
 FROM users
 WHERE id = $1
 ;`
@@ -89,7 +89,8 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*user.User, error) 
 	var u user.User
 	if err := row.Scan(
 		&u.ID,
-		&u.Username,
+		&u.OrganizationID,
+		&u.DisplayName,
 		&u.Email,
 		&u.CreateTime,
 		&u.UpdateTime,
@@ -104,7 +105,7 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*user.User, error) 
 	return &u, nil
 }
 
-const getByEmailQuery = `SELECT id, username, password, email, create_time, update_time
+const getByEmailQuery = `SELECT id, organization_id, display_name, password, email, create_time, update_time
 FROM users
 WHERE email = $1
 ;`
@@ -117,7 +118,8 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, 
 	var u user.User
 	if err := row.Scan(
 		&u.ID,
-		&u.Username,
+		&u.OrganizationID,
+		&u.DisplayName,
 		&u.Password,
 		&u.Email,
 		&u.CreateTime,
@@ -136,21 +138,21 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, 
 const updateQueryTemplate = `UPDATE users
 SET %s
 WHERE id = $%d
-RETURNING id, username, email, create_time, update_time;`
+RETURNING id, organization_id, display_name, email, create_time, update_time;`
 
 func (r *Repository) Update(ctx context.Context, in *user.User, fields ...user.Field) (*user.User, error) {
 	if len(fields) == 0 {
 		return nil, user.ErrNoFieldsToUpdate
 	}
 
-	set := make([]string, 0, len(fields)) // set clauses, e.g. "username = $1", "email = $2"
+	set := make([]string, 0, len(fields)) // set clauses, e.g. "display_name = $1", "email = $2"
 	args := make([]interface{}, 0, len(fields)+1)
 
 	for _, f := range fields {
 		switch f {
-		case user.Username:
-			set = append(set, fmt.Sprintf("username = $%d", len(args)+1))
-			args = append(args, in.Username)
+		case user.DisplayName:
+			set = append(set, fmt.Sprintf("display_name = $%d", len(args)+1))
+			args = append(args, in.DisplayName)
 		case user.Email:
 			set = append(set, fmt.Sprintf("email = $%d", len(args)+1))
 			args = append(args, in.Email)
@@ -184,7 +186,8 @@ func (r *Repository) Update(ctx context.Context, in *user.User, fields ...user.F
 	var u user.User
 	if err := row.Scan(
 		&u.ID,
-		&u.Username,
+		&u.OrganizationID,
+		&u.DisplayName,
 		&u.Email,
 		&u.CreateTime,
 		&u.UpdateTime,
@@ -254,8 +257,8 @@ func generateSorting(sorting []user.Sort) (string, error) {
 		}
 
 		switch s.Field {
-		case user.Username:
-			sortFields = append(sortFields, fmt.Sprintf("username %s", dir))
+		case user.DisplayName:
+			sortFields = append(sortFields, fmt.Sprintf("display_name %s", dir))
 		case user.Email:
 			sortFields = append(sortFields, fmt.Sprintf("email %s", dir))
 		case user.CreateTime:
@@ -274,7 +277,7 @@ func generateSorting(sorting []user.Sort) (string, error) {
 
 const listQueryTemplate = `SELECT 
     id, 
-    username, 
+    display_name, 
     email, 
     create_time, 
     update_time
@@ -334,7 +337,7 @@ func (r *Repository) List(ctx context.Context, pagination user.Pagination, sorti
 		var u user.User
 		if err = rows.Scan(
 			&u.ID,
-			&u.Username,
+			&u.DisplayName,
 			&u.Email,
 			&u.CreateTime,
 			&u.UpdateTime,

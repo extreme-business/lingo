@@ -27,17 +27,17 @@ const (
 func usernameSpecialChars() []rune { return []rune{'_', '-'} }
 
 type registrationValidator struct {
-	usernameValidator validate.StringValidator
-	emailValidator    validate.StringValidator
-	passwordValidator validate.StringValidator
+	displayNameValidator validate.StringValidator
+	emailValidator       validate.StringValidator
+	passwordValidator    validate.StringValidator
 }
 
 func newRegistrationValidator() *registrationValidator {
 	return &registrationValidator{
-		usernameValidator: validate.StringValidator{
-			validate.MaxLength("username", maxUsernameLength),
-			validate.MinLength("username", minUsernameLength),
-			validate.SpecialCharWhitelist("username", usernameSpecialChars()...),
+		displayNameValidator: validate.StringValidator{
+			validate.MaxLength("display_name", maxUsernameLength),
+			validate.MinLength("display_name", minUsernameLength),
+			validate.SpecialCharWhitelist("display_name", usernameSpecialChars()...),
 		},
 		emailValidator: validate.StringValidator{
 			validate.MaxLength("email", maxEmailLength),
@@ -53,7 +53,7 @@ func newRegistrationValidator() *registrationValidator {
 }
 
 func (v *registrationValidator) Validate(r Registration) error {
-	if err := v.usernameValidator.Validate(r.Username); err != nil {
+	if err := v.displayNameValidator.Validate(r.DisplayName); err != nil {
 		return err
 	}
 

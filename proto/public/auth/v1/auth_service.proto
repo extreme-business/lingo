@@ -3,6 +3,7 @@ package public.auth.v1;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "public/auth/v1/user.proto";
 
@@ -46,10 +47,19 @@ service AuthService {
     };
   }
 
+  rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse) {
+    option (google.api.http) = {post: "/v1/logout"};
+  }
+
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+    option (google.api.http) = {post: "/v1/refresh"};
+  }
+
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
-      post: "/v1/users"
-      body: "*"
+      // The `parent` captures the parent resource name, such as "shelves/1".
+      post: "/v1/{parent=organizations/*}/users"
+      body: "user"
     };
   }
 }
@@ -77,21 +87,30 @@ message LoginUserResponse {
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The user that was logged in"},
     (google.api.field_behavior) = REQUIRED
   ];
+  string token = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The token that was generated"},
+    (google.api.field_behavior) = REQUIRED
+  ];
+  string refresh_token = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The refresh token that was generated"},
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
+message LogoutUserRequest {}
+
+message LogoutUserResponse {}
+
+message RefreshTokenRequest {}
+
+message RefreshTokenResponse {}
+
 message CreateUserRequest {
-  string email = 1 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The email of a user"},
-    (google.api.field_behavior) = REQUIRED
-  ];
-  string username = 2 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The username of a user"},
-    (google.api.field_behavior) = REQUIRED
-  ];
-  string password = 3 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The password of a user"},
-    (google.api.field_behavior) = REQUIRED
-  ];
+  // Resource name of the parent resource where to create the book.
+  // For example: "organizations/123"
+  string parent = 1;
+  // The user resource to be created. Client must not set the `User.name` field.
+  public.auth.v1.User user = 2;
 }
 
 message CreateUserResponse {

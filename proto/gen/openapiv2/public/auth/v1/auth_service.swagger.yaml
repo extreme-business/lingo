@@ -39,7 +39,35 @@ paths:
             $ref: '#/definitions/v1LoginUserRequest'
       tags:
         - AuthService
-  /v1/users:
+  /v1/logout:
+    post:
+      operationId: AuthService_LogoutUser
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1LogoutUserResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      tags:
+        - AuthService
+  /v1/refresh:
+    post:
+      operationId: AuthService_RefreshToken
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1RefreshTokenResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      tags:
+        - AuthService
+  /v1/{parent}/users:
     post:
       operationId: AuthService_CreateUser
       responses:
@@ -52,11 +80,20 @@ paths:
           schema:
             $ref: '#/definitions/rpcStatus'
       parameters:
-        - name: body
+        - name: parent
+          description: |-
+            Resource name of the parent resource where to create the book.
+            For example: "organizations/123"
+          in: path
+          required: true
+          type: string
+          pattern: organizations/[^/]+
+        - name: user
+          description: The user resource to be created. Client must not set the `User.name` field.
           in: body
           required: true
           schema:
-            $ref: '#/definitions/v1CreateUserRequest'
+            $ref: '#/definitions/v1User'
       tags:
         - AuthService
 definitions:
@@ -79,22 +116,6 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/protobufAny'
-  v1CreateUserRequest:
-    type: object
-    properties:
-      email:
-        type: string
-        description: The email of a user
-      username:
-        type: string
-        description: The username of a user
-      password:
-        type: string
-        description: The password of a user
-    required:
-      - email
-      - username
-      - password
   v1CreateUserResponse:
     type: object
     properties:
@@ -125,17 +146,41 @@ definitions:
       user:
         $ref: '#/definitions/v1User'
         description: The user that was logged in
+      token:
+        type: string
+        description: The token that was generated
+      refreshToken:
+        type: string
+        description: The refresh token that was generated
     required:
       - user
+      - token
+      - refreshToken
+  v1LogoutUserResponse:
+    type: object
+  v1RefreshTokenResponse:
+    type: object
   v1User:
     type: object
     properties:
-      id:
+      name:
         type: string
-      username:
+        description: The user's unique identifier.
+      displayName:
         type: string
+        description: The user's display name.
       email:
         type: string
+        description: The user's email.
+      password:
+        type: string
+        description: The user's password.
+      updateTime:
+        type: string
+        format: date-time
+      createTime:
+        type: string
+        format: date-time
 securityDefinitions:
   Bearer:
     type: apiKey

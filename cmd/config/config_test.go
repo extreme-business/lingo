@@ -277,7 +277,7 @@ func TestConfig_HTTPTLSCertFile(t *testing.T) {
 	})
 }
 
-func TestConfig_AuthUrl(t *testing.T) {
+func TestConfig_AuthURL(t *testing.T) {
 	t.Cleanup(func() {
 		viper.Reset()
 	})
@@ -302,6 +302,151 @@ func TestConfig_AuthUrl(t *testing.T) {
 		}
 		if got != "test" {
 			t.Errorf("AuthUrl() = %v, want %v", got, "test")
+		}
+	})
+}
+
+func TestConfig_SystemUserID(t *testing.T) {
+	t.Cleanup(func() {
+		viper.Reset()
+	})
+
+	t.Run("should return error if SYSTEM_USER_ID is not set", func(t *testing.T) {
+		v, err := config.New().SystemUserID()
+		if err == nil {
+			t.Errorf("SystemUserID() error = %v, wantErr %v", err, true)
+		}
+
+		if v != "" {
+			t.Errorf("SystemUserID() = %v, want %v", v, "")
+		}
+	})
+
+	t.Run("should return the value of SYSTEM_USER_ID", func(t *testing.T) {
+		t.Setenv("LINGO_SYSTEM_USER_ID", "test")
+		c := config.New()
+		got, err := c.SystemUserID()
+		if err != nil {
+			t.Errorf("SystemUserID() error = %v, wantErr %v", err, nil)
+		}
+		if got != "test" {
+			t.Errorf("SystemUserID() = %v, want %v", got, "test")
+		}
+	})
+}
+
+func TestConfig_SystemUserEmail(t *testing.T) {
+	t.Cleanup(func() {
+		viper.Reset()
+	})
+
+	t.Run("should return error if SYSTEM_USER_EMAIL is not set", func(t *testing.T) {
+		v, err := config.New().SystemUserEmail()
+		if err == nil {
+			t.Errorf("SystemUserEmail() error = %v, wantErr %v", err, true)
+		}
+
+		if v != "" {
+			t.Errorf("SystemUserEmail() = %v, want %v", v, "")
+		}
+	})
+
+	t.Run("should return the value of SYSTEM_USER_EMAIL", func(t *testing.T) {
+		t.Setenv("LINGO_SYSTEM_USER_EMAIL", "test")
+		c := config.New()
+		got, err := c.SystemUserEmail()
+		if err != nil {
+			t.Errorf("SystemUserEmail() error = %v, wantErr %v", err, nil)
+		}
+		if got != "test" {
+			t.Errorf("SystemUserEmail() = %v, want %v", got, "test")
+		}
+	})
+}
+
+func TestConfig_SystemUserPassword(t *testing.T) {
+	t.Cleanup(func() {
+		viper.Reset()
+	})
+
+	t.Run("should return error if SYSTEM_USER_PASSWORD is not set", func(t *testing.T) {
+		v, err := config.New().SystemUserPassword()
+		if err == nil {
+			t.Errorf("SystemUserPassword() error = %v, wantErr %v", err, true)
+		}
+
+		if v != "" {
+			t.Errorf("SystemUserPassword() = %v, want %v", v, "")
+		}
+	})
+
+	t.Run("should return the value of SYSTEM_USER_PASSWORD", func(t *testing.T) {
+		t.Setenv("LINGO_SYSTEM_USER_PASSWORD", "test")
+		c := config.New()
+		got, err := c.SystemUserPassword()
+		if err != nil {
+			t.Errorf("SystemUserPassword() error = %v, wantErr %v", err, nil)
+		}
+		if got != "test" {
+			t.Errorf("SystemUserPassword() = %v, want %v", got, "test")
+		}
+	})
+}
+
+func TestConfig_SystemOrganizationID(t *testing.T) {
+	t.Cleanup(func() {
+		viper.Reset()
+	})
+
+	t.Run("should return error if SYSTEM_ORGANIZATION_ID is not set", func(t *testing.T) {
+		v, err := config.New().SystemOrganizationID()
+		if err == nil {
+			t.Errorf("SystemOrganizationID() error = %v, wantErr %v", err, true)
+		}
+
+		if v != "" {
+			t.Errorf("SystemOrganizationID() = %v, want %v", v, "")
+		}
+	})
+
+	t.Run("should return the value of SYSTEM_ORGANIZATION_ID", func(t *testing.T) {
+		t.Setenv("LINGO_SYSTEM_ORGANIZATION_ID", "test")
+		c := config.New()
+		got, err := c.SystemOrganizationID()
+		if err != nil {
+			t.Errorf("SystemOrganizationID() error = %v, wantErr %v", err, nil)
+		}
+		if got != "test" {
+			t.Errorf("SystemOrganizationID() = %v, want %v", got, "test")
+		}
+	})
+}
+
+func TestConfig_SystemOrganizationName(t *testing.T) {
+	t.Cleanup(func() {
+		viper.Reset()
+	})
+
+	t.Run("should return error if SYSTEM_ORGANIZATION_NAME is not set", func(t *testing.T) {
+		v, err := config.New().SystemOrganizationName()
+		if err == nil {
+			t.Errorf("SystemOrganizationName() error = %v, wantErr %v", err, true)
+		}
+
+		if v != "" {
+			t.Errorf("SystemOrganizationName() = %v, want %v", v, "")
+		}
+	})
+
+	t.Run("should return the value of SYSTEM_ORGANIZATION_NAME", func(t *testing.T) {
+		t.Setenv("LINGO_SYSTEM_ORGANIZATION_NAME", "test")
+		c := config.New()
+		got, err := c.SystemOrganizationName()
+		if err != nil {
+			t.Errorf("SystemOrganizationName() error = %v, wantErr %v", err, nil)
+		}
+		if got != "test" {
+			t.Errorf("SystemOrganizationName() = %v, want %v", got, "test")
 		}
 	})
 }

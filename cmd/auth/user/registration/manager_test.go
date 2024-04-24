@@ -33,12 +33,12 @@ func TestManager_Register(t *testing.T) {
 		userRepo := user.MockRepository{
 			CreateFunc: func(_ context.Context, u *user.User) (*user.User, error) {
 				return &user.User{
-					ID:         u.ID,
-					Username:   u.Username,
-					Email:      u.Email,
-					Password:   u.Password,
-					CreateTime: u.CreateTime,
-					UpdateTime: u.UpdateTime,
+					ID:          u.ID,
+					DisplayName: u.DisplayName,
+					Email:       u.Email,
+					Password:    u.Password,
+					CreateTime:  u.CreateTime,
+					UpdateTime:  u.UpdateTime,
 				}, nil
 			},
 		}
@@ -52,9 +52,9 @@ func TestManager_Register(t *testing.T) {
 		})
 
 		u, err := m.Register(context.TODO(), registration.Registration{
-			Username: "username",
-			Email:    "email",
-			Password: "password!1",
+			DisplayName: "username",
+			Email:       "email",
+			Password:    "password!1",
 		})
 		if err != nil {
 			t.Fatalf("Register() = %v, want nil", err)
@@ -62,7 +62,7 @@ func TestManager_Register(t *testing.T) {
 
 		expected := &domain.User{
 			ID:            uuid.Must(uuid.Parse("c5172a66-3dbe-4415-bbf9-9921d9798698")),
-			Username:      "username",
+			DisplayName:   "username",
 			Email:         "email",
 			CreateTime:    now.Add(time.Second),
 			UpdateTime:    now.Add(time.Second),
@@ -96,9 +96,9 @@ func TestManager_Register(t *testing.T) {
 		})
 
 		u, err := m.Register(context.TODO(), registration.Registration{
-			Username: "username",
-			Email:    "email",
-			Password: "password!1",
+			DisplayName: "username",
+			Email:       "email",
+			Password:    "password!1",
 		})
 
 		if err == nil {
@@ -128,52 +128,52 @@ func TestManager_Register_validations(t *testing.T) {
 			want2  string
 		}{
 			{
-				name: "username too short",
+				name: "display name too short",
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "a",
-						Email:    "email",
-						Password: "password!1",
+						DisplayName: "a",
+						Email:       "email",
+						Password:    "password!1",
 					},
 				},
 				want:  nil,
-				want2: "username",
+				want2: "display_name",
 			},
 			{
-				name: "username too long",
+				name: "display name too long",
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
-						Email:    "email",
-						Password: "password!1",
+						DisplayName: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						Email:       "email",
+						Password:    "password!1",
 					},
 				},
 				want:  nil,
-				want2: "username",
+				want2: "display_name",
 			},
 			{
-				name: "username contains non allowed special char",
+				name: "display name contains non allowed special char",
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "username!",
-						Email:    "email",
-						Password: "password!1",
+						DisplayName: "username!",
+						Email:       "email",
+						Password:    "password!1",
 					},
 				},
 				want:  nil,
-				want2: "username",
+				want2: "display_name",
 			},
 			{
 				name: "email too short",
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "abcdefghijklmnopqrstuvwxyz",
-						Email:    "a",
-						Password: "password!1",
+						DisplayName: "abcdefghijklmnopqrstuvwxyz",
+						Email:       "a",
+						Password:    "password!1",
 					},
 				},
 				want:  nil,
@@ -184,9 +184,9 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "abcdefghijklmnopqrstuvwxyz",
-						Email:    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
-						Password: "password!1",
+						DisplayName: "abcdefghijklmnopqrstuvwxyz",
+						Email:       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						Password:    "password!1",
 					},
 				},
 				want:  nil,
@@ -197,9 +197,9 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "abcdefghijklmnopqrstuvwxyz",
-						Email:    "email",
-						Password: "a",
+						DisplayName: "abcdefghijklmnopqrstuvwxyz",
+						Email:       "email",
+						Password:    "a",
 					},
 				},
 				want:  nil,
@@ -210,9 +210,9 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "abcdefghijklmnopqrstuvwxyz",
-						Email:    "email",
-						Password: "1@Aabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						DisplayName: "abcdefghijklmnopqrstuvwxyz",
+						Email:       "email",
+						Password:    "1@Aabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
 					},
 				},
 				want:  nil,
@@ -223,9 +223,9 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "abcdefghijklmnopqrstuvwxyz",
-						Email:    "email",
-						Password: "password1",
+						DisplayName: "abcdefghijklmnopqrstuvwxyz",
+						Email:       "email",
+						Password:    "password1",
 					},
 				},
 				want:  nil,
@@ -236,9 +236,9 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						Username: "abcdefghijklmnopqrstuvwxyz",
-						Email:    "email",
-						Password: "password!",
+						DisplayName: "abcdefghijklmnopqrstuvwxyz",
+						Email:       "email",
+						Password:    "password!",
 					},
 				},
 				want:  nil,
