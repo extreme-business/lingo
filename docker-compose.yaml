@@ -29,7 +29,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 30
 
   auth-migration:
     image: arigaio/atlas:0.21.1
@@ -39,7 +39,8 @@ services:
     networks:
       - lingo-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   auth:
     image: lingo
