@@ -7,10 +7,10 @@ services:
       - "8090:8080"
     volumes:
       - ./provision/swagger-ui/swagger-config.json:/swagger-config.json
-      - ./proto/gen/openapiv2/public/auth/v1/auth_service.swagger.yaml:/auth_service.swagger.yaml
+      - ./proto/gen/openapiv2/public/account/v1/account_service.swagger.yaml:/account_service.swagger.yaml
     environment:
       CONFIG_URL: /swagger-config.json
-      SWAGGER_JSON: /auth_service.swagger.yaml
+      SWAGGER_JSON: /account_service.swagger.yaml
 
   db:
     image: postgres:14.4-alpine
@@ -31,25 +31,25 @@ services:
       timeout: 5s
       retries: 30
 
-  auth-migration:
+  account-migration:
     image: arigaio/atlas:0.21.1
-    command: migrate apply --url "postgres://postgres:postgres@db:5432/organization?sslmode=disable"
+    command: migrate apply --url "postgres://postgres:postgres@db:5432/account?sslmode=disable"
     volumes:
-      - ./cmd/auth/migrations:/migrations
+      - ./cmd/account/migrations:/migrations
     networks:
       - lingo-network
     depends_on:
       db:
         condition: service_healthy
 
-  auth:
+  account:
     image: lingo
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["--", "serve", "auth"]
+    command: ["--", "serve", "account"]
     environment:
-      LINGO_DB_URL: postgres://postgres:postgres@db:5432/organization?sslmode=disable
+      LINGO_DB_URL: postgres://postgres:postgres@db:5432/account?sslmode=disable
       LINGO_GRPC_PORT: 8080
       LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
       LINGO_GRPC_TLS_KEY_FILE: /src/lingo/certs/grpc-lingo.key
@@ -69,19 +69,19 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-      - auth-migration
+      - account-migration
     networks:
       - lingo-network
 
-  auth-gateway:
+  account-gateway:
     image: lingo
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["--", "serve", "auth-gateway"]
+    command: ["--", "serve", "account-gateway"]
     environment:
       LINGO_HTTP_PORT: 8081
-      LINGO_AUTH_URL: auth:8080
+      LINGO_AUTH_URL: account:8080
       LINGO_HTTP_TLS_CERT_FILE: /src/lingo/certs/http-lingo.crt
       LINGO_HTTP_TLS_KEY_FILE: /src/lingo/certs/http-lingo.key
       LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
@@ -92,7 +92,7 @@ services:
     ports:
       - 8092:8081
     depends_on:
-      - auth
+      - account
     networks:
       - lingo-network
 

@@ -13,19 +13,19 @@ demosite = 'https://owner.github.io/repo'
 tags = ['blog', 'company']
 features = ['some', 'awesome', 'features']
 
-# If the theme has multiple authors
-authors = [
-  {name = 'Name of author', homepage = 'Website of author'},
-  {name = 'Name of author', homepage = 'Website of author'}
+# If the theme has multiple accountors
+accountors = [
+  {name = 'Name of accountor', homepage = 'Website of accountor'},
+  {name = 'Name of accountor', homepage = 'Website of accountor'}
 ]
 
-# If the theme has a single author
-[author]
+# If the theme has a single accountor
+[accountor]
   name = 'Your name'
   homepage = 'Your website'
 
 # If porting an existing theme
 [original]
-  author = 'Name of original author'
-  homepage = 'Website of original author'
+  accountor = 'Name of original accountor'
+  homepage = 'Website of original accountor'
   repo = 'https://github.com/owner/repo'

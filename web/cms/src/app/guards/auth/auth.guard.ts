@@ -1,6 +1,6 @@
 import { CanActivateFn } from '@angular/router';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const accountGuard: CanActivateFn = (route, state) => {
   // check for cookies
   
 

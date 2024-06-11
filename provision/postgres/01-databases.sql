@@ -1,5 +1,2 @@
-CREATE DATABASE "organization";
-GRANT ALL PRIVILEGES ON DATABASE "organization" TO postgres;
-
-CREATE DATABASE "relay";
-GRANT ALL PRIVILEGES ON DATABASE "relay" TO postgres;
+CREATE DATABASE "account";
+GRANT ALL PRIVILEGES ON DATABASE "account" TO postgres;

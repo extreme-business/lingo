@@ -21,7 +21,7 @@ func TestCorsHeaders(t *testing.T) {
 					http.MethodPut,
 					http.MethodDelete,
 				}, ",")},
-			"Access-Control-Allow-Headers": {"Content-Type, Authorization"},
+			"Access-Control-Allow-Headers": {"Content-Type, Accountorization"},
 		}
 
 		if diff := cmp.Diff(httpserver.CorsHeaders(), corsHeaders); diff != "" {

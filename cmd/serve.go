@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	authcmd "github.com/dwethmar/lingo/cmd/auth/cmd"
+	accountcmd "github.com/dwethmar/lingo/cmd/account/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -15,11 +15,11 @@ func NewServeCmd() *cobra.Command {
 
 //nolint:gochecknoinits // This is the entry point of the serve cli.
 func init() {
-	// auth
+	// account
 	serveCmd := NewServeCmd()
-	// add auth subcommands
-	serveCmd.AddCommand(authcmd.NewGrpcCmd())
-	serveCmd.AddCommand(authcmd.NewGatewayCmd())
+	// add account subcommands
+	serveCmd.AddCommand(accountcmd.NewGrpcCmd())
+	serveCmd.AddCommand(accountcmd.NewGatewayCmd())
 
 	rootCmd.AddCommand(serveCmd)
 }

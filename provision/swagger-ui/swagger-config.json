@@ -1,9 +1,9 @@
 {
     "urls": [
       {
-        "url": "auth_service.swagger.yaml",
-        "name": "Auth",
-        "description": "authentication api for lingo users"
+        "url": "account_service.swagger.yaml",
+        "name": "Account",
+        "description": "account api for lingo users"
       }
     ],
     "plugins": [

@@ -16,7 +16,7 @@ func CorsHeaders() http.Header {
 				http.MethodPut,
 				http.MethodDelete,
 			}, ",")},
-		"Access-Control-Allow-Headers": {"Content-Type, Authorization"},
+		"Access-Control-Allow-Headers": {"Content-Type, Accountorization"},
 	}
 }
 
