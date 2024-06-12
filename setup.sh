@@ -10,10 +10,10 @@ source env.sh
 echo "Creating proto files..."
 source proto.sh
 
-# lint 
-echo "Linting..."
-source lint.sh
-
 # certs
 echo "Creating certs..."
 source certs.sh
+
+# lint 
+echo "Linting..."
+source lint.sh
