@@ -2,8 +2,22 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"log"
 )
+
+var (
+	_ Conn = (*DB)(nil) // Ensure *DB complies with the Conn interface.
+	_ Conn = (*Tx)(nil) // Ensure *Tx complies with the Conn interface.
+)
+
+// Conn is a database connection or transaction.
+// Use this interface as a dependency in your code.
+type Conn interface {
+	Query(ctx context.Context, query string, args ...interface{}) (*Rows, error)
+	QueryRow(ctx context.Context, query string, args ...interface{}) *Row
+	Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+}
 
 // Factory is a function that initializes a repository with a database connection.
 type Factory[T any] func(c Conn) T

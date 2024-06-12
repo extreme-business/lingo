@@ -9,22 +9,9 @@ import (
 )
 
 var (
-	_ Conn = (*DB)(nil) // Ensure *DB complies with the Conn interface.
-	_ Conn = (*Tx)(nil) // Ensure *Tx complies with the Conn interface.
-)
-
-var (
 	// ErrTransactorNotSet indicates that the transactor is not set.
 	ErrTransactorNotSet = errors.New("transactor not set")
 )
-
-// Conn is a database connection or transaction.
-// Use this interface as a dependency in your code.
-type Conn interface {
-	Query(ctx context.Context, query string, args ...interface{}) (*Rows, error)
-	QueryRow(ctx context.Context, query string, args ...interface{}) *Row
-	Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-}
 
 // DBHandler is a database interface and should comply with *sql.DB.
 type DBHandler interface {

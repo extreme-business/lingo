@@ -63,8 +63,8 @@ func New(options ...Option) *Server {
 		reflection.Register(c.GrpcServer)
 	}
 
-	for _, register := range c.ServerRegisters {
-		register(c.GrpcServer)
+	if c.ServiceRegistrar != nil {
+		c.ServiceRegistrar(c.GrpcServer)
 	}
 
 	var address string

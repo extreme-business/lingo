@@ -56,9 +56,9 @@ func runAccount(_ *cobra.Command, _ []string) error {
 	}
 
 	accountServer := setupService(account)
-	grpcServer, err := setupServer(config, []func(grpc.ServiceRegistrar){
-		func(s grpc.ServiceRegistrar) { protoaccount.RegisterAccountServiceServer(s, accountServer) },
-		func(s grpc.ServiceRegistrar) { grpc_health_v1.RegisterHealthServer(s, accountServer) },
+	grpcServer, err := setupServer(config, func(s grpc.ServiceRegistrar) {
+		protoaccount.RegisterAccountServiceServer(s, accountServer)
+		grpc_health_v1.RegisterHealthServer(s, accountServer)
 	})
 	if err != nil {
 		return fmt.Errorf("failed to setup grpc server: %w", err)

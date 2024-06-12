@@ -42,10 +42,8 @@ func TestNew(t *testing.T) {
 		s := grpcserver.New(
 			grpcserver.WithGrpcServer(&MockGrpcServer{}),
 			grpcserver.WithListener(lis),
-			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){
-				func(grpc.ServiceRegistrar) {
-					visited = true
-				},
+			grpcserver.WithServiceRegistrar(func(grpc.ServiceRegistrar) {
+				visited = true
 			}),
 			grpcserver.WithReflection(),
 		)
@@ -67,7 +65,7 @@ func TestServer_Serve(t *testing.T) {
 
 		s := grpcserver.New(
 			grpcserver.WithListener(lis),
-			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){}),
+			grpcserver.WithServiceRegistrar(func(grpc.ServiceRegistrar) {}),
 			grpcserver.WithReflection(),
 		)
 
@@ -86,7 +84,7 @@ func TestServer_Serve(t *testing.T) {
 
 		s := grpcserver.New(
 			grpcserver.WithListener(lis),
-			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){}),
+			grpcserver.WithServiceRegistrar(func(grpc.ServiceRegistrar) {}),
 			grpcserver.WithReflection(),
 		)
 		ctx := context.Background()
@@ -115,7 +113,7 @@ func TestServer_Serve(t *testing.T) {
 			grpcserver.WithGrpcServer(&MockGrpcServer{
 				ServeFunc: func(_ net.Listener) error { return expectedErr },
 			}),
-			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){}),
+			grpcserver.WithServiceRegistrar(func(grpc.ServiceRegistrar) {}),
 			grpcserver.WithReflection(),
 		)
 
@@ -132,7 +130,7 @@ func TestServer_Serve(t *testing.T) {
 			grpcserver.WithGrpcServer(&MockGrpcServer{
 				ServeFunc: func(_ net.Listener) error { return grpc.ErrServerStopped },
 			}),
-			grpcserver.WithServiceRegistrars([]func(grpc.ServiceRegistrar){}),
+			grpcserver.WithServiceRegistrar(func(grpc.ServiceRegistrar) {}),
 			grpcserver.WithReflection(),
 		)
 

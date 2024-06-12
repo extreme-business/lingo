@@ -7,11 +7,11 @@ import (
 )
 
 type Config struct {
-	Lis             net.Listener                  // Listener
-	Address         string                        // Address
-	ServerRegisters []func(grpc.ServiceRegistrar) // Server registers
-	Reflection      bool                          // Enable reflection
-	GrpcServer      grpcServer                    // Grpc server
+	Lis              net.Listener                // Listener
+	Address          string                      // Address
+	ServiceRegistrar func(grpc.ServiceRegistrar) // Server registers
+	Reflection       bool                        // Enable reflection
+	GrpcServer       grpcServer                  // Grpc server
 }
 
 func (c *Config) Apply(opts ...Option) {
@@ -37,9 +37,9 @@ func WithListener(l net.Listener) Option {
 	})
 }
 
-func WithServiceRegistrars(r []func(grpc.ServiceRegistrar)) Option {
+func WithServiceRegistrar(r func(grpc.ServiceRegistrar)) Option {
 	return optionFunc(func(c *Config) {
-		c.ServerRegisters = r
+		c.ServiceRegistrar = r
 	})
 }
 

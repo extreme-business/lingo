@@ -149,7 +149,7 @@ func setupService(account *app.Account) *server.Server {
 }
 
 // setupGrpcServer sets up a gRPC server for the relay service.
-func setupServer(config *config.Config, serviceRegistrars []func(grpc.ServiceRegistrar)) (*grpcserver.Server, error) {
+func setupServer(config *config.Config, serviceRegistrar func(grpc.ServiceRegistrar)) (*grpcserver.Server, error) {
 	grpcPort, err := config.GRPCPort()
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func setupServer(config *config.Config, serviceRegistrars []func(grpc.ServiceReg
 		grpcserver.WithReflection(),
 		grpcserver.WithGrpcServer(grpc.NewServer(grpc.Creds(creds))),
 		grpcserver.WithAddress(fmt.Sprintf(":%d", grpcPort)),
-		grpcserver.WithServiceRegistrars(serviceRegistrars),
+		grpcserver.WithServiceRegistrar(serviceRegistrar),
 	), nil
 }
 

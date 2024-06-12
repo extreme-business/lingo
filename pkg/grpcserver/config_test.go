@@ -25,14 +25,14 @@ func TestWithListener(t *testing.T) {
 
 func TestWithServiceRegistrars(t *testing.T) {
 	t.Run("WithServiceRegistrars", func(t *testing.T) {
-		r := []func(grpc.ServiceRegistrar){}
-		opt := grpcserver.WithServiceRegistrars(r)
+		r := func(grpc.ServiceRegistrar) {}
+		opt := grpcserver.WithServiceRegistrar(r)
 
 		c := &grpcserver.Config{}
 		c.Apply(opt)
 
-		if !reflect.DeepEqual(c.ServerRegisters, r) {
-			t.Errorf("expected %v, got %v", r, c.ServerRegisters)
+		if !reflect.DeepEqual(c.ServiceRegistrar, r) {
+			t.Errorf("expected %v, got %v", r, c.ServiceRegistrar)
 		}
 	})
 }

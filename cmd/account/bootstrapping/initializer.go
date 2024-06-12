@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"strings"
 
 	"github.com/dwethmar/lingo/cmd/account/password"
 	"github.com/dwethmar/lingo/cmd/account/storage"
@@ -71,6 +73,7 @@ func systemOrganizationConfigValidator() func(c SystemOrgConfig) error {
 
 // Initializer is responsible for setting up the system user and organization.
 type Initializer struct {
+	logger                    *slog.Logger
 	systemUserConfig          SystemUserConfig
 	systemOrganizationConfig  SystemOrgConfig
 	clock                     clock.Now
@@ -80,6 +83,7 @@ type Initializer struct {
 }
 
 type Config struct {
+	Logger                   *slog.Logger
 	SystemUserConfig         SystemUserConfig
 	SystemOrganizationConfig SystemOrgConfig
 	Clock                    clock.Now
@@ -88,6 +92,7 @@ type Config struct {
 
 func New(config Config) *Initializer {
 	return &Initializer{
+		logger:                    config.Logger,
 		systemUserConfig:          config.SystemUserConfig,
 		systemOrganizationConfig:  config.SystemOrganizationConfig,
 		clock:                     config.Clock,
@@ -113,16 +118,20 @@ func (s *Initializer) setupOrganization(ctx context.Context, r storage.Organizat
 	if err == nil {
 		// check if the organization needs to be updated
 		updated := false
-		for _, check := range []func(*storage.Organization) bool{
-			func(o *storage.Organization) bool { return o.LegalName != s.systemOrganizationConfig.LegalName },
+		triggeredChecks := []string{}
+		for check, isDifferent := range map[string]func(*storage.Organization) bool{
+			"legal name": func(o *storage.Organization) bool { return o.LegalName != s.systemOrganizationConfig.LegalName },
 		} {
-			if check(org) {
+			if isDifferent(org) {
+				triggeredChecks = append(triggeredChecks, check)
 				updated = true
 				break
 			}
 		}
 
 		if updated {
+			s.logger.Info("system organization update triggered", slog.String("changes", strings.Join(triggeredChecks, ", ")))
+
 			org.LegalName = s.systemOrganizationConfig.LegalName
 			org.UpdateTime = now
 
@@ -140,6 +149,8 @@ func (s *Initializer) setupOrganization(ctx context.Context, r storage.Organizat
 
 	// if the organization does not exist, create it
 	if errors.Is(err, storage.ErrOrganizationNotFound) {
+		s.logger.Info("system organization creation triggered")
+
 		o, cErr := r.Create(ctx, &storage.Organization{
 			ID:         s.systemOrganizationConfig.ID,
 			LegalName:  s.systemOrganizationConfig.LegalName,
@@ -157,7 +168,7 @@ func (s *Initializer) setupOrganization(ctx context.Context, r storage.Organizat
 	return org, err
 }
 
-// setupUser sets up the system user. If.
+// setupUser sets up the system user. If the user already exists, it will be updated if necessary.
 func (s *Initializer) setupUser(ctx context.Context, org *storage.Organization, r storage.UserRepository) (*storage.User, error) {
 	now := s.clock()
 
@@ -171,21 +182,23 @@ func (s *Initializer) setupUser(ctx context.Context, org *storage.Organization, 
 	if err == nil {
 		// check if the user needs to be updated
 		updated := false
-		checks := []func(*storage.User) bool{ // checks if the user needs to be updated
-			func(u *storage.User) bool { return u.OrganizationID != org.ID },
-			func(u *storage.User) bool { return u.DisplayName != systemUserName },
-			func(u *storage.User) bool { return u.Email != s.systemUserConfig.Email },
-			func(u *storage.User) bool { return !password.Check(u.Password, hashedPassword) },
-		}
+		triggeredChecks := []string{}
 
-		for _, isDifferent := range checks {
+		for check, isDifferent := range map[string]func(*storage.User) bool{
+			"organization id": func(u *storage.User) bool { return u.OrganizationID != org.ID },
+			"display name":    func(u *storage.User) bool { return u.DisplayName != systemUserName },
+			"email":           func(u *storage.User) bool { return u.Email != s.systemUserConfig.Email },
+			"password":        func(u *storage.User) bool { return !password.Check(u.Password, hashedPassword) },
+		} {
 			if isDifferent(user) {
 				updated = true
-				break
+				triggeredChecks = append(triggeredChecks, check)
 			}
 		}
 
 		if updated {
+			s.logger.Info("system user update triggered", slog.String("changes", strings.Join(triggeredChecks, ", ")))
+
 			user.OrganizationID = org.ID
 			user.DisplayName = systemUserName
 			user.Email = s.systemUserConfig.Email
@@ -209,6 +222,8 @@ func (s *Initializer) setupUser(ctx context.Context, org *storage.Organization, 
 
 	// if the user does not exist, create it
 	if errors.Is(err, storage.ErrUserNotFound) {
+		s.logger.Info("system user creation triggered")
+
 		u, cErr := r.Create(ctx, &storage.User{
 			ID:             s.systemUserConfig.ID,
 			OrganizationID: org.ID,
