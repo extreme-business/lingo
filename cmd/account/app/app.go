@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/dwethmar/lingo/cmd/account/bootstrapping"
-	"github.com/dwethmar/lingo/cmd/account/domain"
-	"github.com/dwethmar/lingo/cmd/account/user/authentication"
-	"github.com/dwethmar/lingo/cmd/account/user/registration"
+	"github.com/extreme-business/lingo/cmd/account/bootstrapping"
+	"github.com/extreme-business/lingo/cmd/account/domain"
+	"github.com/extreme-business/lingo/cmd/account/user/authentication"
+	"github.com/extreme-business/lingo/cmd/account/user/registration"
 	"github.com/google/uuid"
 )
 

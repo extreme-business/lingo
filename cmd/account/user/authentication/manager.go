@@ -5,11 +5,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dwethmar/lingo/cmd/account/domain"
-	"github.com/dwethmar/lingo/cmd/account/password"
-	"github.com/dwethmar/lingo/cmd/account/storage"
-	"github.com/dwethmar/lingo/cmd/account/token"
-	"github.com/dwethmar/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/cmd/account/domain"
+	"github.com/extreme-business/lingo/cmd/account/password"
+	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/cmd/account/token"
+	"github.com/extreme-business/lingo/pkg/clock"
 )
 
 const (

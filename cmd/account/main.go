@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/dwethmar/lingo/cmd/account/cmd"
-	"github.com/dwethmar/lingo/pkg/cli"
+	"github.com/extreme-business/lingo/cmd/account/cmd"
+	"github.com/extreme-business/lingo/pkg/cli"
 )
 
 func New() {

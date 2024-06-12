@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dwethmar/lingo/pkg/httpserver"
+	"github.com/extreme-business/lingo/pkg/httpserver"
 	"github.com/google/go-cmp/cmp"
 )
 

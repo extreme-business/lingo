@@ -1,7 +1,7 @@
 package registration
 
 import (
-	"github.com/dwethmar/lingo/pkg/validate"
+	"github.com/extreme-business/lingo/pkg/validate"
 )
 
 const (

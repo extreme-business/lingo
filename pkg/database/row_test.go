@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/dwethmar/lingo/pkg/database"
-	"github.com/dwethmar/lingo/pkg/database/mock"
+	"github.com/extreme-business/lingo/pkg/database"
+	"github.com/extreme-business/lingo/pkg/database/mock"
 )
 
 func TestNewRows(t *testing.T) {

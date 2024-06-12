@@ -1,4 +1,4 @@
-module github.com/dwethmar/lingo
+module github.com/extreme-business/lingo
 
 go 1.22.3
 

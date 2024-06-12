@@ -9,7 +9,6 @@ source env.sh
 # create proto files
 echo "Creating proto files..."
 source proto.sh
-source proto-buf-mod-update.sh
 
 # lint 
 echo "Linting..."

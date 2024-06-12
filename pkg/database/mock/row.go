@@ -1,6 +1,6 @@
 package mock
 
-import "github.com/dwethmar/lingo/pkg/database"
+import "github.com/extreme-business/lingo/pkg/database"
 
 var _ database.RowHandler = &RowHandler{}
 var _ database.RowsHandler = &RowsHandler{}

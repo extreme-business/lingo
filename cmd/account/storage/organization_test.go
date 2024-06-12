@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/dwethmar/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/cmd/account/storage"
 	"github.com/google/go-cmp/cmp"
 )
 

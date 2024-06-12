@@ -3,7 +3,7 @@ package private.account.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/dwethmar/lingo/protogen/private/account/v1;account";
+option go_package = "github.com/extreme-business/lingo/protogen/private/account/v1;account";
 
 message Account {
   string id = 1;

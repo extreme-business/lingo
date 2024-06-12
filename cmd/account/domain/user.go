@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	protoaccount "github.com/dwethmar/lingo/proto/gen/go/public/account/v1"
+	protoaccount "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

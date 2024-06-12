@@ -55,7 +55,7 @@ else
 fi
 
 if [ "$REBUILD_IMAGE" = true ]; then
-    docker build --target lint -t lingo-lint .
+    docker build --target lint -t lingo-lint "$LINGO_PROJECT_PATH"
     echo "Docker image lingo-lint built successfully."
 fi
 

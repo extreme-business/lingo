@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	accountcmd "github.com/dwethmar/lingo/cmd/account/cmd"
+	accountcmd "github.com/extreme-business/lingo/cmd/account/cmd"
 	"github.com/spf13/cobra"
 )
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dwethmar/lingo/cmd"
+	"github.com/extreme-business/lingo/cmd"
 )
 
 func main() {

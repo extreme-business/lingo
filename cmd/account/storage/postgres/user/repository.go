@@ -9,8 +9,8 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/dwethmar/lingo/cmd/account/storage"
-	"github.com/dwethmar/lingo/pkg/database"
+	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/pkg/database"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 

@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/dwethmar/lingo/cmd/account/storage"
-	"github.com/dwethmar/lingo/cmd/account/storage/postgres"
-	"github.com/dwethmar/lingo/pkg/database"
-	dbmock "github.com/dwethmar/lingo/pkg/database/mock"
+	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/cmd/account/storage/postgres"
+	"github.com/extreme-business/lingo/pkg/database"
+	dbmock "github.com/extreme-business/lingo/pkg/database/mock"
 )
 
 // checkIfAllReposAreNotNil checks if all repositories are non-nil.

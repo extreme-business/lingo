@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	"github.com/dwethmar/lingo/cmd/account/domain"
-	authentication "github.com/dwethmar/lingo/cmd/account/user/authentication"
+	"github.com/extreme-business/lingo/cmd/account/domain"
+	authentication "github.com/extreme-business/lingo/cmd/account/user/authentication"
 )
 
 // LoginResult is the result of a login operation.

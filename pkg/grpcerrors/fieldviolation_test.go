@@ -3,7 +3,7 @@ package grpcerrors_test
 import (
 	"testing"
 
-	"github.com/dwethmar/lingo/pkg/grpcerrors"
+	"github.com/extreme-business/lingo/pkg/grpcerrors"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/dwethmar/lingo/cmd/account/config"
+	"github.com/extreme-business/lingo/cmd/account/config"
 	"github.com/spf13/viper"
 )
 

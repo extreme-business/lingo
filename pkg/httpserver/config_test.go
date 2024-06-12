@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dwethmar/lingo/pkg/httpserver"
+	"github.com/extreme-business/lingo/pkg/httpserver"
 )
 
 func TestWithAddr(t *testing.T) {

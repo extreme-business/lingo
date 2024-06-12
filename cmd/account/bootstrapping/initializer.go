@@ -8,10 +8,10 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/dwethmar/lingo/cmd/account/password"
-	"github.com/dwethmar/lingo/cmd/account/storage"
-	"github.com/dwethmar/lingo/pkg/clock"
-	"github.com/dwethmar/lingo/pkg/validate"
+	"github.com/extreme-business/lingo/cmd/account/password"
+	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/pkg/validate"
 	"github.com/google/uuid"
 )
 

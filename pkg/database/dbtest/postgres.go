@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	dbpostgres "github.com/dwethmar/lingo/pkg/database/postgres"
+	dbpostgres "github.com/extreme-business/lingo/pkg/database/postgres"
 
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"

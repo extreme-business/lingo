@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/dwethmar/lingo/cmd/account/token"
+	"github.com/extreme-business/lingo/cmd/account/token"
 )
 
 //go:embed testdata/valid_token.txt

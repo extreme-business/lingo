@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/dwethmar/lingo/pkg/database"
+	"github.com/extreme-business/lingo/pkg/database"
 )
 
 var _ database.Conn = &Recorder{}

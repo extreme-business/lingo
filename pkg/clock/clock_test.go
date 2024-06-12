@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dwethmar/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/pkg/clock"
 )
 
 func TestClock_Now(t *testing.T) {

@@ -3,7 +3,7 @@ package token
 import (
 	"time"
 
-	"github.com/dwethmar/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/golang-jwt/jwt/v5"
 )
 

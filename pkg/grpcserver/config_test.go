@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/dwethmar/lingo/pkg/grpcserver"
+	"github.com/extreme-business/lingo/pkg/grpcserver"
 	"google.golang.org/grpc"
 )
 

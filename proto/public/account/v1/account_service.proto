@@ -6,19 +6,19 @@ import "google/api/field_behavior.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "public/account/v1/user.proto";
 
-option go_package = "github.com/dwethmar/lingo/protogen/public/account/v1;account";
+option go_package = "github.com/extreme-business/lingo/protogen/public/account/v1;account";
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {
     title: "Lingo Account API";
     version: "1.0";
     contact: {
       name: "lingo";
-      url: "https://github.com/DWethmar/lingo";
+      url: "https://github.com/extreme-business/lingo";
       email: "denniswethmar@gmail.com";
     };
     license: {
       name: "MIT License"
-      url: "https://github.com/DWethmar/lingo/blob/main/LICENSE";
+      url: "https://github.com/extreme-business/lingo/blob/main/LICENSE";
     };
   };
   host: "localhost:8092";

@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/dwethmar/lingo/cmd/account/app"
-	"github.com/dwethmar/lingo/cmd/account/domain"
-	"github.com/dwethmar/lingo/pkg/grpcerrors"
-	"github.com/dwethmar/lingo/pkg/resource"
-	"github.com/dwethmar/lingo/pkg/validate"
-	protoaccount "github.com/dwethmar/lingo/proto/gen/go/public/account/v1"
+	"github.com/extreme-business/lingo/cmd/account/app"
+	"github.com/extreme-business/lingo/cmd/account/domain"
+	"github.com/extreme-business/lingo/pkg/grpcerrors"
+	"github.com/extreme-business/lingo/pkg/resource"
+	"github.com/extreme-business/lingo/pkg/validate"
+	protoaccount "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 	"github.com/google/uuid"
 )
 

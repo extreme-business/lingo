@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dwethmar/lingo/cmd/account/storage"
-	"github.com/dwethmar/lingo/cmd/account/storage/postgres/organization"
-	"github.com/dwethmar/lingo/cmd/account/storage/postgres/seed"
-	"github.com/dwethmar/lingo/pkg/database"
-	"github.com/dwethmar/lingo/pkg/database/dbtest"
+	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/cmd/account/storage/postgres/organization"
+	"github.com/extreme-business/lingo/cmd/account/storage/postgres/seed"
+	"github.com/extreme-business/lingo/pkg/database"
+	"github.com/extreme-business/lingo/pkg/database/dbtest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 )

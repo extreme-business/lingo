@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/dwethmar/lingo/cmd/account/config"
-	"github.com/dwethmar/lingo/pkg/database/postgres"
-	protoaccount "github.com/dwethmar/lingo/proto/gen/go/public/account/v1"
+	"github.com/extreme-business/lingo/cmd/account/config"
+	"github.com/extreme-business/lingo/pkg/database/postgres"
+	protoaccount "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"

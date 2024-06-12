@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dwethmar/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/cmd/account/storage"
 	"github.com/google/uuid"
 )
 

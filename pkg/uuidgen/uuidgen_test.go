@@ -3,7 +3,7 @@ package uuidgen_test
 import (
 	"testing"
 
-	"github.com/dwethmar/lingo/pkg/uuidgen"
+	"github.com/extreme-business/lingo/pkg/uuidgen"
 )
 
 func TestDefault(t *testing.T) {

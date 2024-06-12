@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/dwethmar/lingo/pkg/database"
+	"github.com/extreme-business/lingo/pkg/database"
 )
 
 // DBHandler is a mock implementation of the database.DBHandler interface.

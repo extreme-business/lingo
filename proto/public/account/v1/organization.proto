@@ -4,7 +4,7 @@ package public.account.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/dwethmar/lingo/protogen/public/account/v1;account";
+option go_package = "github.com/extreme-business/lingo/protogen/public/account/v1;account";
 
 message Organization {
   // The name of the organization. Example: "organizations/dd69abd0-4f8b-4e53-9acd-4c38f87e7047"

@@ -3,7 +3,7 @@ package resource_test
 import (
 	"testing"
 
-	"github.com/dwethmar/lingo/pkg/resource"
+	"github.com/extreme-business/lingo/pkg/resource"
 	"github.com/google/uuid"
 )
 

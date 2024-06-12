@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/dwethmar/lingo/cmd/account/config"
+	"github.com/extreme-business/lingo/cmd/account/config"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )

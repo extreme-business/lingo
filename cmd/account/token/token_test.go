@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dwethmar/lingo/cmd/account/token"
+	"github.com/extreme-business/lingo/cmd/account/token"
 )
 
 func TestExpirationTime(t *testing.T) {

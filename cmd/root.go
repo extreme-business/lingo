@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/dwethmar/lingo/pkg/cli"
+	"github.com/extreme-business/lingo/pkg/cli"
 	"github.com/spf13/cobra"
 )
 

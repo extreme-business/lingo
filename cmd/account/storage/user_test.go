@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dwethmar/lingo/cmd/account/domain"
-	"github.com/dwethmar/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/cmd/account/domain"
+	"github.com/extreme-business/lingo/cmd/account/storage"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 )

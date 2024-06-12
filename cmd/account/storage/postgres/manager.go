@@ -1,10 +1,10 @@
 package postgres
 
 import (
-	"github.com/dwethmar/lingo/cmd/account/storage"
-	"github.com/dwethmar/lingo/cmd/account/storage/postgres/organization"
-	"github.com/dwethmar/lingo/cmd/account/storage/postgres/user"
-	"github.com/dwethmar/lingo/pkg/database"
+	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/cmd/account/storage/postgres/organization"
+	"github.com/extreme-business/lingo/cmd/account/storage/postgres/user"
+	"github.com/extreme-business/lingo/pkg/database"
 )
 
 // NewManager creates a new manager for storage.

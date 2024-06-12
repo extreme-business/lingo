@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/dwethmar/lingo/pkg/validate"
+	"github.com/extreme-business/lingo/pkg/validate"
 	"github.com/google/uuid"
 )
 

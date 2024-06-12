@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/dwethmar/lingo/cmd/account/storage"
-	"github.com/dwethmar/lingo/pkg/database/postgres"
+	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/pkg/database/postgres"
 )
 
 type State struct {

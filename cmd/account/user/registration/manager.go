@@ -3,11 +3,11 @@ package registration
 import (
 	"context"
 
-	"github.com/dwethmar/lingo/cmd/account/domain"
-	"github.com/dwethmar/lingo/cmd/account/password"
-	"github.com/dwethmar/lingo/cmd/account/storage"
-	"github.com/dwethmar/lingo/pkg/clock"
-	"github.com/dwethmar/lingo/pkg/uuidgen"
+	"github.com/extreme-business/lingo/cmd/account/domain"
+	"github.com/extreme-business/lingo/cmd/account/password"
+	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/pkg/uuidgen"
 	"github.com/google/uuid"
 )
 

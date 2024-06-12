@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dwethmar/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/pkg/clock"
 )
 
 // Created is the event that is dispatched when a token is created.
