@@ -1,7 +1,12 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  script: |
-    docker build --target prod -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:tag1 .
-  automapSubstitutions: true
+  args: [
+    'build',
+    '--target', 'prod',
+    '--cache-from', 'europe-west4-docker.pkg.dev/$PROJECT_ID/docker-repository/lingo-image:${TAG_NAME}-${SHORT_SHA}',
+    '-t', 'europe-west4-docker.pkg.dev/$PROJECT_ID/docker-repository/lingo-image:${TAG_NAME}-${SHORT_SHA}',
+    '.'
+  ]
+  env: ['DOCKER_BUILDKIT=1']
 images:
-- 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:tag1'
+- 'europe-west4-docker.pkg.dev/$PROJECT_ID/docker-repository/lingo-image:${TAG_NAME}-${SHORT_SHA}'
