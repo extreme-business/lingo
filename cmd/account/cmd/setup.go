@@ -117,14 +117,18 @@ func setupAccount(
 		return nil, err
 	}
 
-	app := app.New(
-		logger,
-		bootstrapping.New(bootstrapping.Config{
-			SystemUserConfig:         suc,
-			SystemOrganizationConfig: soc,
-			Clock:                    clock,
-			DBManager:                dbManager,
-		}),
+	i, err := bootstrapping.New(bootstrapping.Config{
+		Logger:                   logger,
+		SystemUserConfig:         suc,
+		SystemOrganizationConfig: soc,
+		Clock:                    clock,
+		DBManager:                dbManager,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create bootstrapping initializer: %w", err)
+	}
+
+	app := app.New(logger, i,
 		authentication.NewManager(authentication.Config{
 			Clock:                       clock,
 			SigningKeyRegistration:      []byte(signingKeyRegistration),

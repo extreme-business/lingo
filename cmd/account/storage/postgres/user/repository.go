@@ -20,7 +20,7 @@ import (
 const (
 	userIDConstraint          = "users_pkey"
 	userDisplayNameConstraint = "users_display_name_key"
-	userEmailConstraint       = "users_email_key"
+	userEmailConstraint       = "users_unique_active_email"
 )
 
 var _ storage.UserRepository = &Repository{}
@@ -49,7 +49,7 @@ func scan(u *storage.User, f func(dest ...any) error) error {
 	)
 }
 
-const createQuery = `INSERT INTO users (id, organization_id,  display_name, email, password, create_time, update_time)
+const createQuery = `INSERT INTO users (id, organization_id,  display_name, email, hashed_password, create_time, update_time)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, organization_id, display_name, email, create_time, update_time
 ;`
@@ -116,7 +116,7 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*storage.User, erro
 	return &u, nil
 }
 
-const getByEmailQuery = `SELECT id, organization_id, display_name, password, email, create_time, update_time
+const getByEmailQuery = `SELECT id, organization_id, display_name, hashed_password, email, create_time, update_time
 FROM users
 WHERE email = $1
 ;`
@@ -168,7 +168,7 @@ func (r *Repository) Update(ctx context.Context, in *storage.User, fields []stor
 			set = append(set, fmt.Sprintf("email = $%d", len(args)+1))
 			args = append(args, in.Email)
 		case storage.UserPassword:
-			set = append(set, fmt.Sprintf("password = $%d", len(args)+1))
+			set = append(set, fmt.Sprintf("hashed_password = $%d", len(args)+1))
 			args = append(args, in.HashedPassword)
 		case storage.UserUpdateTime:
 			set = append(set, fmt.Sprintf("update_time = $%d", len(args)+1))

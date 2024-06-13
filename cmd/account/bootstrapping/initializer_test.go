@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -22,8 +23,28 @@ import (
 
 func TestNew(t *testing.T) {
 	t.Run("New", func(t *testing.T) {
-		if bootstrapping.New(bootstrapping.Config{}) == nil {
-			t.Errorf("New() = nil")
+		b, err := bootstrapping.New(bootstrapping.Config{
+			Logger: slog.Default(),
+			SystemUserConfig: bootstrapping.SystemUserConfig{
+				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
+				Email:    "test@test.nl",
+				Password: "password",
+			},
+			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
+				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+				LegalName: "Test Organization",
+			},
+			Clock: clock.Default(),
+			DBManager: database.NewManager(database.NewDBWithHandler(&dbmock.DBHandler{}), func(_ database.Conn) storage.Repositories {
+				return storage.Repositories{}
+			}),
+		})
+		if err != nil {
+			t.Errorf("New() error = %v, want %v", err, nil)
+		}
+
+		if b == nil {
+			t.Errorf("New() got nil, want not nil")
 		}
 	})
 }
@@ -86,14 +107,18 @@ func TestInitializer_SetupValidation(t *testing.T) {
 			ctx := context.Background()
 			manager := database.NewManager(db, func(_ database.Conn) storage.Repositories { return storage.Repositories{} })
 
-			initializer := bootstrapping.New(bootstrapping.Config{
+			initializer, err := bootstrapping.New(bootstrapping.Config{
 				SystemUserConfig:         tt.args.SystemUserConfig,
 				SystemOrganizationConfig: tt.args.SystemOrganizationConfig,
 				Clock:                    tt.args.Clock,
 				DBManager:                manager,
 			})
 
-			err := initializer.Setup(ctx)
+			if err != nil {
+				t.Errorf("New() error = %v, want %v", err, nil)
+			}
+
+			err = initializer.Setup(ctx)
 
 			vErr := &validate.Error{}
 			if errors.As(err, &vErr) {
@@ -137,7 +162,8 @@ func TestInitializer_Setup(t *testing.T) {
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 		dbManager := postgres.NewManager(database.NewDB(db))
 
-		initializer := bootstrapping.New(bootstrapping.Config{
+		initializer, err := bootstrapping.New(bootstrapping.Config{
+			Logger: slog.Default(),
 			SystemUserConfig: bootstrapping.SystemUserConfig{
 				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
 				Email:    "test@test.com",
@@ -150,6 +176,10 @@ func TestInitializer_Setup(t *testing.T) {
 			Clock:     clock.New(time.UTC, func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) }),
 			DBManager: dbManager,
 		})
+
+		if err != nil {
+			t.Errorf("New() error = %v, want %v", err, nil)
+		}
 
 		if err := initializer.Setup(ctx); err != nil {
 			t.Errorf("Setup() error = %v, want %v", err, nil)
@@ -199,7 +229,7 @@ func TestInitializer_Setup(t *testing.T) {
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 		dbManager := postgres.NewManager(database.NewDB(db))
 
-		initializer := bootstrapping.New(bootstrapping.Config{
+		initializer, err := bootstrapping.New(bootstrapping.Config{
 			SystemUserConfig: bootstrapping.SystemUserConfig{
 				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
 				Email:    "test@test.nl",
@@ -212,6 +242,10 @@ func TestInitializer_Setup(t *testing.T) {
 			Clock:     clock.New(time.UTC, func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) }),
 			DBManager: dbManager,
 		})
+
+		if err != nil {
+			t.Errorf("New() error = %v, want %v", err, nil)
+		}
 
 		if err := initializer.Setup(ctx); err != nil {
 			t.Errorf("Setup() error = %v, want %v", err, nil)

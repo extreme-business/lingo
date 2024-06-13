@@ -33,7 +33,7 @@ services:
 
   account-migration:
     image: arigaio/atlas:0.21.1
-    command: migrate apply --url "postgres://postgres:postgres@db:5432/account?sslmode=disable"
+    command: migrate apply --url "postgres://postgres:postgres@db:5432/lingo_account?sslmode=disable"
     volumes:
       - ./cmd/account/migrations:/migrations
     networks:
@@ -49,7 +49,7 @@ services:
       target: debug
     command: ["--", "serve", "account"]
     environment:
-      LINGO_DB_URL: postgres://postgres:postgres@db:5432/account?sslmode=disable
+      LINGO_DB_URL: postgres://postgres:postgres@db:5432/lingo_account?sslmode=disable
       LINGO_GRPC_PORT: 8080
       LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
       LINGO_GRPC_TLS_KEY_FILE: /src/lingo/certs/grpc-lingo.key

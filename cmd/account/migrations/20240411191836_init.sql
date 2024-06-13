@@ -24,7 +24,7 @@ CREATE TABLE users (
 );
 
 -- Create unique index with a partial condition on status
-CREATE UNIQUE INDEX unique_active_email ON users (email) WHERE status = 'active';
+CREATE UNIQUE INDEX users_unique_active_email ON users (email) WHERE status = 'active';
 
 -- Create organizations_users table
 CREATE TABLE organizations_users (

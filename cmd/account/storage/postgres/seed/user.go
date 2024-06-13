@@ -25,7 +25,7 @@ func NewUser(id string, organizationID string, displayName string, email string,
 func InsertUser(ctx context.Context, db *sql.Tx, u *storage.User) error {
 	_, err := db.ExecContext(
 		ctx,
-		`INSERT INTO users (id, organization_id, display_name, email, password, create_time, update_time) 
+		`INSERT INTO users (id, organization_id, display_name, email, hashed_password, create_time, update_time) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		u.ID,
 		u.OrganizationID,

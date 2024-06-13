@@ -1,2 +1,2 @@
-CREATE DATABASE "account";
-GRANT ALL PRIVILEGES ON DATABASE "account" TO postgres;
+CREATE DATABASE "lingo_account";
+GRANT ALL PRIVILEGES ON DATABASE "lingo_account" TO postgres;

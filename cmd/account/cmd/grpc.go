@@ -20,7 +20,6 @@ import (
 // runAccount runs the account server.
 func runAccount(_ *cobra.Command, _ []string) error {
 	logger := slog.Default()
-
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Set up channel to receive signals

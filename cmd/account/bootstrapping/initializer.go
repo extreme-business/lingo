@@ -25,26 +25,24 @@ type SystemUserConfig struct {
 	Password string    // Password is the password of the system user.
 }
 
-func systemUserConfigValidator() func(c SystemUserConfig) error {
+func (c *SystemUserConfig) Validate() error {
 	idValidator := validate.UUIDValidator{validate.UUIDIsNotNil("ID")}
 	emailValidator := validate.StringValidator{validate.StringMinLength("Email", 1)}
 	passwordValidator := validate.StringValidator{validate.StringMinLength("Password", 1)}
 
-	return func(c SystemUserConfig) error {
-		if err := idValidator.Validate(c.ID); err != nil {
-			return err
-		}
-
-		if err := emailValidator.Validate(c.Email); err != nil {
-			return err
-		}
-
-		if err := passwordValidator.Validate(c.Password); err != nil {
-			return err
-		}
-
-		return nil
+	if err := idValidator.Validate(c.ID); err != nil {
+		return err
 	}
+
+	if err := emailValidator.Validate(c.Email); err != nil {
+		return err
+	}
+
+	if err := passwordValidator.Validate(c.Password); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // SystemOrgConfig is the configuration for the system organization.
@@ -54,32 +52,28 @@ type SystemOrgConfig struct {
 }
 
 // systemOrganizationConfigValidator returns a function that validates the system organization configuration.
-func systemOrganizationConfigValidator() func(c SystemOrgConfig) error {
+func (c *SystemOrgConfig) Validate() error {
 	idValidator := validate.UUIDValidator{validate.UUIDIsNotNil("ID")}
 	legalNameValidator := validate.StringValidator{validate.StringMinLength("LegalName", 1)}
 
-	return func(c SystemOrgConfig) error {
-		if err := idValidator.Validate(c.ID); err != nil {
-			return err
-		}
-
-		if err := legalNameValidator.Validate(c.LegalName); err != nil {
-			return err
-		}
-
-		return nil
+	if err := idValidator.Validate(c.ID); err != nil {
+		return err
 	}
+
+	if err := legalNameValidator.Validate(c.LegalName); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Initializer is responsible for setting up the system user and organization.
 type Initializer struct {
-	logger                    *slog.Logger
-	systemUserConfig          SystemUserConfig
-	systemOrganizationConfig  SystemOrgConfig
-	clock                     clock.Now
-	dbManager                 storage.DBManager
-	systemUserConfigValidator func(c SystemUserConfig) error
-	SystemOrgConfigValidator  func(c SystemOrgConfig) error
+	logger                   *slog.Logger
+	systemUserConfig         SystemUserConfig
+	systemOrganizationConfig SystemOrgConfig
+	clock                    clock.Now
+	dbManager                storage.DBManager
 }
 
 type Config struct {
@@ -90,21 +84,51 @@ type Config struct {
 	DBManager                storage.DBManager
 }
 
-func New(config Config) *Initializer {
-	return &Initializer{
-		logger:                    config.Logger,
-		systemUserConfig:          config.SystemUserConfig,
-		systemOrganizationConfig:  config.SystemOrganizationConfig,
-		clock:                     config.Clock,
-		dbManager:                 config.DBManager,
-		systemUserConfigValidator: systemUserConfigValidator(),
-		SystemOrgConfigValidator:  systemOrganizationConfigValidator(),
+func (c Config) Validate() error {
+	if c.Logger == nil {
+		return errors.New("logger is required")
 	}
+
+	if c.Clock == nil {
+		return errors.New("clock is required")
+	}
+
+	if c.DBManager == nil {
+		return errors.New("db manager is required")
+	}
+
+	if err := c.SystemUserConfig.Validate(); err != nil {
+		return fmt.Errorf("invalid system user config: %w", err)
+	}
+
+	if err := c.SystemOrganizationConfig.Validate(); err != nil {
+		return fmt.Errorf("invalid system organization config: %w", err)
+	}
+
+	return nil
+}
+
+func New(config Config) (*Initializer, error) {
+	return &Initializer{
+		logger:                   config.Logger,
+		systemUserConfig:         config.SystemUserConfig,
+		systemOrganizationConfig: config.SystemOrganizationConfig,
+		clock:                    config.Clock,
+		dbManager:                config.DBManager,
+	}, config.Validate()
 }
 
 // Setup sets up the system user and organization.
 func (s *Initializer) Setup(ctx context.Context) error {
 	return s.dbManager.BeginOp(ctx, func(ctx context.Context, r storage.Repositories) error {
+		if r.User == nil {
+			return errors.New("user repository is required")
+		}
+
+		if r.Organization == nil {
+			return errors.New("organization repository is required")
+		}
+
 		return s.setup(ctx, &r)
 	})
 }
@@ -247,14 +271,6 @@ func (s *Initializer) setupUser(ctx context.Context, org *storage.Organization, 
 func (s *Initializer) setup(ctx context.Context, r *storage.Repositories) error {
 	if s.clock == nil {
 		return errors.New("clock is required")
-	}
-
-	if err := s.systemUserConfigValidator(s.systemUserConfig); err != nil {
-		return fmt.Errorf("invalid system user config: %w", err)
-	}
-
-	if err := s.SystemOrgConfigValidator(s.systemOrganizationConfig); err != nil {
-		return fmt.Errorf("invalid system organization config: %w", err)
 	}
 
 	// Create the system organization and user.

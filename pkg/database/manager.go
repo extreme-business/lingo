@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 )
 
@@ -34,10 +35,10 @@ type Manager[T any] struct {
 
 // NewManager creates a new Manager instance, initializing it with a database connection,
 // a transaction manager, and a slice of repository registration functions.
-func NewManager[T any](db *DB, register Factory[T]) *Manager[T] {
+func NewManager[T any](db *DB, f Factory[T]) *Manager[T] {
 	return &Manager[T]{
 		db:      db,
-		factory: register,
+		factory: f,
 		failingRollbackHandler: func(_ context.Context, err error) {
 			log.Printf("failed to rollback transaction: %v", err)
 		},
@@ -56,6 +57,14 @@ func (m *Manager[T]) Op() T {
 
 // BeginOp starts a new operation with a transaction and commits the transaction if all operations succeed; it rolls back the transaction otherwise.
 func (m *Manager[T]) BeginOp(ctx context.Context, operation func(ctx context.Context, r T) error) error {
+	if operation == nil {
+		return fmt.Errorf("no operation provided")
+	}
+
+	if m.factory == nil {
+		return fmt.Errorf("no factory function provided")
+	}
+
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
 		return err
