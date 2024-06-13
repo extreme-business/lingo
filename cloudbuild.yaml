@@ -8,5 +8,7 @@ steps:
     '.'
   ]
   env: ['DOCKER_BUILDKIT=1']
+options:
+  logging: CLOUD_LOGGING_ONLY
 images:
 - 'europe-west4-docker.pkg.dev/$PROJECT_ID/docker-repository/lingo-image:${TAG_NAME}-${SHORT_SHA}'
