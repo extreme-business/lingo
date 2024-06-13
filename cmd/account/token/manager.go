@@ -30,7 +30,7 @@ func NewManager(
 	}
 }
 
-func (m *Manager) New(id string) (string, error) {
+func (m *Manager) Create(id string) (string, error) {
 	token, err := m.Tokenizer.Create(id)
 	if err != nil {
 		return "", err

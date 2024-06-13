@@ -25,10 +25,10 @@ type Manager struct {
 }
 
 type Config struct {
-	Clock                       clock.Now
-	SigningKeyRegistration      []byte
-	SigningKeyAccountentication []byte
-	UserRepo                    storage.UserRepository
+	Clock                    clock.Now
+	SigningKeyRegistration   []byte
+	SigningKeyAuthentication []byte
+	UserRepo                 storage.UserRepository
 }
 
 func NewManager(c Config) *Manager {
@@ -42,7 +42,7 @@ func NewManager(c Config) *Manager {
 		),
 		RefreshTokenManager: token.NewManager(
 			c.Clock,
-			c.SigningKeyAccountentication,
+			c.SigningKeyAuthentication,
 			refreshTokenDuration,
 		),
 	}
@@ -75,12 +75,12 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 		return nil, errors.New("could not authenticate")
 	}
 
-	accountToken, err := m.AccountTokenManager.New(u.ID.String())
+	accountToken, err := m.AccountTokenManager.Create(u.ID.String())
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := m.RefreshTokenManager.New(u.ID.String())
+	refreshToken, err := m.RefreshTokenManager.Create(u.ID.String())
 	if err != nil {
 		return nil, err
 	}

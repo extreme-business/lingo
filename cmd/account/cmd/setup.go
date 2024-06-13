@@ -97,7 +97,7 @@ func setupAccount(
 		return nil, err
 	}
 
-	signingKeyAccountentication, err := config.SigningKeyAccountentication()
+	signingKeyAuthentication, err := config.SigningKeyAuthentication()
 	if err != nil {
 		return nil, err
 	}
@@ -130,10 +130,10 @@ func setupAccount(
 
 	app := app.New(logger, i,
 		authentication.NewManager(authentication.Config{
-			Clock:                       clock,
-			SigningKeyRegistration:      []byte(signingKeyRegistration),
-			SigningKeyAccountentication: []byte(signingKeyAccountentication),
-			UserRepo:                    repos.User,
+			Clock:                    clock,
+			SigningKeyRegistration:   []byte(signingKeyRegistration),
+			SigningKeyAuthentication: []byte(signingKeyAuthentication),
+			UserRepo:                 repos.User,
 		}),
 		registration.NewManager(registration.Config{
 			UUIDgen:  uuidgen,

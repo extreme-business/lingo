@@ -61,7 +61,7 @@ func (c *Config) DatabaseURL() (string, error) { return c.configString(envKeyDat
 func (c *Config) SigningKeyRegistration() (string, error) {
 	return c.configString(envKeySigningKeyRegistration)
 }
-func (c *Config) SigningKeyAccountentication() (string, error) {
+func (c *Config) SigningKeyAuthentication() (string, error) {
 	return c.configString(envKeySigningKeyAuthentication)
 }
 func (c *Config) HTTPPort() (int, error)              { return c.configInt(envKeyHTTPPort) }

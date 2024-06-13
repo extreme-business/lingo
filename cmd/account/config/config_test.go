@@ -80,7 +80,7 @@ func TestConfig_SigningKeyAccountentication(t *testing.T) {
 	})
 
 	t.Run("should return error if LINGO_SIGNING_KEY_AUTHENTICATION is not set", func(t *testing.T) {
-		v, err := config.New().SigningKeyAccountentication()
+		v, err := config.New().SigningKeyAuthentication()
 		if err == nil {
 			t.Errorf("SigningKeyAccountentication() error = %v, wantErr %v", err, true)
 		}
@@ -93,7 +93,7 @@ func TestConfig_SigningKeyAccountentication(t *testing.T) {
 	t.Run("should return the value of LINGO_SIGNING_KEY_AUTHENTICATION", func(t *testing.T) {
 		t.Setenv("LINGO_SIGNING_KEY_AUTHENTICATION", "test")
 		c := config.New()
-		got, err := c.SigningKeyAccountentication()
+		got, err := c.SigningKeyAuthentication()
 		if err != nil {
 			t.Errorf("SigningKeyAccountentication() error = %v, wantErr %v", err, nil)
 		}
