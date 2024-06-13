@@ -63,7 +63,7 @@ func (r *Repository) Create(ctx context.Context, u *storage.User) (*storage.User
 		u.OrganizationID,
 		u.DisplayName,
 		u.Email,
-		u.Password,
+		u.HashedPassword,
 		u.CreateTime,
 		u.UpdateTime,
 	)
@@ -131,7 +131,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*storage.Use
 		&u.ID,
 		&u.OrganizationID,
 		&u.DisplayName,
-		&u.Password,
+		&u.HashedPassword,
 		&u.Email,
 		&u.CreateTime,
 		&u.UpdateTime,
@@ -169,7 +169,7 @@ func (r *Repository) Update(ctx context.Context, in *storage.User, fields []stor
 			args = append(args, in.Email)
 		case storage.UserPassword:
 			set = append(set, fmt.Sprintf("password = $%d", len(args)+1))
-			args = append(args, in.Password)
+			args = append(args, in.HashedPassword)
 		case storage.UserUpdateTime:
 			set = append(set, fmt.Sprintf("update_time = $%d", len(args)+1))
 			args = append(args, in.UpdateTime)

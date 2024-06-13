@@ -12,15 +12,27 @@ import (
 // UserCollection is the name of the user collection.
 const UserCollection = "users"
 
+type UserStatus string
+
+func (s UserStatus) String() string { return string(s) }
+
+const (
+	UserStatusActive   UserStatus = "active"
+	UserStatusInactive UserStatus = "inactive"
+	UserStatusDeleted  UserStatus = "deleted"
+)
+
 // User is a user who uses or operates the system.
 type User struct {
 	ID             uuid.UUID
 	OrganizationID uuid.UUID
 	DisplayName    string
 	Email          string
-	Password       string
+	HashedPassword string
+	Status         UserStatus
 	CreateTime     time.Time
 	UpdateTime     time.Time
+	DeleteTime     time.Time
 	Organization   *Organization // Organization is the primary organization the user belongs to.
 }
 

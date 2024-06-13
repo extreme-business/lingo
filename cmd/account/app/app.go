@@ -8,7 +8,6 @@ import (
 	"github.com/extreme-business/lingo/cmd/account/domain"
 	"github.com/extreme-business/lingo/cmd/account/user/authentication"
 	"github.com/extreme-business/lingo/cmd/account/user/registration"
-	"github.com/google/uuid"
 )
 
 type Account struct {
@@ -36,14 +35,12 @@ func (r *Account) Init(ctx context.Context) error {
 	return r.bootstrapping.Setup(ctx)
 }
 
-func (r *Account) CreateUser(ctx context.Context, organizationID uuid.UUID, displayName, email, password string) (*domain.User, error) {
+func (r *Account) CreateUser(ctx context.Context, u *domain.User, password string) (*domain.User, error) {
 	r.logger.Info("Register")
 
 	user, err := r.registrationManager.Register(ctx, registration.Registration{
-		OrganizationID: organizationID,
-		DisplayName:    displayName,
-		Email:          email,
-		Password:       password,
+		User:     u,
+		Password: password,
 	})
 	if err != nil {
 		return nil, err

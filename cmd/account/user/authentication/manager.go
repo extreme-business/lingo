@@ -71,7 +71,7 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 		return nil, err
 	}
 
-	if !password.Check(c.Password, u.Password) {
+	if !password.Check(c.Password, u.HashedPassword) {
 		return nil, errors.New("could not authenticate")
 	}
 

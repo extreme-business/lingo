@@ -49,12 +49,24 @@ func (s *Server) CreateUser(ctx context.Context, req *protoaccount.CreateUserReq
 		}
 	}
 
+	userIn := req.GetUser()
+	if userIn == nil {
+		return nil, grpcerrors.NewFieldViolationErr("user", []grpcerrors.FieldViolation{
+			{
+				Field:       "user",
+				Description: "user is required",
+			},
+		})
+	}
+
 	user, err := s.account.CreateUser(
 		ctx,
-		orgID,
-		req.GetUser().GetDisplayName(),
-		req.GetUser().GetEmail(),
-		req.GetUser().GetPassword(),
+		&domain.User{
+			OrganizationID: orgID,
+			DisplayName:    userIn.GetDisplayName(),
+			Email:          userIn.GetEmail(),
+		},
+		userIn.GetPassword(),
 	)
 	if err != nil {
 		var vErr *validate.Error
@@ -70,13 +82,13 @@ func (s *Server) CreateUser(ctx context.Context, req *protoaccount.CreateUserReq
 		return nil, err
 	}
 
-	var userout protoaccount.User
-	if err = user.ToProto(&userout); err != nil {
+	var userOut protoaccount.User
+	if err = user.ToProto(&userOut); err != nil {
 		return nil, err
 	}
 
 	return &protoaccount.CreateUserResponse{
-		User: &userout,
+		User: &userOut,
 	}, nil
 }
 

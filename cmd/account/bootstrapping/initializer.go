@@ -188,7 +188,7 @@ func (s *Initializer) setupUser(ctx context.Context, org *storage.Organization, 
 			"organization id": func(u *storage.User) bool { return u.OrganizationID != org.ID },
 			"display name":    func(u *storage.User) bool { return u.DisplayName != systemUserName },
 			"email":           func(u *storage.User) bool { return u.Email != s.systemUserConfig.Email },
-			"password":        func(u *storage.User) bool { return !password.Check(u.Password, hashedPassword) },
+			"password":        func(u *storage.User) bool { return !password.Check(u.HashedPassword, hashedPassword) },
 		} {
 			if isDifferent(user) {
 				updated = true
@@ -203,7 +203,7 @@ func (s *Initializer) setupUser(ctx context.Context, org *storage.Organization, 
 			user.DisplayName = systemUserName
 			user.Email = s.systemUserConfig.Email
 			user.UpdateTime = now
-			user.Password = hashedPassword
+			user.HashedPassword = hashedPassword
 
 			u, uErr := r.Update(ctx, user, []storage.UserField{
 				storage.UserOrganizationID,
@@ -229,7 +229,7 @@ func (s *Initializer) setupUser(ctx context.Context, org *storage.Organization, 
 			OrganizationID: org.ID,
 			DisplayName:    systemUserName,
 			Email:          s.systemUserConfig.Email,
-			Password:       hashedPassword,
+			HashedPassword: hashedPassword,
 			UpdateTime:     now,
 			CreateTime:     now,
 		})

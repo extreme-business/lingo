@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -36,8 +37,10 @@ const (
 	UserDisplayName    UserField = "display_name"
 	UserEmail          UserField = "email"
 	UserPassword       UserField = "password"
+	UserStatus         UserField = "status"
 	UserCreateTime     UserField = "create_time"
 	UserUpdateTime     UserField = "update_time"
+	UserDeleteTime     UserField = "delete_time"
 )
 
 // UserFields returns all user fields.
@@ -48,8 +51,10 @@ func UserFields() []UserField {
 		UserDisplayName,
 		UserEmail,
 		UserPassword,
+		UserStatus,
 		UserCreateTime,
 		UserUpdateTime,
+		UserDeleteTime,
 	}
 }
 
@@ -58,9 +63,11 @@ type User struct {
 	OrganizationID uuid.UUID
 	DisplayName    string
 	Email          string
-	Password       string
+	HashedPassword string
+	Status         string
 	CreateTime     time.Time
 	UpdateTime     time.Time
+	DeleteTime     sql.NullTime
 }
 
 // ToDomain maps a User to a domain.User.
@@ -69,7 +76,7 @@ func (u *User) ToDomain(in *domain.User) {
 	in.OrganizationID = u.OrganizationID
 	in.DisplayName = u.DisplayName
 	in.Email = u.Email
-	in.Password = u.Password
+	in.HashedPassword = u.HashedPassword
 	in.CreateTime = u.CreateTime
 	in.UpdateTime = u.UpdateTime
 }
@@ -80,9 +87,14 @@ func (u *User) FromDomain(in *domain.User) {
 	u.OrganizationID = in.OrganizationID
 	u.DisplayName = in.DisplayName
 	u.Email = in.Email
-	u.Password = in.Password
+	u.HashedPassword = in.HashedPassword
+	u.Status = in.Status.String()
 	u.CreateTime = in.CreateTime
 	u.UpdateTime = in.UpdateTime
+	u.DeleteTime = sql.NullTime{
+		Time:  in.DeleteTime,
+		Valid: !in.DeleteTime.IsZero(),
+	}
 }
 
 // UserSort pairs a field with a direction.

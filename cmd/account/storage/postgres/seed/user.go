@@ -16,7 +16,7 @@ func NewUser(id string, organizationID string, displayName string, email string,
 		OrganizationID: uuid.MustParse(organizationID),
 		DisplayName:    displayName,
 		Email:          email,
-		Password:       password,
+		HashedPassword: password,
 		CreateTime:     createTime,
 		UpdateTime:     updateTime,
 	}
@@ -31,7 +31,7 @@ func InsertUser(ctx context.Context, db *sql.Tx, u *storage.User) error {
 		u.OrganizationID,
 		u.DisplayName,
 		u.Email,
-		u.Password,
+		u.HashedPassword,
 		u.CreateTime,
 		u.UpdateTime,
 	)

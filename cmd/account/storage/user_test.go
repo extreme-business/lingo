@@ -19,9 +19,11 @@ func TestUserFields(t *testing.T) {
 			storage.UserOrganizationID,
 			storage.UserDisplayName,
 			storage.UserEmail,
+			storage.UserStatus,
 			storage.UserPassword,
 			storage.UserCreateTime,
 			storage.UserUpdateTime,
+			storage.UserDeleteTime,
 		}
 		if diff := cmp.Diff(got, want); diff != "" {
 			t.Errorf("UserFields() mismatch (-want +got):\n%s", diff)
@@ -65,7 +67,7 @@ func TestUser_ToDomain(t *testing.T) {
 					OrganizationID: uuid.MustParse("95a2122b-3591-4f42-bfd2-c5b8d3f8c30b"),
 					DisplayName:    "display name",
 					Email:          "email",
-					Password:       "password",
+					HashedPassword: "password",
 					CreateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					UpdateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				},
@@ -75,7 +77,7 @@ func TestUser_ToDomain(t *testing.T) {
 				OrganizationID: uuid.MustParse("95a2122b-3591-4f42-bfd2-c5b8d3f8c30b"),
 				DisplayName:    "display name",
 				Email:          "email",
-				Password:       "password",
+				HashedPassword: "password",
 				CreateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				UpdateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			},
@@ -88,7 +90,7 @@ func TestUser_ToDomain(t *testing.T) {
 				OrganizationID: tt.fields.OrganizationID,
 				DisplayName:    tt.fields.DisplayName,
 				Email:          tt.fields.Email,
-				Password:       tt.fields.Password,
+				HashedPassword: tt.fields.Password,
 				CreateTime:     tt.fields.CreateTime,
 				UpdateTime:     tt.fields.UpdateTime,
 			}
@@ -136,7 +138,7 @@ func TestUser_FromDomain(t *testing.T) {
 					OrganizationID: uuid.MustParse("95a2122b-3591-4f42-bfd2-c5b8d3f8c30b"),
 					DisplayName:    "display name",
 					Email:          "email",
-					Password:       "password",
+					HashedPassword: "password",
 					CreateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					UpdateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				},
@@ -150,7 +152,7 @@ func TestUser_FromDomain(t *testing.T) {
 				OrganizationID: tt.fields.OrganizationID,
 				DisplayName:    tt.fields.DisplayName,
 				Email:          tt.fields.Email,
-				Password:       tt.fields.Password,
+				HashedPassword: tt.fields.Password,
 				CreateTime:     tt.fields.CreateTime,
 				UpdateTime:     tt.fields.UpdateTime,
 			}

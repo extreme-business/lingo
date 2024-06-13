@@ -34,12 +34,12 @@ func TestManager_Register(t *testing.T) {
 		userRepo := userMock.Repository{
 			CreateFunc: func(_ context.Context, u *storage.User) (*storage.User, error) {
 				return &storage.User{
-					ID:          u.ID,
-					DisplayName: u.DisplayName,
-					Email:       u.Email,
-					Password:    u.Password,
-					CreateTime:  u.CreateTime,
-					UpdateTime:  u.UpdateTime,
+					ID:             u.ID,
+					DisplayName:    u.DisplayName,
+					Email:          u.Email,
+					HashedPassword: u.HashedPassword,
+					CreateTime:     u.CreateTime,
+					UpdateTime:     u.UpdateTime,
 				}, nil
 			},
 		}
@@ -53,9 +53,11 @@ func TestManager_Register(t *testing.T) {
 		})
 
 		u, err := m.Register(context.TODO(), registration.Registration{
-			DisplayName: "username",
-			Email:       "email",
-			Password:    "password!1",
+			User: &domain.User{
+				DisplayName: "username",
+				Email:       "email",
+			},
+			Password: "password!1",
 		})
 		if err != nil {
 			t.Fatalf("Register() = %v, want nil", err)
@@ -97,9 +99,11 @@ func TestManager_Register(t *testing.T) {
 		})
 
 		u, err := m.Register(context.TODO(), registration.Registration{
-			DisplayName: "username",
-			Email:       "email",
-			Password:    "password!1",
+			User: &domain.User{
+				DisplayName: "username",
+				Email:       "email",
+			},
+			Password: "password!1",
 		})
 
 		if err == nil {
@@ -133,9 +137,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "a",
-						Email:       "email",
-						Password:    "password!1",
+						User: &domain.User{
+							DisplayName: "username",
+							Email:       "email",
+						},
+						Password: "password!1",
 					},
 				},
 				want:  nil,
@@ -146,9 +152,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
-						Email:       "email",
-						Password:    "password!1",
+						User: &domain.User{
+							DisplayName: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+							Email:       "email",
+						},
+						Password: "password!1",
 					},
 				},
 				want:  nil,
@@ -159,9 +167,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "username!",
-						Email:       "email",
-						Password:    "password!1",
+						User: &domain.User{
+							DisplayName: "username!",
+							Email:       "email",
+						},
+						Password: "password!1",
 					},
 				},
 				want:  nil,
@@ -172,9 +182,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "abcdefghijklmnopqrstuvwxyz",
-						Email:       "a",
-						Password:    "password!1",
+						User: &domain.User{
+							DisplayName: "username",
+							Email:       "e",
+						},
+						Password: "password!1",
 					},
 				},
 				want:  nil,
@@ -185,9 +197,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "abcdefghijklmnopqrstuvwxyz",
-						Email:       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
-						Password:    "password!1",
+						User: &domain.User{
+							DisplayName: "abcdefghijklmnopqrstuvwxyz",
+							Email:       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						},
+						Password: "password!1",
 					},
 				},
 				want:  nil,
@@ -198,9 +212,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "abcdefghijklmnopqrstuvwxyz",
-						Email:       "email",
-						Password:    "a",
+						User: &domain.User{
+							DisplayName: "username",
+							Email:       "email",
+						},
+						Password: "a",
 					},
 				},
 				want:  nil,
@@ -211,9 +227,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "abcdefghijklmnopqrstuvwxyz",
-						Email:       "email",
-						Password:    "1@Aabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						User: &domain.User{
+							DisplayName: "username",
+							Email:       "email",
+						},
+						Password: "1@Aabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
 					},
 				},
 				want:  nil,
@@ -224,9 +242,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "abcdefghijklmnopqrstuvwxyz",
-						Email:       "email",
-						Password:    "password1",
+						User: &domain.User{
+							DisplayName: "username",
+							Email:       "email",
+						},
+						Password: "password1",
 					},
 				},
 				want:  nil,
@@ -237,9 +257,11 @@ func TestManager_Register_validations(t *testing.T) {
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						DisplayName: "abcdefghijklmnopqrstuvwxyz",
-						Email:       "email",
-						Password:    "password!",
+						User: &domain.User{
+							DisplayName: "username",
+							Email:       "email",
+						},
+						Password: "password!",
 					},
 				},
 				want:  nil,

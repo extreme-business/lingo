@@ -8,7 +8,6 @@ import (
 	"github.com/extreme-business/lingo/cmd/account/storage"
 	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
-	"github.com/google/uuid"
 )
 
 // Manager is a manager for registration.
@@ -37,10 +36,8 @@ func NewManager(c Config) *Manager {
 }
 
 type Registration struct {
-	OrganizationID uuid.UUID
-	DisplayName    string
-	Email          string
-	Password       string
+	User     *domain.User
+	Password string
 }
 
 // CreateUser creates a new user.
@@ -55,20 +52,19 @@ func (m *Manager) Register(ctx context.Context, r Registration) (*domain.User, e
 	}
 
 	now := m.clock()
-	user, err := m.userRepo.Create(ctx, &storage.User{
-		ID:             m.uuidgen(),
-		OrganizationID: r.OrganizationID,
-		DisplayName:    r.DisplayName,
-		Email:          r.Email,
-		Password:       hashedPassword,
-		CreateTime:     now,
-		UpdateTime:     now,
-	})
+	s := &storage.User{}
+	s.FromDomain(r.User)
+	s.ID = m.uuidgen()
+	s.HashedPassword = hashedPassword
+	s.CreateTime = now
+	s.UpdateTime = now
+
+	user, err := m.userRepo.Create(ctx, s)
 	if err != nil {
 		return nil, err
 	}
 
-	user.Password = "" // Do not return the password
+	user.HashedPassword = "" // Do not return the password
 	var u domain.User
 	user.ToDomain(&u)
 
