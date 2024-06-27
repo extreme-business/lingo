@@ -17,3 +17,12 @@ func (e *Error) Error() string { return fmt.Sprintf("%s: %s", e.field, e.Message
 
 // Unwrap returns the wrapped error.
 func (e *Error) Unwrap() error { return e.err }
+
+func ToError(err error) (*Error, bool) {
+	if err == nil {
+		return nil, false
+	}
+
+	v, ok := err.(*Error)
+	return v, ok
+}

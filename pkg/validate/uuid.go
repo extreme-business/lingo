@@ -27,11 +27,11 @@ func (v UUIDValidator) Validate(s uuid.UUID) *Error {
 }
 
 // UUIDIsNotNil validates that a UUID is not nil.
-func UUIDIsNotNil(name string) UUIDValidatorFunc {
+func UUIDIsNotNil(field string) UUIDValidatorFunc {
 	return func(s uuid.UUID) *Error {
 		if s == uuid.Nil {
 			return &Error{
-				field:   name,
+				field:   field,
 				Message: "should not be nil",
 				err:     ErrUUIDIsNil,
 			}

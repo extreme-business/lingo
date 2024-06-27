@@ -2,7 +2,6 @@ package bootstrapping_test
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"log/slog"
 	"testing"
@@ -33,6 +32,7 @@ func TestNew(t *testing.T) {
 			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
 				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
 				LegalName: "Test Organization",
+				Slug:      "test-organization",
 			},
 			Clock: clock.Default(),
 			DBManager: database.NewManager(database.NewDBWithHandler(&dbmock.DBHandler{}), func(_ database.Conn) storage.Repositories {
@@ -49,87 +49,36 @@ func TestNew(t *testing.T) {
 	})
 }
 
-func TestInitializer_SetupValidation(t *testing.T) {
-	db := database.NewDBWithHandler(&dbmock.DBHandler{
-		BeginTxFunc: func(_ context.Context, _ *sql.TxOptions) (*database.Tx, error) {
-			return database.NewTxWithHandler(&dbmock.TxHandler{
-				RollbackFunc: func() error { return nil },
-			}), nil
-		},
+func TestInitializer_NewManager(t *testing.T) {
+	t.Run("NewManager", func(t *testing.T) {
+		b, err := bootstrapping.New(bootstrapping.Config{
+			Logger: slog.Default(),
+			SystemUserConfig: bootstrapping.SystemUserConfig{
+				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
+				Email:    "test@test.nl",
+				Password: "password",
+			},
+			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
+				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+				LegalName: "Test Organization",
+				Slug:      "test-organization",
+			},
+			Clock: clock.Default(),
+			DBManager: database.NewManager(database.NewDBWithHandler(&dbmock.DBHandler{}), func(_ database.Conn) storage.Repositories {
+				return storage.Repositories{}
+			}),
+		})
+
+		if err != nil {
+			t.Errorf("New() error = %v, want %v", err, nil)
+		}
+
+		if b == nil {
+			t.Errorf("New() got nil, want not nil")
+		}
+
 	})
 
-	type args struct {
-		SystemUserConfig         bootstrapping.SystemUserConfig
-		SystemOrganizationConfig bootstrapping.SystemOrgConfig
-		Clock                    clock.Now
-	}
-	tests := []struct {
-		name      string
-		args      args
-		want      error
-		wantField string
-	}{
-		{
-			name: "should return an error if the user id is zero",
-			args: args{
-				SystemUserConfig: bootstrapping.SystemUserConfig{
-					ID:    uuid.Nil,
-					Email: "test@test.com",
-				},
-				SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
-					ID:        uuid.MustParse("2fc54df3-30d3-4b21-8dfd-f4076fc1da65"),
-					LegalName: "Test Organization",
-				},
-				Clock: clock.New(time.UTC, func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) }),
-			},
-			want:      validate.ErrUUIDIsNil,
-			wantField: "ID",
-		},
-		{
-			name: "should return an error if the user email is empty",
-			args: args{
-				SystemUserConfig: bootstrapping.SystemUserConfig{
-					ID:    uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
-					Email: "",
-				},
-				SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
-					ID:        uuid.MustParse("2fc54df3-30d3-4b21-8dfd-f4076fc1da65"),
-					LegalName: "Test Organization",
-				},
-				Clock: clock.New(time.UTC, func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) }),
-			},
-			want:      validate.ErrStringMinLength,
-			wantField: "Email",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			manager := database.NewManager(db, func(_ database.Conn) storage.Repositories { return storage.Repositories{} })
-
-			initializer, err := bootstrapping.New(bootstrapping.Config{
-				SystemUserConfig:         tt.args.SystemUserConfig,
-				SystemOrganizationConfig: tt.args.SystemOrganizationConfig,
-				Clock:                    tt.args.Clock,
-				DBManager:                manager,
-			})
-
-			if err != nil {
-				t.Errorf("New() error = %v, want %v", err, nil)
-			}
-
-			err = initializer.Setup(ctx)
-
-			vErr := &validate.Error{}
-			if errors.As(err, &vErr) {
-				if vErr.Field() != tt.wantField {
-					t.Errorf("expected error to be on field %s, got %s", tt.wantField, vErr.Field())
-				}
-			} else {
-				t.Errorf("expected error to be a validate.Error, got %v", err)
-			}
-		})
-	}
 }
 
 func TestInitializer_Setup(t *testing.T) {
@@ -140,6 +89,7 @@ func TestInitializer_Setup(t *testing.T) {
 			seed.NewOrganization(
 				"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
 				"Test Organization",
+				"test-organization",
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
@@ -172,6 +122,7 @@ func TestInitializer_Setup(t *testing.T) {
 			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
 				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
 				LegalName: "Test Organization",
+				Slug:      "test-organization",
 			},
 			Clock:     clock.New(time.UTC, func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) }),
 			DBManager: dbManager,
@@ -196,6 +147,7 @@ func TestInitializer_Setup(t *testing.T) {
 		expectedOrganization := seed.NewOrganization(
 			"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
 			"Test Organization",
+			"test-organization",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
@@ -230,6 +182,7 @@ func TestInitializer_Setup(t *testing.T) {
 		dbManager := postgres.NewManager(database.NewDB(db))
 
 		initializer, err := bootstrapping.New(bootstrapping.Config{
+			Logger: slog.Default(),
 			SystemUserConfig: bootstrapping.SystemUserConfig{
 				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
 				Email:    "test@test.nl",
@@ -238,6 +191,7 @@ func TestInitializer_Setup(t *testing.T) {
 			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
 				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
 				LegalName: "Test Organization",
+				Slug:      "test-organization",
 			},
 			Clock:     clock.New(time.UTC, func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) }),
 			DBManager: dbManager,
@@ -251,4 +205,199 @@ func TestInitializer_Setup(t *testing.T) {
 			t.Errorf("Setup() error = %v, want %v", err, nil)
 		}
 	})
+}
+
+func TestSystemUserConfig_Validate(t *testing.T) {
+	type fields struct {
+		ID       uuid.UUID
+		Email    string
+		Password string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		err      error
+		errField string
+	}{
+		{
+			name: "should return no error if the config is valid",
+			fields: fields{
+				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
+				Email:    "test@test.nl",
+				Password: "Password123@",
+			},
+			err:      nil,
+			errField: "",
+		},
+		{
+			name: "should return an error if the ID is empty",
+			fields: fields{
+				ID:       uuid.Nil,
+				Email:    "test@test.nl",
+				Password: "Password123@",
+			},
+			err:      validate.ErrUUIDIsNil,
+			errField: "ID",
+		},
+		{
+			name: "should return an error if the email is empty",
+			fields: fields{
+				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
+				Email:    "",
+				Password: "Password123@",
+			},
+			err:      validate.ErrStringMinLength,
+			errField: "Email",
+		},
+		{
+			name: "should return an error if the password is empty",
+			fields: fields{
+				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
+				Email:    "test@test.nl",
+				Password: "",
+			},
+			err:      validate.ErrStringMinLength,
+			errField: "Password",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &bootstrapping.SystemUserConfig{
+				ID:       tt.fields.ID,
+				Email:    tt.fields.Email,
+				Password: tt.fields.Password,
+			}
+
+			err := c.Validate()
+			if !errors.Is(err, tt.err) {
+				t.Errorf("SystemUserConfig.Validate() error = %v, wantErr %v", err, tt.err)
+			}
+
+			if v, ok := validate.ToError(err); ok {
+				if v.Field() != tt.errField {
+					t.Errorf("SystemUserConfig.Validate() error field = %v, want %v", v.Field(), tt.errField)
+				}
+			}
+		})
+	}
+}
+
+func TestSystemOrgConfig_Validate(t *testing.T) {
+	type fields struct {
+		ID        uuid.UUID
+		LegalName string
+		Slug      string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		err      error
+		errField string
+	}{
+		{
+			name: "should return no error if the config is valid",
+			fields: fields{
+				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+				LegalName: "Test Organization",
+				Slug:      "test-organization",
+			},
+			err:      nil,
+			errField: "",
+		},
+		{
+			name: "should return an error if the ID is empty",
+			fields: fields{
+				ID:        uuid.Nil,
+				LegalName: "Test Organization",
+				Slug:      "test-organization",
+			},
+			err:      validate.ErrUUIDIsNil,
+			errField: "ID",
+		},
+		{
+			name: "should return an error if the legal name is empty",
+			fields: fields{
+				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+				LegalName: "",
+				Slug:      "test-organization",
+			},
+			err:      validate.ErrStringRequired,
+			errField: "LegalName",
+		},
+		{
+			name: "should return an error if the slug is empty",
+			fields: fields{
+				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+				LegalName: "Test Organization",
+				Slug:      "",
+			},
+			err:      validate.ErrStringRequired,
+			errField: "Slug",
+		},
+		{
+			name: "should return an error if the slug is too long",
+			fields: fields{
+				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+				LegalName: "Test Organization",
+				Slug:      "test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test",
+			},
+			err:      validate.ErrStringMaxLength,
+			errField: "Slug",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &bootstrapping.SystemOrgConfig{
+				ID:        tt.fields.ID,
+				LegalName: tt.fields.LegalName,
+				Slug:      tt.fields.Slug,
+			}
+
+			err := c.Validate()
+			if !errors.Is(err, tt.err) {
+				t.Errorf("SystemOrgConfig.Validate() error = %v, wantErr %v", err, tt.err)
+			}
+
+			if v, ok := validate.ToError(err); ok {
+				if v.Field() != tt.errField {
+					t.Errorf("SystemOrgConfig.Validate() error field = %v, want %v", v.Field(), tt.errField)
+				}
+			}
+		})
+	}
+}
+
+func TestConfig_Validate(t *testing.T) {
+	type fields struct {
+		Logger                   *slog.Logger
+		SystemUserConfig         bootstrapping.SystemUserConfig
+		SystemOrganizationConfig bootstrapping.SystemOrgConfig
+		Clock                    clock.Now
+		DBManager                storage.DBManager
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := bootstrapping.Config{
+				Logger:                   tt.fields.Logger,
+				SystemUserConfig:         tt.fields.SystemUserConfig,
+				SystemOrganizationConfig: tt.fields.SystemOrganizationConfig,
+				Clock:                    tt.fields.Clock,
+				DBManager:                tt.fields.DBManager,
+			}
+			if err := c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Config.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestInitializer_setup(t *testing.T) {
+
 }

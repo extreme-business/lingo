@@ -38,7 +38,7 @@ func New(dbConn database.Conn) *Repository {
 }
 
 // scan scans a user from a sql.Row or sql.Rows.
-func scan(u *storage.User, f func(dest ...any) error) error {
+func scan(f func(dest ...any) error, u *storage.User) error {
 	return f(
 		&u.ID,
 		&u.OrganizationID,
@@ -69,7 +69,7 @@ func (r *Repository) Create(ctx context.Context, u *storage.User) (*storage.User
 	)
 
 	var n storage.User
-	if err := scan(&n, row.Scan); err != nil {
+	if err := scan(row.Scan, &n); err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			if pqErr.Code.Name() == "unique_violation" {
@@ -200,7 +200,7 @@ func (r *Repository) Update(ctx context.Context, in *storage.User, fields []stor
 	}
 
 	var u storage.User
-	if err := scan(&u, row.Scan); err != nil {
+	if err := scan(row.Scan, &u); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, storage.ErrUserNotFound
 		}
@@ -315,7 +315,7 @@ func (r *Repository) List(ctx context.Context, pagination storage.Pagination, so
 	var users []*storage.User
 	for rows.Next() {
 		var u storage.User
-		if err = scan(&u, rows.Scan); err != nil {
+		if err = scan(rows.Scan, &u); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 

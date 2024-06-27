@@ -2,7 +2,6 @@ package grpcserver_test
 
 import (
 	"net"
-	"reflect"
 	"testing"
 
 	"github.com/extreme-business/lingo/pkg/grpcserver"
@@ -24,15 +23,26 @@ func TestWithListener(t *testing.T) {
 }
 
 func TestWithServiceRegistrars(t *testing.T) {
-	t.Run("WithServiceRegistrars", func(t *testing.T) {
+	t.Run("registrar should be registered", func(t *testing.T) {
 		r := func(grpc.ServiceRegistrar) {}
 		opt := grpcserver.WithServiceRegistrar(r)
 
 		c := &grpcserver.Config{}
 		c.Apply(opt)
 
-		if !reflect.DeepEqual(c.ServiceRegistrar, r) {
-			t.Errorf("expected %v, got %v", r, c.ServiceRegistrar)
+		if c.ServiceRegistrar == nil {
+			t.Errorf("expected not nil, got nil")
+		}
+	})
+
+	t.Run("registrar should not be registered", func(t *testing.T) {
+		opt := grpcserver.WithServiceRegistrar(nil)
+
+		c := &grpcserver.Config{}
+		c.Apply(opt)
+
+		if c.ServiceRegistrar != nil {
+			t.Errorf("expected nil, got not nil")
 		}
 	})
 }

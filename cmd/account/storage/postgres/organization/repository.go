@@ -18,8 +18,10 @@ import (
 )
 
 const (
-	orgIDConstraint        = "organizations_pkey"
-	orgLegalNameConstraint = "organizations_legal_name_key"
+	orgIDConstraint         = "organizations_pkey"
+	orgLegalNameConstraint  = "organizations_legal_name_key"
+	orgSlugUniqueConstraint = "organizations_slug_key"
+	orgSlugFormatConstraint = "organizations_chk_slug"
 )
 
 var _ storage.OrganizationRepository = &Repository{}
@@ -37,10 +39,11 @@ func New(db database.Conn) *Repository {
 }
 
 // scan scans a organization from a sql.Row or sql.Rows.
-func scan(o *storage.Organization, f func(dest ...any) error) error {
+func scan(f func(dest ...any) error, o *storage.Organization) error {
 	if err := f(
 		&o.ID,
 		&o.LegalName,
+		&o.Slug,
 		&o.CreateTime,
 		&o.UpdateTime,
 	); err != nil {
@@ -50,9 +53,9 @@ func scan(o *storage.Organization, f func(dest ...any) error) error {
 	return nil
 }
 
-const createQuery = `INSERT INTO organizations (id, legal_name, create_time, update_time)
-VALUES ($1, $2, $3, $4)
-RETURNING id,  legal_name, create_time, update_time
+const createQuery = `INSERT INTO organizations (id, legal_name, slug, create_time, update_time)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id,  legal_name, slug, create_time, update_time
 ;`
 
 // Create a new organization.
@@ -62,12 +65,13 @@ func (r *Repository) Create(ctx context.Context, u *storage.Organization) (*stor
 		createQuery,
 		u.ID,
 		u.LegalName,
+		u.Slug,
 		u.CreateTime,
 		u.UpdateTime,
 	)
 
 	var n storage.Organization
-	if err := scan(&n, row.Scan); err != nil {
+	if err := scan(row.Scan, &n); err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			if pqErr.Code.Name() == "unique_violation" {
@@ -76,6 +80,10 @@ func (r *Repository) Create(ctx context.Context, u *storage.Organization) (*stor
 					return nil, storage.ErrConflictOrganizationID
 				case orgLegalNameConstraint:
 					return nil, storage.ErrConflictOrganizationLegalName
+				case orgSlugUniqueConstraint:
+					return nil, storage.ErrConflictOrganizationSlug
+				case orgSlugFormatConstraint:
+					return nil, storage.ErrInvalidOrganizationSlug
 				}
 			}
 		}
@@ -86,7 +94,7 @@ func (r *Repository) Create(ctx context.Context, u *storage.Organization) (*stor
 	return &n, nil
 }
 
-const getByIDQuery = `SELECT id, legal_name, create_time, update_time
+const getByIDQuery = `SELECT id, legal_name, slug, create_time, update_time
 FROM organizations
 WHERE id = $1
 ;`
@@ -96,7 +104,7 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*storage.Organizati
 	row := r.dbConn.QueryRow(ctx, getByIDQuery, id)
 
 	var o storage.Organization
-	if err := scan(&o, row.Scan); err != nil {
+	if err := scan(row.Scan, &o); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, storage.ErrOrganizationNotFound
 		}
@@ -110,7 +118,7 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*storage.Organizati
 const updateQueryTemplate = `UPDATE organizations
 SET %s
 WHERE id = $%d
-RETURNING id, legal_name, create_time, update_time;`
+RETURNING id, legal_name, slug, create_time, update_time;`
 
 func (r *Repository) Update(ctx context.Context, in *storage.Organization, fields []storage.OrganizationField) (*storage.Organization, error) {
 	if len(fields) == 0 {
@@ -125,6 +133,9 @@ func (r *Repository) Update(ctx context.Context, in *storage.Organization, field
 		case storage.OrganizationLegalName:
 			set = append(set, fmt.Sprintf("legal_name = $%d", len(args)+1))
 			args = append(args, in.LegalName)
+		case storage.OrganizationSlug:
+			set = append(set, fmt.Sprintf("slug = $%d", len(args)+1))
+			args = append(args, in.Slug)
 		case storage.OrganizationUpdateTime:
 			set = append(set, fmt.Sprintf("update_time = $%d", len(args)+1))
 			args = append(args, in.UpdateTime)
@@ -148,7 +159,7 @@ func (r *Repository) Update(ctx context.Context, in *storage.Organization, field
 	row := r.dbConn.QueryRow(ctx, query, args...)
 
 	var o storage.Organization
-	if err := scan(&o, row.Scan); err != nil {
+	if err := scan(row.Scan, &o); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, storage.ErrOrganizationNotFound
 		}
@@ -275,7 +286,7 @@ func (r *Repository) List(ctx context.Context, pagination storage.Pagination, so
 	var organizations []*storage.Organization
 	for rows.Next() {
 		var o storage.Organization
-		if err = scan(&o, rows.Scan); err != nil {
+		if err = scan(rows.Scan, &o); err != nil {
 			return nil, fmt.Errorf("failed to scan organization: %w", err)
 		}
 

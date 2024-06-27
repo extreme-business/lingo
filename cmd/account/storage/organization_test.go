@@ -14,6 +14,7 @@ func TestOrganizationFields(t *testing.T) {
 		want := []storage.OrganizationField{
 			storage.OrganizationID,
 			storage.OrganizationLegalName,
+			storage.OrganizationSlug,
 			storage.OrganizationCreateTime,
 			storage.OrganizationUpdateTime,
 		}

@@ -10,6 +10,7 @@ import (
 	"github.com/extreme-business/lingo/cmd/account/storage"
 	"github.com/extreme-business/lingo/cmd/account/user/registration"
 	"github.com/extreme-business/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/pkg/uuidgen"
 	"github.com/extreme-business/lingo/pkg/validate"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -134,11 +135,18 @@ func TestManager_Register_validations(t *testing.T) {
 		}{
 			{
 				name: "display name too short",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
 						User: &domain.User{
-							DisplayName: "username",
+							DisplayName: "u",
 							Email:       "email",
 						},
 						Password: "password!1",
@@ -149,6 +157,13 @@ func TestManager_Register_validations(t *testing.T) {
 			},
 			{
 				name: "display name too long",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
@@ -164,6 +179,13 @@ func TestManager_Register_validations(t *testing.T) {
 			},
 			{
 				name: "display name contains non allowed special char",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
@@ -179,6 +201,13 @@ func TestManager_Register_validations(t *testing.T) {
 			},
 			{
 				name: "email too short",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
@@ -194,6 +223,13 @@ func TestManager_Register_validations(t *testing.T) {
 			},
 			{
 				name: "email too long",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
@@ -209,6 +245,13 @@ func TestManager_Register_validations(t *testing.T) {
 			},
 			{
 				name: "password too short",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
@@ -224,6 +267,13 @@ func TestManager_Register_validations(t *testing.T) {
 			},
 			{
 				name: "password too long",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
@@ -239,6 +289,13 @@ func TestManager_Register_validations(t *testing.T) {
 			},
 			{
 				name: "password does not contain special char",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
@@ -254,6 +311,13 @@ func TestManager_Register_validations(t *testing.T) {
 			},
 			{
 				name: "password does not contain digit",
+				fields: fields{
+					config: registration.Config{
+						UUIDgen:  uuidgen.Default(),
+						Clock:    clock.Default(),
+						UserRepo: &userMock.Repository{},
+					},
+				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{

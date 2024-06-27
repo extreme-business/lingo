@@ -36,6 +36,7 @@ func TestRepository_Create(t *testing.T) {
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"test",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
@@ -156,6 +157,7 @@ func TestRepository_Get(t *testing.T) {
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"test",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
@@ -226,11 +228,13 @@ func TestRepository_Update(t *testing.T) {
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"test",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
 			seed.NewOrganization(
 				"f226487d-61ff-4a18-a2d9-ab888b22dbc8",
+				"test2",
 				"test2",
 				time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -292,7 +296,7 @@ func TestRepository_Update(t *testing.T) {
 		// check if only the username was updated
 		query := recorder.RowQueries[0].Query
 		query = strings.TrimSpace(strings.ReplaceAll(query, "\n", " "))
-		expectedQuery := "UPDATE users SET organization_id = $1, display_name = $2, email = $3, password = $4, update_time = $5 WHERE id = $6"
+		expectedQuery := "UPDATE users SET organization_id = $1, display_name = $2, email = $3, hashed_password = $4, update_time = $5 WHERE id = $6"
 		expectedQuery += " RETURNING id, organization_id, display_name, email, create_time, update_time;"
 
 		if query != expectedQuery {
@@ -355,6 +359,7 @@ func TestRepository_Update_fields(t *testing.T) {
 		Organizations: []*storage.Organization{
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
+				"test",
 				"test",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -446,6 +451,7 @@ func TestRepository_GetByEmail(t *testing.T) {
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"test",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
@@ -516,6 +522,7 @@ func TestRepository_Delete(t *testing.T) {
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"test",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
@@ -561,6 +568,7 @@ func setupTestDatabaseForList(t *testing.T) *dbtest.PostgresContainer {
 		Organizations: []*storage.Organization{
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
+				"test",
 				"test",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),

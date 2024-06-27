@@ -1,4 +1,4 @@
-SELECT id, legal_name, create_time, update_time
+SELECT id, legal_name, slug, create_time, update_time
 FROM organizations
 {{- if .Predicates }}
 WHERE {{- range $i, $v := .Predicates }}

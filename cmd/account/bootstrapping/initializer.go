@@ -49,18 +49,36 @@ func (c *SystemUserConfig) Validate() error {
 type SystemOrgConfig struct {
 	ID        uuid.UUID // ID is the organization id of the system user.
 	LegalName string    // LegalName is the organization name of the system user.
+	Slug      string    // Slug is the organization slug of the system user.
 }
 
 // systemOrganizationConfigValidator returns a function that validates the system organization configuration.
 func (c *SystemOrgConfig) Validate() error {
-	idValidator := validate.UUIDValidator{validate.UUIDIsNotNil("ID")}
-	legalNameValidator := validate.StringValidator{validate.StringMinLength("LegalName", 1)}
+	idValidator := validate.UUIDValidator{
+		validate.UUIDIsNotNil("ID"),
+	}
+	legalNameValidator := validate.StringValidator{
+		validate.StringIsUtf8("LegalName"),
+		validate.StringRequired("LegalName"),
+		validate.StringMinLength("LegalName", 1),
+	}
+	slugValidator := validate.StringValidator{
+		validate.StringIsUtf8("Slug"),
+		validate.StringRequired("Slug"),
+		validate.StringMinLength("Slug", 1),
+		validate.StringMaxLength("Slug", 100),
+		validate.SpecialCharWhitelist("Slug", '-'),
+	}
 
 	if err := idValidator.Validate(c.ID); err != nil {
 		return err
 	}
 
 	if err := legalNameValidator.Validate(c.LegalName); err != nil {
+		return err
+	}
+
+	if err := slugValidator.Validate(c.Slug); err != nil {
 		return err
 	}
 

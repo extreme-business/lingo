@@ -40,6 +40,7 @@ func TestRepository_Create(t *testing.T) {
 		o := seed.NewOrganization(
 			"268d2306-030a-43d5-9269-8afe666a8cf8",
 			"Test Organization",
+			"test-organization",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
@@ -47,6 +48,7 @@ func TestRepository_Create(t *testing.T) {
 		expected := seed.NewOrganization(
 			"268d2306-030a-43d5-9269-8afe666a8cf8",
 			"Test Organization",
+			"test-organization",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
@@ -69,6 +71,7 @@ func TestRepository_Create(t *testing.T) {
 		o := seed.NewOrganization(
 			"1a707dff-65a3-4cb7-83ee-1b4e7a0ae29e",
 			"Test 765434",
+			"test-organization-1001",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
@@ -80,6 +83,7 @@ func TestRepository_Create(t *testing.T) {
 		o = seed.NewOrganization(
 			"1a707dff-65a3-4cb7-83ee-1b4e7a0ae29e", // Same ID as the previous organization
 			"Test 765437",
+			"test-organization-1002",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
@@ -106,6 +110,7 @@ func TestRepository_Create(t *testing.T) {
 		o := seed.NewOrganization(
 			"2f5c8650-2913-41f1-a196-343c4a27ed75",
 			"Test 9855475",
+			"test-organization-2001",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
@@ -118,6 +123,7 @@ func TestRepository_Create(t *testing.T) {
 		o = seed.NewOrganization(
 			"2f5c8650-2913-41f1-a196-343c4a27ed76", // Different ID
 			"Test 9855475",                         // Same legal name as the previous organization
+			"test-organization-2002",               // Different slug
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
@@ -129,6 +135,46 @@ func TestRepository_Create(t *testing.T) {
 
 		if !errors.Is(err, storage.ErrConflictOrganizationLegalName) {
 			t.Errorf("Create() error = %v, want %v", err, storage.ErrConflictOrganizationLegalName)
+		}
+
+		if rr != nil {
+			t.Errorf("Create() error = %v, want %v", r, nil)
+		}
+	})
+
+	t.Run("should return an error if the organization slug already exists", func(t *testing.T) {
+		ctx := context.Background()
+		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
+		r := organization.New(database.NewDB(db))
+
+		o := seed.NewOrganization(
+			"a5994bc8-2f07-4630-9d30-f4860b4dac11",
+			"Test 1266232",
+			"test-organization-3001",
+			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		)
+
+		_, err := r.Create(ctx, o)
+		if err != nil {
+			t.Errorf("Create() error = %v, want %v", err, nil)
+		}
+
+		o = seed.NewOrganization(
+			"87f3f2d1-9c77-4d0d-a0f1-9da901f160fd", // Different ID
+			"Test 123344",                          // Different legal name
+			"test-organization-3001",               // Same slug as the previous organization
+			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		)
+
+		rr, err := r.Create(ctx, o)
+		if err == nil {
+			t.Errorf("Create() error = %v, want %v", nil, err)
+		}
+
+		if !errors.Is(err, storage.ErrConflictOrganizationSlug) {
+			t.Errorf("Create() error = %v, want %v", err, storage.ErrConflictOrganizationSlug)
 		}
 
 		if rr != nil {
@@ -149,6 +195,7 @@ func TestRepository_Get(t *testing.T) {
 			seed.NewOrganization(
 				"95d2f153-bbb9-4104-8f82-d619f0df5ca9",
 				"Test Organization",
+				"test-organization",
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
@@ -163,6 +210,7 @@ func TestRepository_Get(t *testing.T) {
 		expected := seed.NewOrganization(
 			"95d2f153-bbb9-4104-8f82-d619f0df5ca9",
 			"Test Organization",
+			"test-organization",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
@@ -205,6 +253,7 @@ func TestRepository_Update(t *testing.T) {
 			seed.NewOrganization(
 				"c75823e3-ddc7-4170-ade8-9e7a8152f274",
 				"Test Organization",
+				"test-organization",
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
@@ -220,6 +269,7 @@ func TestRepository_Update(t *testing.T) {
 		o := seed.NewOrganization(
 			"c75823e3-ddc7-4170-ade8-9e7a8152f274",
 			"Test Organization 3",
+			"test-organization-3",
 			time.Date(2021, 1, 1, 1, 0, 0, 0, time.UTC), // create time is also changed, but it should not be updated
 			time.Date(2021, 1, 1, 1, 0, 0, 0, time.UTC),
 		)
@@ -227,12 +277,14 @@ func TestRepository_Update(t *testing.T) {
 		expected := seed.NewOrganization(
 			"c75823e3-ddc7-4170-ade8-9e7a8152f274",
 			"Test Organization 3",
+			"test-organization-3",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 1, 0, 0, 0, time.UTC),
 		)
 
 		got, err := r.Update(ctx, o, []storage.OrganizationField{
 			storage.OrganizationLegalName,
+			storage.OrganizationSlug,
 			storage.OrganizationUpdateTime,
 		})
 		if err != nil {
@@ -245,7 +297,7 @@ func TestRepository_Update(t *testing.T) {
 
 		query := recorder.RowQueries[0].Query
 		query = strings.TrimSpace(strings.ReplaceAll(query, "\n", " "))
-		expectedQuery := "UPDATE organizations SET legal_name = $1, update_time = $2 WHERE id = $3 RETURNING id, legal_name, create_time, update_time;"
+		expectedQuery := "UPDATE organizations SET legal_name = $1, slug = $2, update_time = $3 WHERE id = $4 RETURNING id, legal_name, slug, create_time, update_time;"
 
 		if query != expectedQuery {
 			t.Errorf("Update() query = %v, want %v", query, expectedQuery)
@@ -260,6 +312,7 @@ func TestRepository_Update(t *testing.T) {
 		o := seed.NewOrganization(
 			"a1f67eb8-f2f6-4321-85d5-34690ce9ec5d",
 			"Test Organization 3",
+			"test-organization-3",
 			time.Date(2021, 1, 1, 1, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 1, 0, 0, 0, time.UTC),
 		)
@@ -294,6 +347,7 @@ func TestRepository_Delete(t *testing.T) {
 			seed.NewOrganization(
 				"debf1bcc-55c6-4816-9ff4-bf53a00084be",
 				"Test Organization",
+				"test-organization",
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
@@ -328,11 +382,13 @@ func setupTestDatabaseForList(t *testing.T) *dbtest.PostgresContainer {
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"test",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			),
 			seed.NewOrganization(
 				"7bb443e5-8974-44c2-8b7c-b95124205265",
+				"test2",
 				"test2",
 				time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
@@ -350,12 +406,14 @@ func connectAndCreateRepo(t *testing.T, db database.Conn) (*organization.Reposit
 }
 
 func assertOrganizations(t *testing.T, expect, actual []*storage.Organization) {
+	t.Helper()
 	if diff := cmp.Diff(expect, actual); diff != "" {
 		t.Errorf("Create() mismatch (-want +got):\n%s", diff)
 	}
 }
 
 func assertQuery(t *testing.T, recorder *dbtest.Recorder, expectedQuery string) {
+	t.Helper()
 	if expectedQuery != "" {
 		if len(recorder.Queries) != 1 {
 			t.Errorf("expected 1 query, got %d", len(recorder.Queries))
@@ -411,17 +469,19 @@ func TestRepository_List(t *testing.T) {
 				seed.NewOrganization(
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
 					"test",
+					"test",
 					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				),
 				seed.NewOrganization(
 					"7bb443e5-8974-44c2-8b7c-b95124205265",
 					"test2",
+					"test2",
 					time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 					time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 				),
 			},
-			expectedQuery: "SELECT id, legal_name, create_time, update_time FROM organizations;",
+			expectedQuery: "SELECT id, legal_name, slug, create_time, update_time FROM organizations;",
 			expectedError: nil,
 		},
 		{
@@ -436,11 +496,12 @@ func TestRepository_List(t *testing.T) {
 				seed.NewOrganization(
 					"7bb443e5-8974-44c2-8b7c-b95124205265",
 					"test2",
+					"test2",
 					time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 					time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 				),
 			},
-			expectedQuery: "SELECT id, legal_name, create_time, update_time FROM organizations LIMIT $1 OFFSET $2;",
+			expectedQuery: "SELECT id, legal_name, slug, create_time, update_time FROM organizations LIMIT $1 OFFSET $2;",
 			expectedError: nil,
 		},
 		{
@@ -456,17 +517,19 @@ func TestRepository_List(t *testing.T) {
 				seed.NewOrganization(
 					"7bb443e5-8974-44c2-8b7c-b95124205265",
 					"test2",
+					"test2",
 					time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 					time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 				),
 				seed.NewOrganization(
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
 					"test",
+					"test",
 					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				),
 			},
-			expectedQuery: "SELECT id, legal_name, create_time, update_time FROM organizations ORDER BY update_time DESC;",
+			expectedQuery: "SELECT id, legal_name, slug, create_time, update_time FROM organizations ORDER BY update_time DESC;",
 			expectedError: nil,
 		},
 		{
@@ -489,11 +552,12 @@ func TestRepository_List(t *testing.T) {
 				seed.NewOrganization(
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
 					"test",
+					"test",
 					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				),
 			},
-			expectedQuery: "SELECT id, legal_name, create_time, update_time FROM organizations WHERE legal_name LIKE $1 AND legal_name = $2;",
+			expectedQuery: "SELECT id, legal_name, slug, create_time, update_time FROM organizations WHERE legal_name LIKE $1 AND legal_name = $2;",
 			expectedError: nil,
 		},
 	}

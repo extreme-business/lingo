@@ -5,8 +5,10 @@ CREATE TYPE user_status AS ENUM ('active', 'deleted', 'inactive');
 CREATE TABLE organizations (
     id UUID PRIMARY KEY,
     legal_name VARCHAR(255) NOT NULL UNIQUE,
+    Slug VARCHAR(100) NOT NULL UNIQUE,
     create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    CONSTRAINT organizations_chk_slug CHECK (slug ~ '^[a-z0-9-]+$')
 );
 
 -- Create users table

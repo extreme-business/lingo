@@ -13,6 +13,7 @@ import (
 type Organization struct {
 	ID         uuid.UUID
 	LegalName  string
+	Slug       string
 	CreateTime time.Time
 	UpdateTime time.Time
 }
@@ -24,9 +25,11 @@ var (
 	// Sort.
 	ErrEmptyOrganizationSortField       = errors.New("invalid organization sort field")
 	ErrInvalidOrganizationSortDirection = errors.New("invalid organization sort direction")
-	// Unique constraint errors.
+	// Constraint errors.
 	ErrConflictOrganizationID        = errors.New("unique id conflict")
 	ErrConflictOrganizationLegalName = errors.New("unique legal_name conflict")
+	ErrConflictOrganizationSlug      = errors.New("unique slug conflict")
+	ErrInvalidOrganizationSlug       = errors.New("incorrect slug format")
 	// Immutable errors.
 	ErrImmutableOrganizationID         = errors.New("field id is read-only")
 	ErrImmutableOrganizationCreateTime = errors.New("field create_time is read-only")
@@ -37,6 +40,7 @@ type OrganizationField string
 const (
 	OrganizationID         OrganizationField = "id"
 	OrganizationLegalName  OrganizationField = "legal_name"
+	OrganizationSlug       OrganizationField = "slug"
 	OrganizationCreateTime OrganizationField = "create_time"
 	OrganizationUpdateTime OrganizationField = "update_time"
 )
@@ -46,6 +50,7 @@ func OrganizationFields() []OrganizationField {
 	return []OrganizationField{
 		OrganizationID,
 		OrganizationLegalName,
+		OrganizationSlug,
 		OrganizationCreateTime,
 		OrganizationUpdateTime,
 	}
