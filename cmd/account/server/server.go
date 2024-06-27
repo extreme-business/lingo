@@ -65,6 +65,7 @@ func (s *Server) CreateUser(ctx context.Context, req *protoaccount.CreateUserReq
 			OrganizationID: orgID,
 			DisplayName:    userIn.GetDisplayName(),
 			Email:          userIn.GetEmail(),
+			Status:         domain.UserStatusActive,
 		},
 		userIn.GetPassword(),
 	)

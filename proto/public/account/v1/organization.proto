@@ -10,8 +10,9 @@ message Organization {
   // The name of the organization. Example: "organizations/dd69abd0-4f8b-4e53-9acd-4c38f87e7047"
   string name = 1;
   string legal_name = 2;
+  string slug = 3;
 
-  reserved 3 to 9;
+  reserved 4 to 9;
 
   google.protobuf.Timestamp update_time = 10;
   google.protobuf.Timestamp create_time = 11;

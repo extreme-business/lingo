@@ -39,7 +39,6 @@ type User struct {
 func (u *User) FromProto(in *protoaccount.User) error {
 	var organizationID string
 	var id string
-
 	if _, err := fmt.Sscanf(in.GetName(), "organizations/%s/users/%s", &organizationID, &id); err != nil {
 		return err
 	}
