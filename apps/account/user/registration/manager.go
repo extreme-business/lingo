@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/extreme-business/lingo/cmd/account/domain"
-	"github.com/extreme-business/lingo/cmd/account/password"
-	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/extreme-business/lingo/apps/account/password"
+	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
 )

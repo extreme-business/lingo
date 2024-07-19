@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/pkg/database/postgres"
 )
 

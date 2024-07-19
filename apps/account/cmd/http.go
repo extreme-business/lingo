@@ -7,7 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/extreme-business/lingo/cmd/account/config"
+	"github.com/extreme-business/lingo/pkg/config"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
@@ -31,9 +32,18 @@ func runGateway(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	g := new(errgroup.Group)
-	g.Go(func() error { return s.Serve(ctx) })
+	certFile, err := config.HTTPTLSCertFile()
+	if err != nil {
+		return err
+	}
 
+	keyFile, err := config.HTTPTLSKeyFile()
+	if err != nil {
+		return err
+	}
+
+	g := new(errgroup.Group)
+	g.Go(func() error { return s.ServeTLS(ctx, certFile, keyFile) })
 	return g.Wait()
 }
 

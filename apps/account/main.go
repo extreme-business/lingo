@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/extreme-business/lingo/cmd/account/cmd"
+	"github.com/extreme-business/lingo/apps/account/cmd"
 	"github.com/extreme-business/lingo/pkg/cli"
 )
 

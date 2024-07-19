@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/extreme-business/lingo/cmd/account/storage"
-	"github.com/extreme-business/lingo/cmd/account/storage/postgres/seed"
-	"github.com/extreme-business/lingo/cmd/account/storage/postgres/user"
+	"github.com/extreme-business/lingo/apps/account/storage"
+	"github.com/extreme-business/lingo/apps/account/storage/postgres/seed"
+	"github.com/extreme-business/lingo/apps/account/storage/postgres/user"
 	"github.com/extreme-business/lingo/pkg/database"
 	"github.com/extreme-business/lingo/pkg/database/dbtest"
 	"github.com/google/go-cmp/cmp"

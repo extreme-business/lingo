@@ -13,11 +13,12 @@ type Command interface {
 
 // Run executes the given command and returns the exit code.
 func Run(ctx context.Context, logger *slog.Logger, cmd Command) int {
-	logger.Info("Running", slog.Group("command",
+	logger.Info("running", slog.Group("command",
 		"name", cmd.Name(),
 	))
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
+		logger.Error("failed to execute command", slog.String("error", err.Error()))
 		return 1
 	}
 

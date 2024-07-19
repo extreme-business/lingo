@@ -8,8 +8,8 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/extreme-business/lingo/cmd/account/password"
-	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/apps/account/password"
+	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/validate"
 	"github.com/google/uuid"

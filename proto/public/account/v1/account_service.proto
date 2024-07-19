@@ -93,8 +93,8 @@ message LoginUserResponse {
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The user that was logged in"},
     (google.api.field_behavior) = REQUIRED
   ];
-  string token = 2 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The token that was generated"},
+  string access_token = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The access token that was generated"},
     (google.api.field_behavior) = REQUIRED
   ];
   string refresh_token = 3 [

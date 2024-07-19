@@ -3,7 +3,7 @@ package password_test
 import (
 	"testing"
 
-	"github.com/extreme-business/lingo/cmd/account/password"
+	"github.com/extreme-business/lingo/apps/account/password"
 )
 
 func TestHashPassword(t *testing.T) {

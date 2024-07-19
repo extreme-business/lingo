@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/google/uuid"
 )
 

@@ -24,3 +24,6 @@ CREATE TABLE users (
     deleted_time TIMESTAMP,
     FOREIGN KEY (organization_id) REFERENCES organizations (id)
 );
+
+-- Create unique index with a partial condition on status
+CREATE UNIQUE INDEX users_unique_active_email ON users (email) WHERE status = 'active';

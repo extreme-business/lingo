@@ -16,11 +16,12 @@ func TestNew(t *testing.T) {
 			s := httpserver.New(
 				httpserver.WithAddr("localhost:8080"),
 				httpserver.WithHandler(http.DefaultServeMux),
-				httpserver.WithReadTimeout(5*time.Second),
-				httpserver.WithWriteTimeout(10*time.Second),
-				httpserver.WithIdleTimeout(15*time.Second),
-				httpserver.WithShutdownTimeout(5*time.Second),
-				httpserver.WithTLS("./testdata/test.crt", "./testdata/test.key"),
+				httpserver.WithTimeouts(httpserver.Timeouts{
+					ReadTimeout:     5 * time.Second,
+					WriteTimeout:    10 * time.Second,
+					IdleTimeout:     15 * time.Second,
+					ShutdownTimeout: 5 * time.Second,
+				}),
 			)
 
 			if s == nil {
@@ -30,15 +31,15 @@ func TestNew(t *testing.T) {
 	})
 }
 
-func TestServer_Serve(t *testing.T) {
+func TestServer_ServeTLS(t *testing.T) {
 	type fields struct {
 		httpServer      *http.Server
 		shutdownTimeout time.Duration
-		certFile        string
-		keyFile         string
 	}
 	type args struct {
-		ctx context.Context
+		ctx      context.Context
+		certFile string
+		keyFile  string
 	}
 	tests := []struct {
 		name   string
@@ -57,11 +58,11 @@ func TestServer_Serve(t *testing.T) {
 					IdleTimeout:  15 * time.Second,
 				},
 				shutdownTimeout: 5 * time.Second,
-				certFile:        "",
-				keyFile:         "",
 			},
 			args: args{
-				ctx: context.Background(),
+				ctx:      context.Background(),
+				certFile: "",
+				keyFile:  "",
 			},
 			err: httpserver.ErrCertFilesNotSet,
 		},
@@ -76,8 +77,6 @@ func TestServer_Serve(t *testing.T) {
 					IdleTimeout:  15 * time.Second,
 				},
 				shutdownTimeout: 5 * time.Second,
-				certFile:        "./testdata/test.crt",
-				keyFile:         "./testdata/test.key",
 			},
 			args: args{
 				ctx: func() context.Context {
@@ -85,6 +84,8 @@ func TestServer_Serve(t *testing.T) {
 					cancel()
 					return ctx
 				}(),
+				certFile: "./testdata/test.crt",
+				keyFile:  "./testdata/test.key",
 			},
 			err: nil,
 		},
@@ -99,11 +100,11 @@ func TestServer_Serve(t *testing.T) {
 					IdleTimeout:  15 * time.Second,
 				},
 				shutdownTimeout: 5 * time.Second,
-				certFile:        "",
-				keyFile:         "./testdata/test.key",
 			},
 			args: args{
-				ctx: context.Background(),
+				ctx:      context.Background(),
+				certFile: "",
+				keyFile:  "./testdata/test.key",
 			},
 			err: httpserver.ErrCertFilesNotSet,
 		},
@@ -118,11 +119,11 @@ func TestServer_Serve(t *testing.T) {
 					IdleTimeout:  15 * time.Second,
 				},
 				shutdownTimeout: 5 * time.Second,
-				certFile:        "./testdata/test.crt",
-				keyFile:         "",
 			},
 			args: args{
-				ctx: context.Background(),
+				ctx:      context.Background(),
+				certFile: "./testdata/test.crt",
+				keyFile:  "",
 			},
 			err: httpserver.ErrCertFilesNotSet,
 		},
@@ -132,14 +133,15 @@ func TestServer_Serve(t *testing.T) {
 			s := httpserver.New(
 				httpserver.WithAddr(tt.fields.httpServer.Addr),
 				httpserver.WithHandler(tt.fields.httpServer.Handler),
-				httpserver.WithReadTimeout(tt.fields.httpServer.ReadTimeout),
-				httpserver.WithWriteTimeout(tt.fields.httpServer.WriteTimeout),
-				httpserver.WithIdleTimeout(tt.fields.httpServer.IdleTimeout),
-				httpserver.WithShutdownTimeout(tt.fields.shutdownTimeout),
-				httpserver.WithTLS(tt.fields.certFile, tt.fields.keyFile),
+				httpserver.WithTimeouts(httpserver.Timeouts{
+					ReadTimeout:     tt.fields.httpServer.ReadTimeout,
+					WriteTimeout:    tt.fields.httpServer.WriteTimeout,
+					IdleTimeout:     tt.fields.httpServer.IdleTimeout,
+					ShutdownTimeout: tt.fields.shutdownTimeout,
+				}),
 			)
 
-			err := s.Serve(tt.args.ctx)
+			err := s.ServeTLS(tt.args.ctx, tt.args.certFile, tt.args.keyFile)
 			if !errors.Is(tt.err, err) {
 				t.Errorf("Serve() = %v, want %v", err, tt.err)
 			}

@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/extreme-business/lingo/cmd/account/storage"
-	"github.com/extreme-business/lingo/cmd/account/storage/postgres"
+	"github.com/extreme-business/lingo/apps/account/storage"
+	"github.com/extreme-business/lingo/apps/account/storage/postgres"
 	"github.com/extreme-business/lingo/pkg/database"
 	dbmock "github.com/extreme-business/lingo/pkg/database/mock"
 )

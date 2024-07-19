@@ -8,20 +8,21 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/extreme-business/lingo/cmd/account/app"
-	"github.com/extreme-business/lingo/cmd/account/bootstrapping"
-	"github.com/extreme-business/lingo/cmd/account/config"
-	"github.com/extreme-business/lingo/cmd/account/domain"
-	"github.com/extreme-business/lingo/cmd/account/server"
-	"github.com/extreme-business/lingo/cmd/account/storage/postgres"
-	"github.com/extreme-business/lingo/cmd/account/token"
-	"github.com/extreme-business/lingo/cmd/account/user/authentication"
-	"github.com/extreme-business/lingo/cmd/account/user/registration"
+	"github.com/extreme-business/lingo/apps/account/app"
+	"github.com/extreme-business/lingo/apps/account/bootstrapping"
+	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/extreme-business/lingo/apps/account/server"
+	"github.com/extreme-business/lingo/apps/account/storage/postgres"
+	"github.com/extreme-business/lingo/apps/account/user/authentication"
+	"github.com/extreme-business/lingo/apps/account/user/registration"
 	"github.com/extreme-business/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/pkg/config"
 	"github.com/extreme-business/lingo/pkg/database"
 	"github.com/extreme-business/lingo/pkg/grpcserver"
+	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 	"github.com/extreme-business/lingo/pkg/httpserver"
 	"github.com/extreme-business/lingo/pkg/resource"
+	"github.com/extreme-business/lingo/pkg/token"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
 	protoaccount "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 	"github.com/google/uuid"
@@ -196,14 +197,14 @@ func gatewayMetadataAnnotator(_ context.Context, r *http.Request) metadata.MD {
 func gatewayResponseModifier(_ context.Context, r http.ResponseWriter, m proto.Message) error {
 	// check if login response
 	if msg, ok := m.(*protoaccount.LoginUserResponse); ok {
-		tokenExp, err := token.ExpirationTime(msg.GetToken())
+		tokenExp, err := token.ExpirationTime(msg.GetAccessToken())
 		if err != nil {
 			return err
 		}
 
 		http.SetCookie(r, &http.Cookie{
 			Name:     "token",
-			Value:    msg.GetToken(),
+			Value:    msg.GetAccessToken(),
 			SameSite: http.SameSiteStrictMode,
 			Expires:  tokenExp,
 		})
@@ -222,7 +223,7 @@ func gatewayResponseModifier(_ context.Context, r http.ResponseWriter, m proto.M
 			Path:     "/v1/refresh",
 		})
 
-		msg.Token = ""
+		msg.AccessToken = ""
 		msg.RefreshToken = ""
 	}
 
@@ -237,16 +238,6 @@ func setupHTTPServer(ctx context.Context, config *config.Config) (*httpserver.Se
 	}
 
 	accountURL, err := config.AccountURL()
-	if err != nil {
-		return nil, err
-	}
-
-	certFile, err := config.HTTPTLSCertFile()
-	if err != nil {
-		return nil, err
-	}
-
-	keyFile, err := config.HTTPTLSKeyFile()
 	if err != nil {
 		return nil, err
 	}
@@ -276,11 +267,12 @@ func setupHTTPServer(ctx context.Context, config *config.Config) (*httpserver.Se
 	return httpserver.New(
 		httpserver.WithAddr(fmt.Sprintf(":%d", port)),
 		httpserver.WithHandler(mux),
-		httpserver.WithReadTimeout(readTimeout),
-		httpserver.WithWriteTimeout(writeTimeout),
-		httpserver.WithIdleTimeout(idleTimeout),
-		httpserver.WithShutdownTimeout(shutdownTimeout),
-		httpserver.WithHeaders(httpserver.CorsHeaders()),
-		httpserver.WithTLS(certFile, keyFile),
+		httpserver.WithTimeouts(httpserver.Timeouts{
+			ReadTimeout:     readTimeout,
+			WriteTimeout:    writeTimeout,
+			IdleTimeout:     idleTimeout,
+			ShutdownTimeout: shutdownTimeout,
+		}),
+		httpserver.WithMiddleware(httpmiddleware.SetCorsHeaders),
 	), nil
 }

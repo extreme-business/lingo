@@ -9,7 +9,7 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/extreme-business/lingo/cmd/account/storage"
+	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/pkg/database"
 	"github.com/google/uuid"
 	"github.com/lib/pq"

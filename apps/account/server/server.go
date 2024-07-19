@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/extreme-business/lingo/cmd/account/app"
-	"github.com/extreme-business/lingo/cmd/account/domain"
+	"github.com/extreme-business/lingo/apps/account/app"
+	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/pkg/grpcerrors"
 	"github.com/extreme-business/lingo/pkg/resource"
 	"github.com/extreme-business/lingo/pkg/validate"
@@ -115,7 +115,7 @@ func (s *Server) LoginUser(ctx context.Context, req *protoaccount.LoginUserReque
 
 	return &protoaccount.LoginUserResponse{
 		User:         &user,
-		Token:        login.Token,
+		AccessToken:  login.AccessToken,
 		RefreshToken: login.RefreshToken,
 	}, nil
 }

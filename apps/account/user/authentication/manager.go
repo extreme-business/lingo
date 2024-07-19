@@ -5,11 +5,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/extreme-business/lingo/cmd/account/domain"
-	"github.com/extreme-business/lingo/cmd/account/password"
-	"github.com/extreme-business/lingo/cmd/account/storage"
-	"github.com/extreme-business/lingo/cmd/account/token"
+	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/extreme-business/lingo/apps/account/password"
+	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/pkg/clock"
+	"github.com/extreme-business/lingo/pkg/token"
 )
 
 const (
@@ -56,7 +56,7 @@ type Credentials struct {
 // Authentication is the process of verifying whether someone is who they claim to be when accessing a system.
 type Authentication struct {
 	User         *domain.User
-	Token        string
+	AccessToken  string
 	RefreshToken string
 }
 
@@ -90,7 +90,7 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 
 	return &Authentication{
 		User:         &domainUser,
-		Token:        accountToken,
+		AccessToken:  accountToken,
 		RefreshToken: refreshToken,
 	}, nil
 }

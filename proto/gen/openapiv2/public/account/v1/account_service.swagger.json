@@ -263,9 +263,9 @@
           "$ref": "#/definitions/v1User",
           "description": "The user that was logged in"
         },
-        "token": {
+        "accessToken": {
           "type": "string",
-          "description": "The token that was generated"
+          "description": "The access token that was generated"
         },
         "refreshToken": {
           "type": "string",
@@ -274,7 +274,7 @@
       },
       "required": [
         "user",
-        "token",
+        "accessToken",
         "refreshToken"
       ]
     },

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/extreme-business/lingo/cmd/account/domain"
+	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/google/uuid"
 )
 

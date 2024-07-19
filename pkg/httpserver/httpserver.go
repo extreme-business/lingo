@@ -6,16 +6,19 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 )
 
 var (
-	ErrCertFilesNotSet = errors.New("certFile and keyFile must be set")
+	ErrCertFilesNotSet      = errors.New("certFile and keyFile must be set")
+	ErrServerAlreadyStarted = errors.New("server already started")
 )
 
 type Server struct {
-	httpServer        *http.Server
-	shutdownTimeout   time.Duration
-	certFile, keyFile string
+	httpServer      *http.Server
+	shutdownTimeout time.Duration
+	started         bool
 }
 
 func New(options ...Option) *Server {
@@ -30,27 +33,48 @@ func New(options ...Option) *Server {
 		IdleTimeout:  c.IdleTimeout,
 	}
 
-	if len(c.Headers) > 0 {
-		httpServer.Handler = HeadersMiddleware(httpServer.Handler, c.Headers)
+	if c.Middleware != nil {
+		httpServer.Handler = httpmiddleware.Chain(c.Middleware...)(httpServer.Handler)
 	}
 
 	return &Server{
 		httpServer:      httpServer,
 		shutdownTimeout: c.ShutdownTimeout,
-		certFile:        c.CertFile,
-		keyFile:         c.KeyFile,
 	}
 }
 
-func (s *Server) Serve(ctx context.Context) error {
-	if s.certFile == "" || s.keyFile == "" {
+func (s *Server) ServeTLS(ctx context.Context, certFile, keyFile string) error {
+	if s.started {
+		return ErrServerAlreadyStarted
+	}
+
+	if certFile == "" || keyFile == "" {
 		return ErrCertFilesNotSet
 	}
 
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- s.httpServer.ListenAndServeTLS(s.certFile, s.keyFile)
+		errCh <- s.httpServer.ListenAndServeTLS(certFile, keyFile)
 	}()
+
+	return s.handleErr(ctx, errCh)
+}
+
+func (s *Server) Serve(ctx context.Context) error {
+	if s.started {
+		return ErrServerAlreadyStarted
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- s.httpServer.ListenAndServe()
+	}()
+
+	return s.handleErr(ctx, errCh)
+}
+
+func (s *Server) handleErr(ctx context.Context, errCh chan error) error {
+	s.started = true
 
 	select {
 	case <-ctx.Done():

@@ -1,7 +1,7 @@
 package seed
 
 import (
-	"github.com/extreme-business/lingo/cmd/account/migrations"
+	"github.com/extreme-business/lingo/apps/account/migrations"
 	"github.com/extreme-business/lingo/pkg/database/dbtest"
 )
 

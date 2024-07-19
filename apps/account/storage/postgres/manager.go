@@ -1,9 +1,9 @@
 package postgres
 
 import (
-	"github.com/extreme-business/lingo/cmd/account/storage"
-	"github.com/extreme-business/lingo/cmd/account/storage/postgres/organization"
-	"github.com/extreme-business/lingo/cmd/account/storage/postgres/user"
+	"github.com/extreme-business/lingo/apps/account/storage"
+	"github.com/extreme-business/lingo/apps/account/storage/postgres/organization"
+	"github.com/extreme-business/lingo/apps/account/storage/postgres/user"
 	"github.com/extreme-business/lingo/pkg/database"
 )
 

@@ -3,14 +3,14 @@ package app
 import (
 	"context"
 
-	"github.com/extreme-business/lingo/cmd/account/domain"
-	authentication "github.com/extreme-business/lingo/cmd/account/user/authentication"
+	"github.com/extreme-business/lingo/apps/account/domain"
+	authentication "github.com/extreme-business/lingo/apps/account/user/authentication"
 )
 
 // LoginResult is the result of a login operation.
 type LoginResult struct {
 	User         *domain.User
-	Token        string
+	AccessToken  string
 	RefreshToken string
 }
 
@@ -26,7 +26,7 @@ func (r *Account) LoginUser(ctx context.Context, email, password string) (*Login
 
 	return &LoginResult{
 		User:         a.User,
-		Token:        a.Token,
+		AccessToken:  a.AccessToken,
 		RefreshToken: a.RefreshToken,
 	}, nil
 }

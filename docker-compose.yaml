@@ -96,6 +96,25 @@ services:
     networks:
       - lingo-network
 
+  cms:
+    image: lingo
+    build:
+      dockerfile: Dockerfile
+      target: debug
+    command: ["--", "serve", "cms"]
+    environment:
+      LINGO_HTTP_PORT: 8081
+      LINGO_AUTH_URL: account:8080
+      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+    volumes:
+      - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
+    ports:
+      - 8093:8081
+    depends_on:
+      - account
+    networks:
+      - lingo-network
+
 networks:
   lingo-network:
     driver: bridge

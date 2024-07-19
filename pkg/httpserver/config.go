@@ -3,18 +3,22 @@ package httpserver
 import (
 	"net/http"
 	"time"
+
+	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 )
 
 type Config struct {
-	Addr            string
-	Handler         http.Handler
+	Addr       string
+	Middleware []httpmiddleware.Middleware
+	Handler    http.Handler
+	// timeouts
 	ReadTimeout     time.Duration
 	WriteTimeout    time.Duration
 	IdleTimeout     time.Duration
 	ShutdownTimeout time.Duration
-	CertFile        string // CertFile is the path to the certificate file
-	KeyFile         string // KeyFile is the path to the key file
-	Headers         http.Header
+
+	CertFile string // CertFile is the path to the certificate file
+	KeyFile  string // KeyFile is the path to the key file
 }
 
 func (c *Config) Apply(opts ...Option) {
@@ -47,45 +51,25 @@ func WithHandler(handler http.Handler) Option {
 	})
 }
 
-// WithReadTimeout sets the read timeout for the server.
-func WithReadTimeout(readTimeout time.Duration) Option {
-	return optionFunc(func(c *Config) {
-		c.ReadTimeout = readTimeout
-	})
+type Timeouts struct {
+	ReadTimeout     time.Duration
+	WriteTimeout    time.Duration
+	IdleTimeout     time.Duration
+	ShutdownTimeout time.Duration
 }
 
-// WithWriteTimeout sets the write timeout for the server.
-func WithWriteTimeout(writeTimeout time.Duration) Option {
+func WithTimeouts(t Timeouts) Option {
 	return optionFunc(func(c *Config) {
-		c.WriteTimeout = writeTimeout
-	})
-}
-
-// WithIdleTimeout sets the idle timeout for the server.
-func WithIdleTimeout(idleTimeout time.Duration) Option {
-	return optionFunc(func(c *Config) {
-		c.IdleTimeout = idleTimeout
-	})
-}
-
-// WithShutdownTimeout sets the shutdown timeout for the server.
-func WithShutdownTimeout(shutdownTimeout time.Duration) Option {
-	return optionFunc(func(c *Config) {
-		c.ShutdownTimeout = shutdownTimeout
-	})
-}
-
-// WithTLS sets the certificate and key files for the server.
-func WithTLS(certFile string, keyFile string) Option {
-	return optionFunc(func(c *Config) {
-		c.CertFile = certFile
-		c.KeyFile = keyFile
+		c.ReadTimeout = t.ReadTimeout
+		c.WriteTimeout = t.WriteTimeout
+		c.IdleTimeout = t.IdleTimeout
+		c.ShutdownTimeout = t.ShutdownTimeout
 	})
 }
 
 // WithHeaders sets the headers for the server that will be used in the responses.
-func WithHeaders(headers http.Header) Option {
+func WithMiddleware(m ...httpmiddleware.Middleware) Option {
 	return optionFunc(func(c *Config) {
-		c.Headers = headers
+		c.Middleware = append(c.Middleware, m...)
 	})
 }

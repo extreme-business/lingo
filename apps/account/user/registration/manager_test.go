@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/extreme-business/lingo/cmd/account/domain"
-	"github.com/extreme-business/lingo/cmd/account/storage"
-	"github.com/extreme-business/lingo/cmd/account/user/registration"
+	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/extreme-business/lingo/apps/account/storage"
+	"github.com/extreme-business/lingo/apps/account/user/registration"
 	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
 	"github.com/extreme-business/lingo/pkg/validate"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 
-	userMock "github.com/extreme-business/lingo/cmd/account/storage/mock/user"
+	userMock "github.com/extreme-business/lingo/apps/account/storage/mock/user"
 )
 
 func TestNewManager(t *testing.T) {

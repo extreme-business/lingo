@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/extreme-business/lingo/cmd/account/config"
+	"github.com/extreme-business/lingo/pkg/config"
 	"github.com/extreme-business/lingo/pkg/database/postgres"
 	protoaccount "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 	"github.com/spf13/cobra"
