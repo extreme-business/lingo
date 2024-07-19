@@ -47,4 +47,19 @@ func Test_SetCorsHeaders(t *testing.T) {
 			t.Errorf("headers mismatch (-want +got):\n%s", diff)
 		}
 	})
+
+	t.Run("ok on OPTIONS request", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodOptions, "/", nil)
+
+		httpmiddleware.SetCorsHeaders(handler).ServeHTTP(w, r)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("expected status code %d, got %d", http.StatusOK, w.Code)
+		}
+	})
 }
