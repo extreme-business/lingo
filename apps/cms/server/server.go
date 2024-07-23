@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -24,10 +25,15 @@ const (
 	RefreshTokenDuration = 7 * 24 * time.Hour
 )
 
+type Authenticator interface {
+	Authenticate(ctx context.Context, email, password string) (*auth.SuccessResponse, error)
+}
+
 // New creates a new Server instance
 func New(
 	addr string,
-	authenticator *auth.Authenticator,
+	authenticator Authenticator,
+	authMiddleware httpmiddleware.Middleware,
 ) *httpserver.Server {
 	adminMux := http.NewServeMux()
 	adminMux.HandleFunc("/", homeHandler)
@@ -35,7 +41,7 @@ func New(
 	adminMux.HandleFunc("/contact", contactHandler)
 
 	mux := http.NewServeMux()
-	// mux.Handle("/", httpmiddleware.AuthCookie("access_token", authenticator, "/login", adminMux))
+	mux.Handle("/", authMiddleware(http.HandlerFunc(homeHandler)))
 	mux.HandleFunc("/login", loginHandler(clock.Default(), authenticator))
 
 	return httpserver.New(
@@ -113,7 +119,7 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
     `)
 }
 
-func loginHandler(c clock.Now, a *auth.Authenticator) http.HandlerFunc {
+func loginHandler(c clock.Now, a Authenticator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			r.ParseForm()

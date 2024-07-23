@@ -5,11 +5,11 @@ import (
 	"net/http"
 )
 
-type Validator interface {
-	Validate(ctx context.Context, value string) error
+type TokenValidator interface {
+	Validate(ctx context.Context, token string) error
 }
 
-func AuthCookie(cookieName string, a Validator, failureRedirect string) func(http.Handler) http.Handler {
+func AuthCookie(cookieName string, a TokenValidator, failureRedirect string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie(cookieName)

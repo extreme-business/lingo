@@ -5,7 +5,9 @@ import (
 
 	"github.com/extreme-business/lingo/apps/cms/auth"
 	"github.com/extreme-business/lingo/apps/cms/server"
+	"github.com/extreme-business/lingo/apps/cms/server/token"
 	"github.com/extreme-business/lingo/pkg/config"
+	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 	accountproto "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -25,6 +27,11 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to get account service address: %w", err)
 	}
 
+	authSigningKey, err := config.SigningKeyAuthentication()
+	if err != nil {
+		return fmt.Errorf("failed to get login secret: %w", err)
+	}
+
 	var opts = []grpc.DialOption{}
 	conn, err := grpc.NewClient(accountServiceAddr, opts...)
 	if err != nil {
@@ -36,7 +43,14 @@ func runCms(cmd *cobra.Command, _ []string) error {
 
 	authenticator := auth.NewAuthenticator(accountService)
 
-	server := server.New(fmt.Sprintf(":%d", port), authenticator)
+	tokenValidator := token.NewTokenValidator([]byte(authSigningKey))
+	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login")
+
+	server := server.New(
+		fmt.Sprintf(":%d", port),
+		authenticator,
+		authMiddleware,
+	)
 	if err := server.Serve(ctx); err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
