@@ -60,6 +60,7 @@ services:
       LINGO_SYSTEM_USER_PASSWORD: ${LINGO_SYSTEM_USER_PASSWORD:-}
       LINGO_SYSTEM_ORGANIZATION_ID: f79c9967-2766-4b19-9ef6-e10f3d000c98
       LINGO_SYSTEM_ORGANIZATION_LEGAL_NAME: system
+      LINGO_SYSTEM_ORGANIZATION_SLUG: system
     volumes:
       - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
       - ./certs/grpc-lingo.key:/src/lingo/certs/grpc-lingo.key
@@ -81,7 +82,7 @@ services:
     command: ["--", "serve", "account-gateway"]
     environment:
       LINGO_HTTP_PORT: 8081
-      LINGO_AUTH_URL: account:8080
+      LINGO_ACCOUNT_SERVICE_URL: account:8080
       LINGO_HTTP_TLS_CERT_FILE: /src/lingo/certs/http-lingo.crt
       LINGO_HTTP_TLS_KEY_FILE: /src/lingo/certs/http-lingo.key
       LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
@@ -104,8 +105,9 @@ services:
     command: ["--", "serve", "cms"]
     environment:
       LINGO_HTTP_PORT: 8081
-      LINGO_AUTH_URL: account:8080
+      LINGO_ACCOUNT_SERVICE_URL: account:8080
       LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+      LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
     volumes:
       - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
     ports:

@@ -283,7 +283,7 @@ func TestConfig_AccountURL(t *testing.T) {
 	})
 
 	t.Run("should return error if LINGO_AUTH_URL is not set", func(t *testing.T) {
-		v, err := config.New().AccountURL()
+		v, err := config.New().AccountServiceURL()
 		if err == nil {
 			t.Errorf("AccountUrl() error = %v, wantErr %v", err, true)
 		}
@@ -296,7 +296,7 @@ func TestConfig_AccountURL(t *testing.T) {
 	t.Run("should return the value of LINGO_AUTH_URL", func(t *testing.T) {
 		t.Setenv("LINGO_AUTH_URL", "test")
 		c := config.New()
-		got, err := c.AccountURL()
+		got, err := c.AccountServiceURL()
 		if err != nil {
 			t.Errorf("AccountUrl() error = %v, wantErr %v", err, nil)
 		}

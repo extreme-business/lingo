@@ -63,17 +63,3 @@ func TestWithTimeouts(t *testing.T) {
 		}
 	})
 }
-
-// func TestWithHeaders(t *testing.T) {
-// 	t.Run("WithHeaders", func(t *testing.T) {
-// 		headers := httpmiddleware.CorsHeaders()
-// 		opt := httpserver.WithHeaders(headers)
-
-// 		c := &httpserver.Config{}
-// 		c.Apply(opt)
-
-// 		if !reflect.DeepEqual(c.Headers, headers) {
-// 			t.Errorf("expected %v, got %v", headers, c.Headers)
-// 		}
-// 	})
-// }

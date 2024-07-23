@@ -17,12 +17,13 @@ const (
 	envKeyGrpcTLSKeyFile           = "GRPC_TLS_KEY_FILE"
 	envKeyHTTPTLSKeyFile           = "HTTP_TLS_KEY_FILE"
 	envKeyHTTPTLSCertFile          = "HTTP_TLS_CERT_FILE"
-	envKeyAccountURL               = "AUTH_URL"
+	envKeyAccountServiceURL        = "ACCOUNT_SERVICE_URL"
 	envSystemUserID                = "SYSTEM_USER_ID"
 	envSystemUserEmail             = "SYSTEM_USER_EMAIL"
 	envSystemUserPassword          = "SYSTEM_USER_PASSWORD"
 	envSystemOrganizationID        = "SYSTEM_ORGANIZATION_ID"
 	envSystemOrganizationLegalName = "SYSTEM_ORGANIZATION_LEGAL_NAME"
+	envSystemOrganizationSlug      = "SYSTEM_ORGANIZATION_SLUG"
 )
 
 type Config struct {
@@ -70,11 +71,14 @@ func (c *Config) GrpcTLSCertFile() (string, error)      { return c.getString(env
 func (c *Config) GrpcTLSKeyFile() (string, error)       { return c.getString(envKeyGrpcTLSKeyFile) }
 func (c *Config) HTTPTLSKeyFile() (string, error)       { return c.getString(envKeyHTTPTLSKeyFile) }
 func (c *Config) HTTPTLSCertFile() (string, error)      { return c.getString(envKeyHTTPTLSCertFile) }
-func (c *Config) AccountURL() (string, error)           { return c.getString(envKeyAccountURL) }
+func (c *Config) AccountServiceURL() (string, error)    { return c.getString(envKeyAccountServiceURL) }
 func (c *Config) SystemUserID() (string, error)         { return c.getString(envSystemUserID) }
 func (c *Config) SystemUserEmail() (string, error)      { return c.getString(envSystemUserEmail) }
 func (c *Config) SystemUserPassword() (string, error)   { return c.getString(envSystemUserPassword) }
 func (c *Config) SystemOrganizationID() (string, error) { return c.getString(envSystemOrganizationID) }
 func (c *Config) SystemOrganizationLegalName() (string, error) {
 	return c.getString(envSystemOrganizationLegalName)
+}
+func (c *Config) SystemOrganizationSlug() (string, error) {
+	return c.getString(envSystemOrganizationSlug)
 }

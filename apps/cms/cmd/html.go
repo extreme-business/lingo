@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/extreme-business/lingo/apps/cms/auth"
+	"github.com/extreme-business/lingo/apps/cms/account"
 	"github.com/extreme-business/lingo/apps/cms/server"
 	"github.com/extreme-business/lingo/apps/cms/server/token"
 	"github.com/extreme-business/lingo/pkg/config"
@@ -11,6 +11,7 @@ import (
 	accountproto "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func runCms(cmd *cobra.Command, _ []string) error {
@@ -22,7 +23,7 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to get http port: %w", err)
 	}
 
-	accountServiceAddr, err := config.AccountURL()
+	accountServiceAddr, err := config.AccountServiceURL()
 	if err != nil {
 		return fmt.Errorf("failed to get account service address: %w", err)
 	}
@@ -32,7 +33,9 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to get login secret: %w", err)
 	}
 
-	var opts = []grpc.DialOption{}
+	var opts = []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
 	conn, err := grpc.NewClient(accountServiceAddr, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to create account service client: %w", err)
@@ -40,9 +43,7 @@ func runCms(cmd *cobra.Command, _ []string) error {
 	defer conn.Close()
 
 	accountService := accountproto.NewAccountServiceClient(conn)
-
-	authenticator := auth.NewAuthenticator(accountService)
-
+	authenticator := account.NewManager(accountService)
 	tokenValidator := token.NewTokenValidator([]byte(authSigningKey))
 	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login")
 

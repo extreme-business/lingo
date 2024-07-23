@@ -84,6 +84,11 @@ func getSystemOrgConfig(c *config.Config) (bootstrapping.SystemOrgConfig, error)
 		return soc, err
 	}
 
+	soc.Slug, err = c.SystemOrganizationSlug()
+	if err != nil {
+		return soc, err
+	}
+
 	return soc, nil
 }
 
@@ -237,7 +242,7 @@ func setupHTTPServer(ctx context.Context, config *config.Config) (*httpserver.Se
 		return nil, err
 	}
 
-	accountURL, err := config.AccountURL()
+	accountURL, err := config.AccountServiceURL()
 	if err != nil {
 		return nil, err
 	}

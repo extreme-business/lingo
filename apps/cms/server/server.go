@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/extreme-business/lingo/apps/cms/auth"
+	"github.com/extreme-business/lingo/apps/cms/account"
 	"github.com/extreme-business/lingo/apps/cms/cookie"
+	"github.com/extreme-business/lingo/apps/cms/views"
 	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 	"github.com/extreme-business/lingo/pkg/httpserver"
@@ -25,24 +26,31 @@ const (
 	RefreshTokenDuration = 7 * 24 * time.Hour
 )
 
-type Authenticator interface {
-	Authenticate(ctx context.Context, email, password string) (*auth.SuccessResponse, error)
+type Registration struct {
+	Email    string
+	Password string
+}
+
+// AccountManager is the interface for authenticating users
+type AccountManager interface {
+	Authenticate(ctx context.Context, email, password string) (*account.SuccessResponse, error)
+	Register(ctx context.Context, r account.Registration) error
 }
 
 // New creates a new Server instance
 func New(
 	addr string,
-	authenticator Authenticator,
+	accountManager AccountManager,
 	authMiddleware httpmiddleware.Middleware,
 ) *httpserver.Server {
 	adminMux := http.NewServeMux()
 	adminMux.HandleFunc("/", homeHandler)
-	adminMux.HandleFunc("/about", aboutHandler)
-	adminMux.HandleFunc("/contact", contactHandler)
 
 	mux := http.NewServeMux()
-	mux.Handle("/", authMiddleware(http.HandlerFunc(homeHandler)))
-	mux.HandleFunc("/login", loginHandler(clock.Default(), authenticator))
+	mux.Handle("/", authMiddleware(adminMux))
+
+	mux.HandleFunc("/login", loginHandler(clock.Default(), accountManager))
+	mux.Handle("/register", registerHandler(accountManager))
 
 	return httpserver.New(
 		httpserver.WithAddr(addr),
@@ -77,50 +85,10 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
     `)
 }
 
-func aboutHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>About</title>
-        </head>
-        <body>
-            <h1>About Us</h1>
-            <p>This is the about page.</p>
-            <nav>
-                <a href="/">Home</a> |
-                <a href="/about">About</a> |
-                <a href="/contact">Contact</a>
-            </nav>
-        </body>
-        </html>
-    `)
-}
-
-func contactHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Contact</title>
-        </head>
-        <body>
-            <h1>Contact Us</h1>
-            <p>This is the contact page.</p>
-            <nav>
-                <a href="/">Home</a> |
-                <a href="/about">About</a> |
-                <a href="/contact">Contact</a>
-            </nav>
-        </body>
-        </html>
-    `)
-}
-
-func loginHandler(c clock.Now, a Authenticator) http.HandlerFunc {
+func loginHandler(c clock.Now, a AccountManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+
 		if r.Method == http.MethodPost {
 			r.ParseForm()
 			email := r.Form.Get("email")
@@ -128,7 +96,7 @@ func loginHandler(c clock.Now, a Authenticator) http.HandlerFunc {
 
 			s, err := a.Authenticate(r.Context(), email, password)
 			if err != nil {
-				http.Redirect(w, r, "/admin", http.StatusSeeOther)
+				views.ShowError(w, err.Error())
 				return
 			}
 
@@ -139,7 +107,6 @@ func loginHandler(c clock.Now, a Authenticator) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Content-Type", "text/html")
 		fmt.Fprint(w, `
         <!DOCTYPE html>
         <html>
@@ -183,6 +150,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
                 <a href="/about">About</a> |
                 <a href="/contact">Contact</a>
             </nav>
+            Welkom!
         </body>
         </html>
     `)

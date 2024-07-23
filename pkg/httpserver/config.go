@@ -52,10 +52,10 @@ func WithHandler(handler http.Handler) Option {
 }
 
 type Timeouts struct {
-	ReadTimeout     time.Duration
-	WriteTimeout    time.Duration
-	IdleTimeout     time.Duration
-	ShutdownTimeout time.Duration
+	ReadTimeout     time.Duration // ReadTimeout is the maximum duration for reading the entire request, including the body.
+	WriteTimeout    time.Duration // WriteTimeout is the maximum duration before timing out writes of the response.
+	IdleTimeout     time.Duration // IdleTimeout is the maximum amount of time to wait for the next request when keep-alives are enabled.
+	ShutdownTimeout time.Duration // ShutdownTimeout is the maximum duration before shutting down the server.
 }
 
 func WithTimeouts(t Timeouts) Option {
