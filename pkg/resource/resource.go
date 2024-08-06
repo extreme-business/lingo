@@ -52,20 +52,25 @@ type parentChildLink struct {
 	Child  string
 }
 
+type Rule struct {
+	Parent string
+	Child  string
+}
+
 // Parser is a resource name parser that enforces structured relationships between resources.
 type Parser struct {
-	hierarchyRules []parentChildLink // hierarchyRules is a list of allowed parent-child relationships.
+	hierarchyRules map[Rule]struct{}
 }
 
 func NewParser() *Parser {
 	return &Parser{
-		hierarchyRules: []parentChildLink{},
+		hierarchyRules: make(map[Rule]struct{}),
 	}
 }
 
 // RegisterChild registers a child collection under a parent collection.
 func (p *Parser) RegisterChild(parentCollection, childCollection string) {
-	p.hierarchyRules = append(p.hierarchyRules, parentChildLink{Parent: parentCollection, Child: childCollection})
+	p.hierarchyRules[Rule{Parent: parentCollection, Child: childCollection}] = struct{}{}
 }
 
 // Parse parses a structured resource name into a Resource struct.
@@ -92,11 +97,6 @@ func (p *Parser) Parse(name string) (Resource, error) {
 
 // IsAllowedChild checks if a child collection is allowed under a parent collection.
 func (p *Parser) IsAllowedChild(parentCollection, childCollection string) bool {
-	target := parentChildLink{Parent: parentCollection, Child: childCollection}
-	for _, ac := range p.hierarchyRules {
-		if ac == target {
-			return true
-		}
-	}
-	return false
+	_, ok := p.hierarchyRules[Rule{Parent: parentCollection, Child: childCollection}]
+	return ok
 }
