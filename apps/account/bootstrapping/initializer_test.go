@@ -320,7 +320,7 @@ func TestSystemOrgConfig_Validate(t *testing.T) {
 				LegalName: "",
 				Slug:      "test-organization",
 			},
-			err:      validate.ErrStringRequired,
+			err:      validate.ErrEmptyString,
 			errField: "LegalName",
 		},
 		{
@@ -330,7 +330,7 @@ func TestSystemOrgConfig_Validate(t *testing.T) {
 				LegalName: "Test Organization",
 				Slug:      "",
 			},
-			err:      validate.ErrStringRequired,
+			err:      validate.ErrEmptyString,
 			errField: "Slug",
 		},
 		{

@@ -4,20 +4,28 @@
     <meta charset="UTF-8">
     <title>Error Page</title>
     <style>
-        /* Add your CSS styles here */
+        #error {
+            display: block;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Site Header</h1>
-        <!-- Add more header content here -->
+        <h1>Lingo</h1>
     </header>
     <main>
-        {{ block "content" . }}{{ end }}
+        <code id="error">
+            {{ block "content" . }}{{ end }}
+        </code>
     </main>
     <footer>
-        <p>Site Footer</p>
-        <!-- Add more footer content here -->
+        <p>{{ .Year }}</p>
     </footer>
 </body>
 </html>

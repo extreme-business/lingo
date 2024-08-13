@@ -164,12 +164,12 @@ func setupServer(config *config.Config, serviceRegistrar func(grpc.ServiceRegist
 		return nil, err
 	}
 
-	certFile, err := config.GrpcTLSCertFile()
+	certFile, err := config.AccountServiceTLSCertFile()
 	if err != nil {
 		return nil, err
 	}
 
-	keyFile, err := config.GrpcTLSKeyFile()
+	keyFile, err := config.AccountServiceTLSKeyFile()
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func setupHTTPServer(ctx context.Context, config *config.Config) (*httpserver.Se
 		return nil, err
 	}
 
-	grpcCertFile, err := config.GrpcTLSCertFile()
+	grpcCertFile, err := config.AccountServiceTLSCertFile()
 	if err != nil {
 		return nil, err
 	}

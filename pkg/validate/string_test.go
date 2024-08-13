@@ -39,27 +39,27 @@ func TestStringValidator_Validate(t *testing.T) {
 	}
 }
 
-func TestStringRequired(t *testing.T) {
+func TestStringNotEmpty(t *testing.T) {
 	t.Run("should return a StringValidatorFunc that returns no error if a string is not empty", func(t *testing.T) {
-		v := validate.StringRequired("test")
+		v := validate.StringNotEmpty("test")
 		if err := v("a"); err != nil {
 			t.Errorf("expected no error, got %v", err)
 		}
 	})
 
 	t.Run("should return a StringValidatorFunc that returns an error if a string is empty", func(t *testing.T) {
-		v := validate.StringRequired("test")
+		v := validate.StringNotEmpty("test")
 		if err := v(""); err == nil {
 			t.Error("expected an error")
 		}
 	})
 
 	t.Run("error matches field, message and validate.ErrStringRequired", func(t *testing.T) {
-		v := validate.StringRequired("test")
+		v := validate.StringNotEmpty("test")
 		err := v("")
 
-		if !errors.Is(err, validate.ErrStringRequired) {
-			t.Errorf("expected error to be %v, got %v", validate.ErrStringRequired, err)
+		if !errors.Is(err, validate.ErrEmptyString) {
+			t.Errorf("expected error to be %v, got %v", validate.ErrEmptyString, err)
 		}
 
 		if err.Field() != "test" {
@@ -74,21 +74,21 @@ func TestStringRequired(t *testing.T) {
 
 func TestStringIsUtf8(t *testing.T) {
 	t.Run("should return a StringValidatorFunc that returns no error if a string is valid utf8", func(t *testing.T) {
-		v := validate.StringIsUtf8("test")
+		v := validate.StringUtf8("test")
 		if err := v("a"); err != nil {
 			t.Errorf("expected no error, got %v", err)
 		}
 	})
 
 	t.Run("should return a StringValidatorFunc that returns an error if a string is not valid utf8", func(t *testing.T) {
-		v := validate.StringIsUtf8("test")
+		v := validate.StringUtf8("test")
 		if err := v("\xff"); err == nil {
 			t.Error("expected an error")
 		}
 	})
 
 	t.Run("error matches field, message and validate.ErrStringIsUtf8", func(t *testing.T) {
-		v := validate.StringIsUtf8("test")
+		v := validate.StringUtf8("test")
 		err := v("\xff")
 
 		if !errors.Is(err, validate.ErrStringIsUtf8) {

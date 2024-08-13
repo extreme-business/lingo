@@ -21,7 +21,7 @@ CREATE TABLE users (
     status user_status NOT NULL DEFAULT 'active',
     create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_time TIMESTAMP,
+    delete_time TIMESTAMP,
     FOREIGN KEY (organization_id) REFERENCES organizations (id)
 );
 

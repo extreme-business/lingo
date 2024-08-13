@@ -7,22 +7,22 @@ import (
 )
 
 const ( // env keys.
-	databaseURL            = "DB_URL"
-	signingKeyRegistration = "SIGNING_KEY_REGISTRATION"
-	signingKeyAuth         = "SIGNING_KEY_AUTHENTICATION"
-	httpPort               = "HTTP_PORT"
-	grpcPort               = "GRPC_PORT"
-	grpcTLSCertFile        = "GRPC_TLS_CERT_FILE"
-	grpcTLSKeyFile         = "GRPC_TLS_KEY_FILE"
-	httpTLSKeyFile         = "HTTP_TLS_KEY_FILE"
-	httpTLSCertFile        = "HTTP_TLS_CERT_FILE"
-	accountServiceURL      = "ACCOUNT_SERVICE_URL"
-	sysUserID              = "SYSTEM_USER_ID"
-	sysUserEmail           = "SYSTEM_USER_EMAIL"
-	sysUserPassword        = "SYSTEM_USER_PASSWORD"
-	sysOrganizationID      = "SYSTEM_ORGANIZATION_ID"
-	sysOrgLegalName        = "SYSTEM_ORGANIZATION_LEGAL_NAME"
-	sysOrgSlug             = "SYSTEM_ORGANIZATION_SLUG"
+	databaseURL               = "DB_URL"
+	signingKeyRegistration    = "SIGNING_KEY_REGISTRATION"
+	signingKeyAuth            = "SIGNING_KEY_AUTHENTICATION"
+	httpPort                  = "HTTP_PORT"
+	grpcPort                  = "GRPC_PORT"
+	accountServiceTLSCertFile = "ACCOUNT_TLS_CERT_FILE"
+	accountServiceTLSKeyFile  = "ACCOUNT_TLS_KEY_FILE"
+	httpTLSKeyFile            = "HTTP_TLS_KEY_FILE"
+	httpTLSCertFile           = "HTTP_TLS_CERT_FILE"
+	accountServiceURL         = "ACCOUNT_SERVICE_URL"
+	sysUserID                 = "SYSTEM_USER_ID"
+	sysUserEmail              = "SYSTEM_USER_EMAIL"
+	sysUserPassword           = "SYSTEM_USER_PASSWORD"
+	sysOrganizationID         = "SYSTEM_ORGANIZATION_ID"
+	sysOrgLegalName           = "SYSTEM_ORGANIZATION_LEGAL_NAME"
+	sysOrgSlug                = "SYSTEM_ORGANIZATION_SLUG"
 )
 
 type Config struct {
@@ -62,8 +62,8 @@ func (c *Config) SigningKeyRegistration() (string, error)      { return c.str(si
 func (c *Config) SigningKeyAuthentication() (string, error)    { return c.str(signingKeyAuth) }
 func (c *Config) HTTPPort() (int, error)                       { return c.int(httpPort) }
 func (c *Config) GRPCPort() (int, error)                       { return c.int(grpcPort) }
-func (c *Config) GrpcTLSCertFile() (string, error)             { return c.str(grpcTLSCertFile) }
-func (c *Config) GrpcTLSKeyFile() (string, error)              { return c.str(grpcTLSKeyFile) }
+func (c *Config) AccountServiceTLSCertFile() (string, error)   { return c.str(accountServiceTLSCertFile) }
+func (c *Config) AccountServiceTLSKeyFile() (string, error)    { return c.str(accountServiceTLSKeyFile) }
 func (c *Config) HTTPTLSKeyFile() (string, error)              { return c.str(httpTLSKeyFile) }
 func (c *Config) HTTPTLSCertFile() (string, error)             { return c.str(httpTLSCertFile) }
 func (c *Config) AccountServiceURL() (string, error)           { return c.str(accountServiceURL) }

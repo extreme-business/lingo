@@ -3,6 +3,7 @@ package views
 import (
 	"io"
 	"text/template"
+	"time"
 
 	_ "embed"
 )
@@ -11,6 +12,12 @@ import (
 var errorHTML string
 var errorTemplate = template.Must(template.Must(layoutTemplate.Clone()).Parse(errorHTML))
 
-func ShowError(w io.Writer, message string) error {
-	return errorTemplate.Execute(w, message)
+func Error(w io.Writer, message string) error {
+	// Create a map to hold the data, including the current year
+	data := map[string]interface{}{
+		"Message": message,
+		"Year":    time.Now().Year(),
+	}
+
+	return errorTemplate.Execute(w, data)
 }

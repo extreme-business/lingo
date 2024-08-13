@@ -287,7 +287,7 @@ func (r *Repository) List(ctx context.Context, pagination storage.Pagination, so
 	for rows.Next() {
 		var o storage.Organization
 		if err = scan(rows.Scan, &o); err != nil {
-			return nil, fmt.Errorf("failed to scan organization: %w", err)
+			return nil, err
 		}
 
 		organizations = append(organizations, &o)

@@ -58,13 +58,13 @@ func (c *SystemOrgConfig) Validate() error {
 		validate.UUIDIsNotNil("ID"),
 	}
 	legalNameValidator := validate.StringValidator{
-		validate.StringIsUtf8("LegalName"),
-		validate.StringRequired("LegalName"),
+		validate.StringUtf8("LegalName"),
+		validate.StringNotEmpty("LegalName"),
 		validate.StringMinLength("LegalName", 1),
 	}
 	slugValidator := validate.StringValidator{
-		validate.StringIsUtf8("Slug"),
-		validate.StringRequired("Slug"),
+		validate.StringUtf8("Slug"),
+		validate.StringNotEmpty("Slug"),
 		validate.StringMinLength("Slug", 1),
 		validate.StringMaxLength("Slug", 100),
 		validate.SpecialCharWhitelist("Slug", '-'),
@@ -161,10 +161,10 @@ func (s *Initializer) setupOrganization(ctx context.Context, r storage.Organizat
 		// check if the organization needs to be updated
 		updated := false
 		triggeredChecks := []string{}
-		for check, isDifferent := range map[string]func(*storage.Organization) bool{
+		for check, diff := range map[string]func(*storage.Organization) bool{
 			"legal name": func(o *storage.Organization) bool { return o.LegalName != s.systemOrganizationConfig.LegalName },
 		} {
-			if isDifferent(org) {
+			if diff(org) {
 				triggeredChecks = append(triggeredChecks, check)
 				updated = true
 				break
@@ -196,6 +196,7 @@ func (s *Initializer) setupOrganization(ctx context.Context, r storage.Organizat
 		o, cErr := r.Create(ctx, &storage.Organization{
 			ID:         s.systemOrganizationConfig.ID,
 			LegalName:  s.systemOrganizationConfig.LegalName,
+			Slug:       s.systemOrganizationConfig.Slug,
 			UpdateTime: now,
 			CreateTime: now,
 		})
@@ -226,13 +227,13 @@ func (s *Initializer) setupUser(ctx context.Context, org *storage.Organization, 
 		updated := false
 		triggeredChecks := []string{}
 
-		for check, isDifferent := range map[string]func(*storage.User) bool{
+		for check, diff := range map[string]func(*storage.User) bool{
 			"organization id": func(u *storage.User) bool { return u.OrganizationID != org.ID },
 			"display name":    func(u *storage.User) bool { return u.DisplayName != systemUserName },
 			"email":           func(u *storage.User) bool { return u.Email != s.systemUserConfig.Email },
 			"password":        func(u *storage.User) bool { return !password.Check(u.HashedPassword, hashedPassword) },
 		} {
-			if isDifferent(user) {
+			if diff(user) {
 				updated = true
 				triggeredChecks = append(triggeredChecks, check)
 			}
@@ -294,12 +295,12 @@ func (s *Initializer) setup(ctx context.Context, r *storage.Repositories) error 
 	// Create the system organization and user.
 	org, err := s.setupOrganization(ctx, r.Organization)
 	if err != nil {
-		return fmt.Errorf("failed to set up system organization: %w", err)
+		return err
 	}
 
 	_, err = s.setupUser(ctx, org, r.User)
 	if err != nil {
-		return fmt.Errorf("failed to set up system user: %w", err)
+		return err
 	}
 
 	return nil

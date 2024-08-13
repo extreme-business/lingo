@@ -22,20 +22,21 @@ services:
       - 5422:5432
     restart: unless-stopped
     volumes:
+      - db_data:/var/lib/postgresql/data
       - ./provision/postgres/01-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql
     networks:
       - lingo-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 30
 
   account-migration:
-    image: arigaio/atlas:0.21.1
+    image: arigaio/atlas:0.26.0
     command: migrate apply --url "postgres://postgres:postgres@db:5432/lingo_account?sslmode=disable"
     volumes:
-      - ./cmd/account/migrations:/migrations
+      - ./apps/account/migrations:/migrations
     networks:
       - lingo-network
     depends_on:
@@ -47,16 +48,16 @@ services:
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["--", "serve", "account"]
+    command: [ "--", "serve", "account" ]
     environment:
       LINGO_DB_URL: postgres://postgres:postgres@db:5432/lingo_account?sslmode=disable
       LINGO_GRPC_PORT: 8080
-      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
-      LINGO_GRPC_TLS_KEY_FILE: /src/lingo/certs/grpc-lingo.key
+      LINGO_ACCOUNT_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+      LINGO_ACCOUNT_TLS_KEY_FILE: /src/lingo/certs/grpc-lingo.key
       LINGO_SIGNING_KEY_REGISTRATION: ${LINGO_SIGNING_KEY_REGISTRATION:-}
       LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
       LINGO_SYSTEM_USER_ID: af67170c-092d-439a-9015-aefaf5b5a9d8
-      LINGO_SYSTEM_USER_EMAIL: system
+      LINGO_SYSTEM_USER_EMAIL: system@extreme.business
       LINGO_SYSTEM_USER_PASSWORD: ${LINGO_SYSTEM_USER_PASSWORD:-}
       LINGO_SYSTEM_ORGANIZATION_ID: f79c9967-2766-4b19-9ef6-e10f3d000c98
       LINGO_SYSTEM_ORGANIZATION_LEGAL_NAME: system
@@ -79,13 +80,13 @@ services:
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["--", "serve", "account-gateway"]
+    command: [ "--", "serve", "account-gateway" ]
     environment:
       LINGO_HTTP_PORT: 8081
       LINGO_ACCOUNT_SERVICE_URL: account:8080
       LINGO_HTTP_TLS_CERT_FILE: /src/lingo/certs/http-lingo.crt
       LINGO_HTTP_TLS_KEY_FILE: /src/lingo/certs/http-lingo.key
-      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+      LINGO_ACCOUNT_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
     volumes:
       - ./certs/http-lingo.crt:/src/lingo/certs/http-lingo.crt
       - ./certs/http-lingo.key:/src/lingo/certs/http-lingo.key
@@ -102,20 +103,24 @@ services:
     build:
       dockerfile: Dockerfile
       target: debug
-    command: ["--", "serve", "cms"]
+    command: [ "--", "serve", "cms" ]
     environment:
       LINGO_HTTP_PORT: 8081
       LINGO_ACCOUNT_SERVICE_URL: account:8080
-      LINGO_GRPC_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
+      LINGO_ACCOUNT_TLS_CERT_FILE: /src/lingo/certs/grpc-lingo.crt
       LINGO_SIGNING_KEY_AUTHENTICATION: ${LINGO_SIGNING_KEY_AUTHENTICATION:-}
     volumes:
       - ./certs/grpc-lingo.crt:/src/lingo/certs/grpc-lingo.crt
     ports:
       - 8093:8081
+      - 2102:2345
     depends_on:
       - account
     networks:
       - lingo-network
+
+volumes:
+  db_data:
 
 networks:
   lingo-network:

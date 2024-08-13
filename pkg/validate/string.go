@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ErrStringRequired             = errors.New("string is required")
+	ErrEmptyString                = errors.New("string is empty")
 	ErrStringIsUtf8               = errors.New("string is not valid utf-8")
 	ErrStringMinLength            = errors.New("string is too short")
 	ErrStringMaxLength            = errors.New("string is too long")
@@ -34,20 +34,20 @@ func (v StringValidator) Validate(s string) *Error {
 	return nil
 }
 
-func StringRequired(field string) StringValidatorFunc {
+func StringNotEmpty(field string) StringValidatorFunc {
 	return func(s string) *Error {
 		if s == "" {
 			return &Error{
 				field:   field,
-				Message: "string is required",
-				err:     ErrStringRequired,
+				Message: "string is empty",
+				err:     ErrEmptyString,
 			}
 		}
 		return nil
 	}
 }
 
-func StringIsUtf8(field string) StringValidatorFunc {
+func StringUtf8(field string) StringValidatorFunc {
 	return func(s string) *Error {
 		if !utf8.ValidString(s) {
 			return &Error{

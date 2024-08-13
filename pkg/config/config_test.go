@@ -161,60 +161,60 @@ func TestConfig_GRPCPort(t *testing.T) {
 	})
 }
 
-func TestConfig_GrpcTLSCertFile(t *testing.T) {
+func TestConfig_AccountServiceTLSCertFile(t *testing.T) {
 	t.Cleanup(func() {
 		viper.Reset()
 	})
 
-	t.Run("should return error if LINGO_GRPC_TLS_CERT_FILE is not set", func(t *testing.T) {
-		v, err := config.New().GrpcTLSCertFile()
+	t.Run("should return error if LINGO_ACCOUNT_TLS_CERT_FILE is not set", func(t *testing.T) {
+		v, err := config.New().AccountServiceTLSCertFile()
 		if err == nil {
-			t.Errorf("GrpcTLSCertFile() error = %v, wantErr %v", err, true)
+			t.Errorf("AccountServiceTLSCertFile() error = %v, wantErr %v", err, true)
 		}
 
 		if v != "" {
-			t.Errorf("GrpcTLSCertFile() = %v, want %v", v, "")
+			t.Errorf("AccountServiceTLSCertFile() = %v, want %v", v, "")
 		}
 	})
 
-	t.Run("should return the value of LINGO_GRPC_TLS_CERT_FILE", func(t *testing.T) {
-		t.Setenv("LINGO_GRPC_TLS_CERT_FILE", "test")
+	t.Run("should return the value of ACCOUNT_TLS_CERT_FILE", func(t *testing.T) {
+		t.Setenv("LINGO_ACCOUNT_TLS_CERT_FILE", "test")
 		c := config.New()
-		got, err := c.GrpcTLSCertFile()
+		got, err := c.AccountServiceTLSCertFile()
 		if err != nil {
-			t.Errorf("GrpcTLSCertFile() error = %v, wantErr %v", err, nil)
+			t.Errorf("AccountServiceTLSCertFile() error = %v, wantErr %v", err, nil)
 		}
 		if got != "test" {
-			t.Errorf("GrpcTLSCertFile() = %v, want %v", got, "test")
+			t.Errorf("AccountServiceTLSCertFile() = %v, want %v", got, "test")
 		}
 	})
 }
 
-func TestConfig_GrpcTLSKeyFile(t *testing.T) {
+func TestConfig_AccountServiceTLSKeyFile(t *testing.T) {
 	t.Cleanup(func() {
 		viper.Reset()
 	})
 
-	t.Run("should return error if LINGO_GRPC_TLS_KEY_FILE is not set", func(t *testing.T) {
-		v, err := config.New().GrpcTLSKeyFile()
+	t.Run("should return error if LINGO_ACCOUNT_TLS_KEY_FILE is not set", func(t *testing.T) {
+		v, err := config.New().AccountServiceTLSKeyFile()
 		if err == nil {
-			t.Errorf("GrpcTLSKeyFile() error = %v, wantErr %v", err, true)
+			t.Errorf("AccountServiceTLSKeyFile() error = %v, wantErr %v", err, true)
 		}
 
 		if v != "" {
-			t.Errorf("GrpcTLSKeyFile() = %v, want %v", v, "")
+			t.Errorf("AccountServiceTLSKeyFile() = %v, want %v", v, "")
 		}
 	})
 
 	t.Run("should return the value of LINGO_GRPC_TLS_KEY_FILE", func(t *testing.T) {
-		t.Setenv("LINGO_GRPC_TLS_KEY_FILE", "test")
+		t.Setenv("LINGO_ACCOUNT_TLS_KEY_FILE", "test")
 		c := config.New()
-		got, err := c.GrpcTLSKeyFile()
+		got, err := c.AccountServiceTLSKeyFile()
 		if err != nil {
-			t.Errorf("GrpcTLSKeyFile() error = %v, wantErr %v", err, nil)
+			t.Errorf("AccountServiceTLSKeyFile() error = %v, wantErr %v", err, nil)
 		}
 		if got != "test" {
-			t.Errorf("GrpcTLSKeyFile() = %v, want %v", got, "test")
+			t.Errorf("AccountServiceTLSKeyFile() = %v, want %v", got, "test")
 		}
 	})
 }

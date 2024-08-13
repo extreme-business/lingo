@@ -84,6 +84,32 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
     `)
 }
 
+const loginTemplate = `
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Home</title>
+</head>
+<body>
+	<h1>Welcome to the Home Page</h1>
+	<nav>
+		<a href="/">Home</a> |
+		<a href="/about">About</a> |
+		<a href="/contact">Contact</a>
+	</nav>
+	<div>
+		<form action="/login" method="post">
+			<label for="email">email:</label>
+			<input type="email" id="email" name="email">
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password">
+			<button type="submit">Login</button>
+		</form>
+	</div>
+</body>
+</html>
+`
+
 func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
@@ -95,42 +121,19 @@ func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 
 			s, err := a.Authenticate(r.Context(), email, password)
 			if err != nil {
-				views.ShowError(w, err.Error())
+				views.Error(w, err.Error())
 				return
 			}
 
-			cookie.SetAccessToken(w, s.AccessToken, c().Add(AccessTokenDuration))
-			cookie.SetRefreshToken(w, s.RefreshToken, c().Add(RefreshTokenDuration))
+			now := c()
+			cookie.SetAccessToken(w, s.AccessToken, now.Add(AccessTokenDuration))
+			cookie.SetRefreshToken(w, s.RefreshToken, now.Add(RefreshTokenDuration))
 
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
 
-		fmt.Fprint(w, `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Home</title>
-        </head>
-        <body>
-            <h1>Welcome to the Home Page</h1>
-            <nav>
-                <a href="/">Home</a> |
-                <a href="/about">About</a> |
-                <a href="/contact">Contact</a>
-            </nav>
-			<div>
-				<form action="/login" method="post">
-					<label for="username">Username:</label>
-					<input type="text" id="username" name="username">
-					<label for="password">Password:</label>
-					<input type="password" id="password" name="password">
-					<button type="submit">Login</button>
-				</form>
-			</div>
-        </body>
-        </html>
-    `)
+		fmt.Fprint(w, loginTemplate)
 	}
 }
 

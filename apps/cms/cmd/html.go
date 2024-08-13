@@ -11,7 +11,7 @@ import (
 	accountproto "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 func runCms(cmd *cobra.Command, _ []string) error {
@@ -23,19 +23,30 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to get http port: %w", err)
 	}
 
+	authSigningKey, err := config.SigningKeyAuthentication()
+	if err != nil {
+		return fmt.Errorf("failed to get signing key: %w", err)
+	}
+
 	accountServiceAddr, err := config.AccountServiceURL()
 	if err != nil {
 		return fmt.Errorf("failed to get account service address: %w", err)
 	}
 
-	authSigningKey, err := config.SigningKeyAuthentication()
+	accountServiceCertFile, err := config.AccountServiceTLSCertFile()
 	if err != nil {
-		return fmt.Errorf("failed to get login secret: %w", err)
+		return fmt.Errorf("failed to get account service cert file: %w", err)
 	}
 
-	var opts = []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	creds, err := credentials.NewClientTLSFromFile(accountServiceCertFile, "lingo")
+	if err != nil {
+		return fmt.Errorf("failed to load TLS keys: %w", err)
 	}
+
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(creds),
+	}
+
 	conn, err := grpc.NewClient(accountServiceAddr, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to create account service client: %w", err)
