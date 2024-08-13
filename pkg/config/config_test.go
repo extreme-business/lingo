@@ -282,7 +282,7 @@ func TestConfig_AccountURL(t *testing.T) {
 		viper.Reset()
 	})
 
-	t.Run("should return error if LINGO_AUTH_URL is not set", func(t *testing.T) {
+	t.Run("should return error if LINGO_ACCOUNT_SERVICE_URL is not set", func(t *testing.T) {
 		v, err := config.New().AccountServiceURL()
 		if err == nil {
 			t.Errorf("AccountUrl() error = %v, wantErr %v", err, true)

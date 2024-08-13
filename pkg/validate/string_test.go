@@ -66,8 +66,8 @@ func TestStringNotEmpty(t *testing.T) {
 			t.Errorf("expected field to be test, got %v", err.Field())
 		}
 
-		if err.Error() != "test: string is required" {
-			t.Errorf("expected error message to be 'test: string is required', got %v", err.Error())
+		if err.Error() != "test: string is empty" {
+			t.Errorf("expected error message to be 'test: string is empty, got %v", err.Error())
 		}
 	})
 }
