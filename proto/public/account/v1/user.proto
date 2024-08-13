@@ -20,4 +20,5 @@ message User {
 
   google.protobuf.Timestamp update_time = 10;
   google.protobuf.Timestamp create_time = 11;
+  google.protobuf.Timestamp delete_time = 12;
 }

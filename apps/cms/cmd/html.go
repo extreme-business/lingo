@@ -70,7 +70,7 @@ func runCms(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func NewHtmlCmd() *cobra.Command {
+func NewHTMLCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "cms",
 		Short: "Start the cms service",

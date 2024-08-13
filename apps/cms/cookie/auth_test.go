@@ -1,8 +1,10 @@
-package cookie
+package cookie_test
 
 import (
 	"net/http"
 	"testing"
+
+	"github.com/extreme-business/lingo/apps/cms/cookie"
 )
 
 func TestGetAccessToken(t *testing.T) {
@@ -13,7 +15,7 @@ func TestGetAccessToken(t *testing.T) {
 			Value: "access",
 		})
 
-		token, err := GetAccessToken(r)
+		token, err := cookie.AccessToken(r)
 		if err != nil {
 			t.Error("expected no error")
 		}
@@ -25,9 +27,7 @@ func TestGetAccessToken(t *testing.T) {
 
 	t.Run("should return error if access token is not found", func(t *testing.T) {
 		r, _ := http.NewRequest(http.MethodGet, "/", nil)
-
-		_, err := GetAccessToken(r)
-		if err == nil {
+		if _, err := cookie.AccessToken(r); err == nil {
 			t.Error("expected error")
 		}
 	})
@@ -41,7 +41,7 @@ func TestGetRefreshToken(t *testing.T) {
 			Value: "refresh",
 		})
 
-		token, err := GetRefreshToken(r)
+		token, err := cookie.RefreshToken(r)
 		if err != nil {
 			t.Error("expected no error")
 		}
@@ -54,8 +54,7 @@ func TestGetRefreshToken(t *testing.T) {
 	t.Run("should return error if refresh token is not found", func(t *testing.T) {
 		r, _ := http.NewRequest(http.MethodGet, "/", nil)
 
-		_, err := GetRefreshToken(r)
-		if err == nil {
+		if _, err := cookie.RefreshToken(r); err == nil {
 			t.Error("expected error")
 		}
 	})

@@ -214,6 +214,9 @@ definitions:
       createTime:
         type: string
         format: date-time
+      deleteTime:
+        type: string
+        format: date-time
 securityDefinitions:
   Bearer:
     type: apiKey

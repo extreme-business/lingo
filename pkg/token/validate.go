@@ -10,12 +10,12 @@ import (
 
 // Validator validates a token.
 type Validator struct {
-	secretKey []byte
+	secret []byte
 }
 
-func NewValidator(secretKey []byte) *Validator {
+func NewValidator(secret []byte) *Validator {
 	return &Validator{
-		secretKey: secretKey,
+		secret: secret,
 	}
 }
 
@@ -27,7 +27,7 @@ type Claims struct {
 // Validate validates the token and returns the email hash.
 func (v *Validator) Validate(tokenStr string) (*Claims, error) {
 	token, err := jwt.Parse(tokenStr, func(_ *jwt.Token) (interface{}, error) {
-		return v.secretKey, nil
+		return v.secret, nil
 	})
 
 	if err != nil {

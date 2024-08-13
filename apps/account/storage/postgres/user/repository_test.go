@@ -271,7 +271,7 @@ func TestRepository_Update(t *testing.T) {
 			storage.UserOrganizationID,
 			storage.UserDisplayName,
 			storage.UserEmail,
-			storage.UserPassword,
+			storage.UserHashedPassword,
 			storage.UserUpdateTime,
 		})
 

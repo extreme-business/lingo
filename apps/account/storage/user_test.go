@@ -3,12 +3,9 @@ package storage_test
 import (
 	"errors"
 	"testing"
-	"time"
 
-	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/uuid"
 )
 
 func TestUserFields(t *testing.T) {
@@ -19,7 +16,7 @@ func TestUserFields(t *testing.T) {
 			storage.UserOrganizationID,
 			storage.UserDisplayName,
 			storage.UserEmail,
-			storage.UserPassword,
+			storage.UserHashedPassword,
 			storage.UserStatus,
 			storage.UserCreateTime,
 			storage.UserUpdateTime,
@@ -29,136 +26,6 @@ func TestUserFields(t *testing.T) {
 			t.Errorf("UserFields() mismatch (-want +got):\n%s", diff)
 		}
 	})
-}
-
-func TestUser_ToDomain(t *testing.T) {
-	type fields struct {
-		ID             uuid.UUID
-		OrganizationID uuid.UUID
-		DisplayName    string
-		Email          string
-		Password       string
-		CreateTime     time.Time
-		UpdateTime     time.Time
-	}
-	type args struct {
-		in *domain.User
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *domain.User
-	}{
-		{
-			name: "convert to domain",
-			fields: fields{
-				ID:             uuid.MustParse("0d322d31-c960-497b-ada0-d3ffd1bded8f"),
-				OrganizationID: uuid.MustParse("95a2122b-3591-4f42-bfd2-c5b8d3f8c30b"),
-				DisplayName:    "display name",
-				Email:          "email",
-				Password:       "password",
-				CreateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				UpdateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			},
-			args: args{
-				in: &domain.User{
-					ID:             uuid.MustParse("0d322d31-c960-497b-ada0-d3ffd1bded8f"),
-					OrganizationID: uuid.MustParse("95a2122b-3591-4f42-bfd2-c5b8d3f8c30b"),
-					DisplayName:    "display name",
-					Email:          "email",
-					HashedPassword: "password",
-					CreateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				},
-			},
-			want: &domain.User{
-				ID:             uuid.MustParse("0d322d31-c960-497b-ada0-d3ffd1bded8f"),
-				OrganizationID: uuid.MustParse("95a2122b-3591-4f42-bfd2-c5b8d3f8c30b"),
-				DisplayName:    "display name",
-				Email:          "email",
-				HashedPassword: "password",
-				CreateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				UpdateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := &storage.User{
-				ID:             tt.fields.ID,
-				OrganizationID: tt.fields.OrganizationID,
-				DisplayName:    tt.fields.DisplayName,
-				Email:          tt.fields.Email,
-				HashedPassword: tt.fields.Password,
-				CreateTime:     tt.fields.CreateTime,
-				UpdateTime:     tt.fields.UpdateTime,
-			}
-			u.ToDomain(tt.args.in)
-
-			if diff := cmp.Diff(tt.args.in, tt.want); diff != "" {
-				t.Errorf("User.ToDomain() mismatch (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestUser_FromDomain(t *testing.T) {
-	type fields struct {
-		ID             uuid.UUID
-		OrganizationID uuid.UUID
-		DisplayName    string
-		Email          string
-		Password       string
-		CreateTime     time.Time
-		UpdateTime     time.Time
-	}
-	type args struct {
-		in *domain.User
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		{
-			name: "convert from domain",
-			fields: fields{
-				ID:             uuid.MustParse("0d322d31-c960-497b-ada0-d3ffd1bded8f"),
-				OrganizationID: uuid.MustParse("95a2122b-3591-4f42-bfd2-c5b8d3f8c30b"),
-				DisplayName:    "display name",
-				Email:          "email",
-				Password:       "password",
-				CreateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				UpdateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			},
-			args: args{
-				in: &domain.User{
-					ID:             uuid.MustParse("0d322d31-c960-497b-ada0-d3ffd1bded8f"),
-					OrganizationID: uuid.MustParse("95a2122b-3591-4f42-bfd2-c5b8d3f8c30b"),
-					DisplayName:    "display name",
-					Email:          "email",
-					HashedPassword: "password",
-					CreateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdateTime:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(_ *testing.T) {
-			u := &storage.User{
-				ID:             tt.fields.ID,
-				OrganizationID: tt.fields.OrganizationID,
-				DisplayName:    tt.fields.DisplayName,
-				Email:          tt.fields.Email,
-				HashedPassword: tt.fields.Password,
-				CreateTime:     tt.fields.CreateTime,
-				UpdateTime:     tt.fields.UpdateTime,
-			}
-			u.FromDomain(tt.args.in)
-		})
-	}
 }
 
 func TestUserOrderBy_Validate(t *testing.T) {

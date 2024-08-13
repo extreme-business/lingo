@@ -2,7 +2,7 @@ package authentication
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
@@ -65,13 +65,13 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 		return nil, err
 	}
 
-	u, err := m.userRepo.GetByEmail(ctx, c.Email)
+	u, err := m.userRepo.GetByEmail(ctx, c.Email) // refactor to user.Reader
 	if err != nil {
 		return nil, err
 	}
 
-	if !password.Check(c.Password, u.HashedPassword) {
-		return nil, errors.New("could not authenticate")
+	if err := password.Check([]byte(c.Password), []byte(u.HashedPassword)); err != nil {
+		return nil, fmt.Errorf("could not validate: %w", err)
 	}
 
 	accountToken, err := m.AccountTokenManager.Create(u.ID.String())
@@ -84,11 +84,13 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 		return nil, err
 	}
 
-	var domainUser domain.User
-	u.ToDomain(&domainUser)
+	domainUser := &domain.User{}
+	if err := domainUser.FromStorage(u); err != nil {
+		return nil, err
+	}
 
 	return &Authentication{
-		User:         &domainUser,
+		User:         domainUser,
 		AccessToken:  accountToken,
 		RefreshToken: refreshToken,
 	}, nil

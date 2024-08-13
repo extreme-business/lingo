@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/extreme-business/lingo/apps/account/auth/registration"
 	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/account/storage"
-	"github.com/extreme-business/lingo/apps/account/user/registration"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
 	"github.com/extreme-business/lingo/pkg/validate"
 	"github.com/google/go-cmp/cmp"

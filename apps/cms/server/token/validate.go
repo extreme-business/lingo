@@ -13,9 +13,9 @@ type TokenValidator struct {
 	tokenValidator *token.Validator
 }
 
-func NewTokenValidator(secretKey []byte) *TokenValidator {
+func NewTokenValidator(secret []byte) *TokenValidator {
 	return &TokenValidator{
-		tokenValidator: token.NewValidator(secretKey),
+		tokenValidator: token.NewValidator(secret),
 	}
 }
 

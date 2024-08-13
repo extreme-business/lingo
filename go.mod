@@ -1,6 +1,6 @@
 module github.com/extreme-business/lingo
 
-go 1.22.3
+go 1.22.6
 
 require (
 	ariga.io/atlas-go-sdk v0.5.3

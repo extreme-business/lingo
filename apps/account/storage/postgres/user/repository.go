@@ -160,22 +160,33 @@ func (r *Repository) Update(ctx context.Context, in *storage.User, fields []stor
 	args := make([]interface{}, 0, len(fields)+1)
 
 	for _, f := range fields {
+		index := len(args) + 1
 		switch f {
 		case storage.UserDisplayName:
-			set = append(set, fmt.Sprintf("display_name = $%d", len(args)+1))
+			set = append(set, fmt.Sprintf("display_name = $%d", index))
 			args = append(args, in.DisplayName)
 		case storage.UserEmail:
-			set = append(set, fmt.Sprintf("email = $%d", len(args)+1))
+			set = append(set, fmt.Sprintf("email = $%d", index))
 			args = append(args, in.Email)
-		case storage.UserPassword:
-			set = append(set, fmt.Sprintf("hashed_password = $%d", len(args)+1))
+		case storage.UserHashedPassword:
+			set = append(set, fmt.Sprintf("hashed_password = $%d", index))
 			args = append(args, in.HashedPassword)
 		case storage.UserUpdateTime:
-			set = append(set, fmt.Sprintf("update_time = $%d", len(args)+1))
+			set = append(set, fmt.Sprintf("update_time = $%d", index))
 			args = append(args, in.UpdateTime)
 		case storage.UserOrganizationID:
-			set = append(set, fmt.Sprintf("organization_id = $%d", len(args)+1))
+			set = append(set, fmt.Sprintf("organization_id = $%d", index))
 			args = append(args, in.OrganizationID)
+		case storage.UserStatus:
+			set = append(set, fmt.Sprintf("status = $%d", index))
+			args = append(args, in.Status)
+		case storage.UserDeleteTime:
+			if in.DeleteTime.Time.IsZero() {
+				set = append(set, "delete_time = NULL")
+			} else {
+				set = append(set, fmt.Sprintf("delete_time = $%d", index))
+				args = append(args, in.DeleteTime.Time)
+			}
 		case storage.UserID:
 			return nil, storage.ErrImmutableUserID
 		case storage.UserCreateTime:

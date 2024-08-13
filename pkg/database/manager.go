@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	"log"
 )
 
@@ -58,11 +58,11 @@ func (m *Manager[T]) Op() T {
 // BeginOp starts a new operation with a transaction and commits the transaction if all operations succeed; it rolls back the transaction otherwise.
 func (m *Manager[T]) BeginOp(ctx context.Context, operation func(ctx context.Context, r T) error) error {
 	if operation == nil {
-		return fmt.Errorf("no operation provided")
+		return errors.New("no operation provided")
 	}
 
 	if m.factory == nil {
-		return fmt.Errorf("no factory function provided")
+		return errors.New("no factory provided")
 	}
 
 	tx, err := m.db.Begin(ctx)

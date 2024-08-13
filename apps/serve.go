@@ -21,7 +21,7 @@ func init() {
 	// add serve subcommands
 	serveCmd.AddCommand(accountcmd.NewGrpcCmd())
 	serveCmd.AddCommand(accountcmd.NewGatewayCmd())
-	serveCmd.AddCommand(cmscmd.NewHtmlCmd())
+	serveCmd.AddCommand(cmscmd.NewHTMLCmd())
 
 	rootCmd.AddCommand(serveCmd)
 }

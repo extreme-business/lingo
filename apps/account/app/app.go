@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/extreme-business/lingo/apps/account/auth/authentication"
+	"github.com/extreme-business/lingo/apps/account/auth/registration"
 	"github.com/extreme-business/lingo/apps/account/bootstrapping"
 	"github.com/extreme-business/lingo/apps/account/domain"
-	"github.com/extreme-business/lingo/apps/account/user/authentication"
-	"github.com/extreme-business/lingo/apps/account/user/registration"
 )
 
 type Account struct {
