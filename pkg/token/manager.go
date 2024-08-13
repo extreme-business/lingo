@@ -23,7 +23,7 @@ func NewManager(
 	tokenExpireDuration time.Duration,
 ) *Manager {
 	return &Manager{
-		Validator: &Validator{secretKey: signingKey},
+		Validator: &Validator{secret: signingKey},
 		Tokenizer: &Tokenizer{clock: clock, secretKey: signingKey, expiry: tokenExpireDuration},
 	}
 }

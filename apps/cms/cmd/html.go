@@ -63,14 +63,14 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		authenticator,
 		authMiddleware,
 	)
-	if err := server.Serve(ctx); err != nil {
+	if err = server.Serve(ctx); err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
 
 	return nil
 }
 
-func NewHtmlCmd() *cobra.Command {
+func NewHTMLCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "cms",
 		Short: "Start the cms service",

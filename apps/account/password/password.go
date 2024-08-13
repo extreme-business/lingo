@@ -1,6 +1,8 @@
 package password
 
 import (
+	"fmt"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -8,12 +10,13 @@ const (
 	defaultCost = 14
 )
 
-func Hash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), defaultCost)
-	return string(bytes), err
+func Hash(password []byte) ([]byte, error) {
+	return bcrypt.GenerateFromPassword(password, defaultCost)
 }
 
-func Check(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+func Check(password, hash []byte) error {
+	if err := bcrypt.CompareHashAndPassword(hash, password); err != nil {
+		return fmt.Errorf("password does not match hash: %w", err)
+	}
+	return nil
 }

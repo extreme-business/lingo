@@ -16,12 +16,10 @@ func NewServeCmd() *cobra.Command {
 
 //nolint:gochecknoinits // This is the entry point of the serve cli.
 func init() {
-	// serve
 	serveCmd := NewServeCmd()
-	// add serve subcommands
 	serveCmd.AddCommand(accountcmd.NewGrpcCmd())
 	serveCmd.AddCommand(accountcmd.NewGatewayCmd())
-	serveCmd.AddCommand(cmscmd.NewHtmlCmd())
+	serveCmd.AddCommand(cmscmd.NewHTMLCmd())
 
 	rootCmd.AddCommand(serveCmd)
 }

@@ -9,15 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Organization is a organization.
-type Organization struct {
-	ID         uuid.UUID
-	LegalName  string
-	Slug       string
-	CreateTime time.Time
-	UpdateTime time.Time
-}
-
 var (
 	ErrOrganizationNotFound = errors.New("organization not found")
 	// Fields.
@@ -34,6 +25,15 @@ var (
 	ErrImmutableOrganizationID         = errors.New("field id is read-only")
 	ErrImmutableOrganizationCreateTime = errors.New("field create_time is read-only")
 )
+
+// Organization is a organization.
+type Organization struct {
+	ID         uuid.UUID
+	LegalName  string
+	Slug       string
+	CreateTime time.Time
+	UpdateTime time.Time
+}
 
 type OrganizationField string
 

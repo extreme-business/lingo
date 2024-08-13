@@ -37,11 +37,11 @@ func (m *Repository) List(ctx context.Context, p storage.Pagination, s storage.U
 	return m.ListFunc(ctx, p, s, c...)
 }
 
-func (m *Repository) GetByEmail(ctx context.Context, username string) (*storage.User, error) {
+func (m *Repository) GetByEmail(ctx context.Context, email string) (*storage.User, error) {
 	if m.GetByEmailFunc == nil {
 		panic("GetByEmailFunc is not implemented")
 	}
-	return m.GetByEmailFunc(ctx, username)
+	return m.GetByEmailFunc(ctx, email)
 }
 
 func (m *Repository) Update(ctx context.Context, u *storage.User, fields []storage.UserField) (*storage.User, error) {

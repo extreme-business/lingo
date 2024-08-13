@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func GetAccessToken(r *http.Request) (string, error) {
+func AccessToken(r *http.Request) (string, error) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
 		return "", err
@@ -18,7 +18,7 @@ func SetAccessToken(w http.ResponseWriter, token string, expires time.Time) {
 	Set(w, "access_token", token, expires, true, "/")
 }
 
-func GetRefreshToken(r *http.Request) (string, error) {
+func RefreshToken(r *http.Request) (string, error) {
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
 		return "", err

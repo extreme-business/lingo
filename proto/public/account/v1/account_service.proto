@@ -76,10 +76,6 @@ message LoginUserRequest {
       (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The email of a user"},
       (google.api.field_behavior) = REQUIRED
     ];
-    string username = 2 [
-      (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The username of a user"},
-      (google.api.field_behavior) = REQUIRED
-    ];
   }
 
   string password = 3 [

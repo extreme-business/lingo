@@ -75,9 +75,7 @@ func TestInitializer_NewManager(t *testing.T) {
 		if b == nil {
 			t.Errorf("New() got nil, want not nil")
 		}
-
 	})
-
 }
 
 func TestInitializer_Setup(t *testing.T) {
@@ -131,7 +129,7 @@ func TestInitializer_Setup(t *testing.T) {
 			t.Errorf("New() error = %v, want %v", err, nil)
 		}
 
-		if err := initializer.Setup(ctx); err != nil {
+		if err = initializer.Setup(ctx); err != nil {
 			t.Errorf("Setup() error = %v, want %v", err, nil)
 		}
 
@@ -200,7 +198,7 @@ func TestInitializer_Setup(t *testing.T) {
 			t.Errorf("New() error = %v, want %v", err, nil)
 		}
 
-		if err := initializer.Setup(ctx); err != nil {
+		if err = initializer.Setup(ctx); err != nil {
 			t.Errorf("Setup() error = %v, want %v", err, nil)
 		}
 	})
@@ -272,7 +270,7 @@ func TestSystemUserConfig_Validate(t *testing.T) {
 				t.Errorf("SystemUserConfig.Validate() error = %v, wantErr %v", err, tt.err)
 			}
 
-			if v, ok := validate.ToError(err); ok {
+			if v, ok := validate.AssertError(err); ok {
 				if v.Field() != tt.errField {
 					t.Errorf("SystemUserConfig.Validate() error field = %v, want %v", v.Field(), tt.errField)
 				}
@@ -357,7 +355,7 @@ func TestSystemOrgConfig_Validate(t *testing.T) {
 				t.Errorf("SystemOrgConfig.Validate() error = %v, wantErr %v", err, tt.err)
 			}
 
-			if v, ok := validate.ToError(err); ok {
+			if v, ok := validate.AssertError(err); ok {
 				if v.Field() != tt.errField {
 					t.Errorf("SystemOrgConfig.Validate() error field = %v, want %v", v.Field(), tt.errField)
 				}

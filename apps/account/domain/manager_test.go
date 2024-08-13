@@ -1,4 +1,4 @@
-package postgres_test
+package domain_test
 
 import (
 	"context"
@@ -6,14 +6,14 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/account/storage"
-	"github.com/extreme-business/lingo/apps/account/storage/postgres"
 	"github.com/extreme-business/lingo/pkg/database"
 	dbmock "github.com/extreme-business/lingo/pkg/database/mock"
 )
 
 // checkIfAllReposAreNotNil checks if all repositories are non-nil.
-func checkIfAllReposAreNotNil(t *testing.T, repos storage.Repositories) {
+func checkIfAllReposAreNotNil(t *testing.T, repos domain.Domain) {
 	t.Helper()
 
 	val := reflect.ValueOf(repos)
@@ -31,7 +31,7 @@ func checkIfAllReposAreNotNil(t *testing.T, repos storage.Repositories) {
 
 func TestNew(t *testing.T) {
 	t.Run("New repository should have all repositories set", func(t *testing.T) {
-		got := postgres.NewManager(database.NewDB(&sql.DB{}))
+		got := domain.NewManager(database.NewDB(&sql.DB{}))
 		if got == nil {
 			t.Error("Expected New to return a non-nil manager instance")
 			return

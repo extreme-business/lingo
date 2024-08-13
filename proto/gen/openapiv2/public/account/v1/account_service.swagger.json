@@ -241,10 +241,6 @@
           "type": "string",
           "description": "The email of a user"
         },
-        "username": {
-          "type": "string",
-          "description": "The username of a user"
-        },
         "password": {
           "type": "string",
           "description": "The password of a user"
@@ -252,7 +248,6 @@
       },
       "required": [
         "email",
-        "username",
         "password"
       ]
     },
@@ -308,6 +303,10 @@
           "format": "date-time"
         },
         "createTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deleteTime": {
           "type": "string",
           "format": "date-time"
         }

@@ -13,14 +13,14 @@ type TokenValidator struct {
 	tokenValidator *token.Validator
 }
 
-func NewTokenValidator(secretKey []byte) *TokenValidator {
+func NewTokenValidator(secret []byte) *TokenValidator {
 	return &TokenValidator{
-		tokenValidator: token.NewValidator(secretKey),
+		tokenValidator: token.NewValidator(secret),
 	}
 }
 
 // Validate implements httpmiddleware.Validator.
-func (v *TokenValidator) Validate(ctx context.Context, value string) error {
+func (v *TokenValidator) Validate(_ context.Context, value string) error {
 	_, err := v.tokenValidator.Validate(value)
 	return err
 }

@@ -5,10 +5,10 @@ import (
 )
 
 const (
-	// maxUsernameLength is the maximum length of a username.
-	maxUsernameLength = 50
-	// minUsernameLength is the minimum length of a username.
-	minUsernameLength = 3
+	// maxDisplayNameLength is the maximum length of a username.
+	maxDisplayNameLength = 50
+	// minDisplayNameLength is the minimum length of a username.
+	minDisplayNameLength = 3
 	// maxEmailLength is the maximum length of an email.
 	maxEmailLength = 50
 	// minEmailLength is the minimum length of an email.
@@ -23,8 +23,8 @@ const (
 	minPasswordDigits = 1
 )
 
-// usernameSpecialChars returns a list of special characters that are allowed in a username.
-func usernameSpecialChars() []rune { return []rune{'_', '-'} }
+// displayNameSpecialChars returns a list of special characters that are allowed in a username.
+func displayNameSpecialChars() []rune { return []rune{'_', '-'} }
 
 type registrationValidator struct {
 	displayNameValidator validate.StringValidator
@@ -35,9 +35,9 @@ type registrationValidator struct {
 func newRegistrationValidator() *registrationValidator {
 	return &registrationValidator{
 		displayNameValidator: validate.StringValidator{
-			validate.StringMaxLength("display_name", maxUsernameLength),
-			validate.StringMinLength("display_name", minUsernameLength),
-			validate.SpecialCharWhitelist("display_name", usernameSpecialChars()...),
+			validate.StringMaxLength("display_name", maxDisplayNameLength),
+			validate.StringMinLength("display_name", minDisplayNameLength),
+			validate.SpecialCharWhitelist("display_name", displayNameSpecialChars()...),
 		},
 		emailValidator: validate.StringValidator{
 			validate.StringMaxLength("email", maxEmailLength),

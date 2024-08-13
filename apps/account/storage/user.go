@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/google/uuid"
 )
 
@@ -68,33 +67,6 @@ type User struct {
 	CreateTime     time.Time
 	UpdateTime     time.Time
 	DeleteTime     sql.NullTime
-}
-
-// ToDomain maps a User to a domain.User.
-func (u *User) ToDomain(in *domain.User) {
-	in.ID = u.ID
-	in.OrganizationID = u.OrganizationID
-	in.DisplayName = u.DisplayName
-	in.Email = u.Email
-	in.HashedPassword = u.HashedPassword
-	in.CreateTime = u.CreateTime
-	in.UpdateTime = u.UpdateTime
-}
-
-// FromDomain maps a domain.User to a User.
-func (u *User) FromDomain(in *domain.User) {
-	u.ID = in.ID
-	u.OrganizationID = in.OrganizationID
-	u.DisplayName = in.DisplayName
-	u.Email = in.Email
-	u.HashedPassword = in.HashedPassword
-	u.Status = in.Status.String()
-	u.CreateTime = in.CreateTime
-	u.UpdateTime = in.UpdateTime
-	u.DeleteTime = sql.NullTime{
-		Time:  in.DeleteTime,
-		Valid: !in.DeleteTime.IsZero(),
-	}
 }
 
 // UserSort pairs a field with a direction.

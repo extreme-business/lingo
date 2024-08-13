@@ -52,7 +52,6 @@ func (m *Manager) configured() error {
 	}
 
 	return nil
-
 }
 
 type Registration struct {
@@ -70,16 +69,19 @@ func (m *Manager) Register(ctx context.Context, r Registration) (*domain.User, e
 		return nil, err
 	}
 
-	hashedPassword, err := password.Hash(r.Password)
+	hashedPassword, err := password.Hash([]byte(r.Password))
 	if err != nil {
 		return nil, err
 	}
 
 	now := m.clock()
 	s := &storage.User{}
-	s.FromDomain(r.User)
+	if err := r.User.ToStorage(s); err != nil {
+		return nil, err
+	}
+
 	s.ID = m.uuidgen()
-	s.HashedPassword = hashedPassword
+	s.HashedPassword = string(hashedPassword)
 	s.CreateTime = now
 	s.UpdateTime = now
 
@@ -89,8 +91,7 @@ func (m *Manager) Register(ctx context.Context, r Registration) (*domain.User, e
 	}
 
 	user.HashedPassword = "" // Do not return the password
-	var u domain.User
-	user.ToDomain(&u)
 
-	return &u, nil
+	u := &domain.User{}
+	return u, u.FromStorage(user)
 }
