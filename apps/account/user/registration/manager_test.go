@@ -9,7 +9,6 @@ import (
 	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/apps/account/user/registration"
-	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
 	"github.com/extreme-business/lingo/pkg/validate"
 	"github.com/google/go-cmp/cmp"
@@ -47,7 +46,7 @@ func TestManager_Register(t *testing.T) {
 
 		m := registration.NewManager(registration.Config{
 			UserRepo: &userRepo,
-			Clock:    clock.New(time.UTC, func() time.Time { return now.Add(time.Second) }),
+			Clock:    func() time.Time { return now.Add(time.Second) },
 			UUIDgen: func() uuid.UUID {
 				return uuid.MustParse("c5172a66-3dbe-4415-bbf9-9921d9798698")
 			},
@@ -93,7 +92,7 @@ func TestManager_Register(t *testing.T) {
 
 		m := registration.NewManager(registration.Config{
 			UserRepo: &userRepo,
-			Clock:    clock.New(time.UTC, func() time.Time { return now }),
+			Clock:    func() time.Time { return now },
 			UUIDgen: func() uuid.UUID {
 				return uuid.MustParse("c5172a66-3dbe-4415-bbf9-9921d9798698")
 			},
@@ -138,7 +137,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},
@@ -160,7 +159,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},
@@ -182,7 +181,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},
@@ -204,7 +203,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},
@@ -226,7 +225,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},
@@ -248,7 +247,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},
@@ -270,7 +269,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},
@@ -292,7 +291,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},
@@ -314,7 +313,7 @@ func TestManager_Register_validations(t *testing.T) {
 				fields: fields{
 					config: registration.Config{
 						UUIDgen:  uuidgen.Default(),
-						Clock:    clock.Default(),
+						Clock:    time.Now,
 						UserRepo: &userMock.Repository{},
 					},
 				},

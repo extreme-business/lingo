@@ -74,7 +74,7 @@ func TestConfig_SigningKeyRegistration(t *testing.T) {
 	})
 }
 
-func TestConfig_SigningKeyAccountentication(t *testing.T) {
+func TestConfig_SigningKeyAuthentication(t *testing.T) {
 	t.Cleanup(func() {
 		viper.Reset()
 	})
@@ -82,11 +82,11 @@ func TestConfig_SigningKeyAccountentication(t *testing.T) {
 	t.Run("should return error if LINGO_SIGNING_KEY_AUTHENTICATION is not set", func(t *testing.T) {
 		v, err := config.New().SigningKeyAuthentication()
 		if err == nil {
-			t.Errorf("SigningKeyAccountentication() error = %v, wantErr %v", err, true)
+			t.Errorf("SigningKeyAuthentication() error = %v, wantErr %v", err, true)
 		}
 
 		if v != "" {
-			t.Errorf("SigningKeyAccountentication() = %v, want %v", v, "")
+			t.Errorf("SigningKeyAuthentication() = %v, want %v", v, "")
 		}
 	})
 
@@ -95,10 +95,10 @@ func TestConfig_SigningKeyAccountentication(t *testing.T) {
 		c := config.New()
 		got, err := c.SigningKeyAuthentication()
 		if err != nil {
-			t.Errorf("SigningKeyAccountentication() error = %v, wantErr %v", err, nil)
+			t.Errorf("SigningKeyAuthentication() error = %v, wantErr %v", err, nil)
 		}
 		if got != "test" {
-			t.Errorf("SigningKeyAccountentication() = %v, want %v", got, "test")
+			t.Errorf("SigningKeyAuthentication() = %v, want %v", got, "test")
 		}
 	})
 }

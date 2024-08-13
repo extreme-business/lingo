@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/extreme-business/lingo/apps/account/password"
 	"github.com/extreme-business/lingo/apps/account/storage"
-	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/validate"
 	"github.com/google/uuid"
 )
@@ -90,7 +90,7 @@ type Initializer struct {
 	logger                   *slog.Logger
 	systemUserConfig         SystemUserConfig
 	systemOrganizationConfig SystemOrgConfig
-	clock                    clock.Now
+	clock                    func() time.Time
 	dbManager                storage.DBManager
 }
 
@@ -98,7 +98,7 @@ type Config struct {
 	Logger                   *slog.Logger
 	SystemUserConfig         SystemUserConfig
 	SystemOrganizationConfig SystemOrgConfig
-	Clock                    clock.Now
+	Clock                    func() time.Time
 	DBManager                storage.DBManager
 }
 

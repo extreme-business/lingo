@@ -3,8 +3,6 @@ package token
 import (
 	"fmt"
 	"time"
-
-	"github.com/extreme-business/lingo/pkg/clock"
 )
 
 // Created is the event that is dispatched when a token is created.
@@ -20,7 +18,7 @@ type Manager struct {
 }
 
 func NewManager(
-	clock clock.Now,
+	clock func() time.Time,
 	signingKey []byte,
 	tokenExpireDuration time.Duration,
 ) *Manager {

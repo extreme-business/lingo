@@ -11,7 +11,6 @@ import (
 	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/apps/account/storage/postgres"
 	"github.com/extreme-business/lingo/apps/account/storage/postgres/seed"
-	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/database"
 	"github.com/extreme-business/lingo/pkg/database/dbtest"
 	dbmock "github.com/extreme-business/lingo/pkg/database/mock"
@@ -34,7 +33,7 @@ func TestNew(t *testing.T) {
 				LegalName: "Test Organization",
 				Slug:      "test-organization",
 			},
-			Clock: clock.Default(),
+			Clock: time.Now,
 			DBManager: database.NewManager(database.NewDBWithHandler(&dbmock.DBHandler{}), func(_ database.Conn) storage.Repositories {
 				return storage.Repositories{}
 			}),
@@ -63,7 +62,7 @@ func TestInitializer_NewManager(t *testing.T) {
 				LegalName: "Test Organization",
 				Slug:      "test-organization",
 			},
-			Clock: clock.Default(),
+			Clock: time.Now,
 			DBManager: database.NewManager(database.NewDBWithHandler(&dbmock.DBHandler{}), func(_ database.Conn) storage.Repositories {
 				return storage.Repositories{}
 			}),
@@ -124,7 +123,7 @@ func TestInitializer_Setup(t *testing.T) {
 				LegalName: "Test Organization",
 				Slug:      "test-organization",
 			},
-			Clock:     clock.New(time.UTC, func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) }),
+			Clock:     func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) },
 			DBManager: dbManager,
 		})
 
@@ -193,7 +192,7 @@ func TestInitializer_Setup(t *testing.T) {
 				LegalName: "Test Organization",
 				Slug:      "test-organization",
 			},
-			Clock:     clock.New(time.UTC, func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) }),
+			Clock:     func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) },
 			DBManager: dbManager,
 		})
 
@@ -372,7 +371,7 @@ func TestConfig_Validate(t *testing.T) {
 		Logger                   *slog.Logger
 		SystemUserConfig         bootstrapping.SystemUserConfig
 		SystemOrganizationConfig bootstrapping.SystemOrgConfig
-		Clock                    clock.Now
+		Clock                    func() time.Time
 		DBManager                storage.DBManager
 	}
 	tests := []struct {

@@ -8,7 +8,6 @@ import (
 	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/account/password"
 	"github.com/extreme-business/lingo/apps/account/storage"
-	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/token"
 )
 
@@ -25,7 +24,7 @@ type Manager struct {
 }
 
 type Config struct {
-	Clock                    clock.Now
+	Clock                    func() time.Time
 	SigningKeyRegistration   []byte
 	SigningKeyAuthentication []byte
 	UserRepo                 storage.UserRepository

@@ -3,18 +3,18 @@ package registration
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/account/password"
 	"github.com/extreme-business/lingo/apps/account/storage"
-	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
 )
 
 // Manager is a manager for registration.
 type Manager struct {
 	uuidgen               uuidgen.Generator
-	clock                 clock.Now
+	clock                 func() time.Time
 	userRepo              storage.UserRepository
 	registrationValidator *registrationValidator
 }
@@ -22,7 +22,7 @@ type Manager struct {
 // Config is the configuration for the manager.
 type Config struct {
 	UUIDgen  uuidgen.Generator
-	Clock    clock.Now
+	Clock    func() time.Time
 	UserRepo storage.UserRepository
 }
 

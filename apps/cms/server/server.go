@@ -9,7 +9,6 @@ import (
 	"github.com/extreme-business/lingo/apps/cms/account"
 	"github.com/extreme-business/lingo/apps/cms/cookie"
 	"github.com/extreme-business/lingo/apps/cms/views"
-	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 	"github.com/extreme-business/lingo/pkg/httpserver"
 )
@@ -49,7 +48,7 @@ func New(
 	mux := http.NewServeMux()
 	mux.Handle("/", authMiddleware(adminMux))
 
-	mux.HandleFunc("/login", loginHandler(clock.Default(), accountManager))
+	mux.HandleFunc("/login", loginHandler(time.Now, accountManager))
 	mux.Handle("/register", registerHandler(accountManager))
 
 	return httpserver.New(
@@ -85,7 +84,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
     `)
 }
 
-func loginHandler(c clock.Now, a AccountManager) http.HandlerFunc {
+func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 

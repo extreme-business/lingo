@@ -47,30 +47,25 @@ func (r Resource) Find(collection string) *Resource {
 	return r.Parent.Find(collection)
 }
 
-type parentChildLink struct {
-	Parent string
-	Child  string
-}
-
-type Rule struct {
+type rKey struct {
 	Parent string
 	Child  string
 }
 
 // Parser is a resource name parser that enforces structured relationships between resources.
 type Parser struct {
-	hierarchyRules map[Rule]struct{}
+	hierarchyRules map[rKey]struct{}
 }
 
 func NewParser() *Parser {
 	return &Parser{
-		hierarchyRules: make(map[Rule]struct{}),
+		hierarchyRules: make(map[rKey]struct{}),
 	}
 }
 
 // RegisterChild registers a child collection under a parent collection.
 func (p *Parser) RegisterChild(parentCollection, childCollection string) {
-	p.hierarchyRules[Rule{Parent: parentCollection, Child: childCollection}] = struct{}{}
+	p.hierarchyRules[rKey{Parent: parentCollection, Child: childCollection}] = struct{}{}
 }
 
 // Parse parses a structured resource name into a Resource struct.
@@ -82,7 +77,7 @@ func (p *Parser) Parse(name string) (Resource, error) {
 
 	var current *Resource
 	for i := 0; i < len(parts); i += 2 {
-		if current != nil && !p.IsAllowedChild(current.CollectionID, parts[i]) {
+		if current != nil && !p.isChildAllowed(current.CollectionID, parts[i]) {
 			return Resource{}, fmt.Errorf("child collection '%s' is not allowed under parent collection '%s'", parts[i], current.CollectionID)
 		}
 		current = &Resource{
@@ -96,7 +91,7 @@ func (p *Parser) Parse(name string) (Resource, error) {
 }
 
 // IsAllowedChild checks if a child collection is allowed under a parent collection.
-func (p *Parser) IsAllowedChild(parentCollection, childCollection string) bool {
-	_, ok := p.hierarchyRules[Rule{Parent: parentCollection, Child: childCollection}]
+func (p *Parser) isChildAllowed(parentCollection, childCollection string) bool {
+	_, ok := p.hierarchyRules[rKey{Parent: parentCollection, Child: childCollection}]
 	return ok
 }

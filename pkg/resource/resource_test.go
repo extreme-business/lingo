@@ -122,16 +122,6 @@ func TestNewParser(t *testing.T) {
 	})
 }
 
-func TestParser_RegisterChild(t *testing.T) {
-	t.Run("should register a child collection", func(t *testing.T) {
-		p := resource.NewParser()
-		p.RegisterChild("parent", "child")
-		if !p.IsAllowedChild("parent", "child") {
-			t.Error("RegisterChild() = false, want true")
-		}
-	})
-}
-
 func TestParser_Parse(t *testing.T) {
 	t.Run("should parse a resource name", func(t *testing.T) {
 		p := resource.NewParser()
@@ -177,15 +167,6 @@ func TestParser_Parse(t *testing.T) {
 		_, err := p.Parse("parent/1/child/2")
 		if err == nil {
 			t.Error("Parse() error = nil, want an error")
-		}
-	})
-}
-
-func TestParser_IsAllowedChild(t *testing.T) {
-	t.Run("should return false if the child collection is not allowed", func(t *testing.T) {
-		p := resource.NewParser()
-		if p.IsAllowedChild("child", "invalid") {
-			t.Error("IsAllowedChild() = true, want false")
 		}
 	})
 }

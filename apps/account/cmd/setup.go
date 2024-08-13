@@ -15,7 +15,6 @@ import (
 	"github.com/extreme-business/lingo/apps/account/storage/postgres"
 	"github.com/extreme-business/lingo/apps/account/user/authentication"
 	"github.com/extreme-business/lingo/apps/account/user/registration"
-	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/extreme-business/lingo/pkg/config"
 	"github.com/extreme-business/lingo/pkg/database"
 	"github.com/extreme-business/lingo/pkg/grpcserver"
@@ -108,7 +107,7 @@ func setupAccount(
 		return nil, err
 	}
 
-	clock := clock.Default()
+	clock := time.Now
 	uuidgen := uuidgen.Default()
 	dbManager := postgres.NewManager(database.NewDB(db))
 	repos := dbManager.Op()

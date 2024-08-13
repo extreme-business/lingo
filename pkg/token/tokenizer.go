@@ -3,13 +3,12 @@ package token
 import (
 	"time"
 
-	"github.com/extreme-business/lingo/pkg/clock"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 // Tokenizer creates a token.
 type Tokenizer struct {
-	clock     clock.Now
+	clock     func() time.Time
 	secretKey []byte
 	expiry    time.Duration
 }
