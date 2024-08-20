@@ -23,7 +23,7 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to get http port: %w", err)
 	}
 
-	signingKeyAuthentication, err := config.SigningKeyRefreshToken()
+	signingKeyAccessToken, err := config.SigningKeyAccessToken()
 	if err != nil {
 		return fmt.Errorf("failed to get signing key: %w", err)
 	}
@@ -55,7 +55,7 @@ func runCms(cmd *cobra.Command, _ []string) error {
 
 	accountService := accountproto.NewAccountServiceClient(accountClient)
 	authenticator := account.NewManager(accountService)
-	tokenValidator := token.NewTokenValidator([]byte(signingKeyAuthentication))
+	tokenValidator := token.NewTokenValidator([]byte(signingKeyAccessToken))
 	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login")
 
 	server := server.New(
@@ -63,7 +63,7 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		authenticator,
 		authMiddleware,
 	)
-	if err := server.Serve(ctx); err != nil {
+	if err = server.Serve(ctx); err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
 

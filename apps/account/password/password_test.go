@@ -14,7 +14,7 @@ func TestHashPassword(t *testing.T) {
 			t.Fatalf("HashPassword() error = %v", err)
 		}
 
-		if err := password.Check([]byte(pw), hash); err != nil {
+		if err = password.Check([]byte(pw), hash); err != nil {
 			t.Fatalf("CheckPasswordHash() = false, want true")
 		}
 	})

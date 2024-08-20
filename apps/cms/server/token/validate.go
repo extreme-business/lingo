@@ -20,7 +20,7 @@ func NewTokenValidator(secret []byte) *TokenValidator {
 }
 
 // Validate implements httpmiddleware.Validator.
-func (v *TokenValidator) Validate(ctx context.Context, value string) error {
+func (v *TokenValidator) Validate(_ context.Context, value string) error {
 	_, err := v.tokenValidator.Validate(value)
 	return err
 }

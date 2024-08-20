@@ -18,7 +18,7 @@ func AuthCookie(cookieName string, a TokenValidator, failureRedirect string) fun
 				return
 			}
 
-			if err := a.Validate(r.Context(), cookie.Value); err != nil {
+			if err = a.Validate(r.Context(), cookie.Value); err != nil {
 				http.Redirect(w, r, failureRedirect, http.StatusSeeOther)
 				return
 			}

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -66,7 +67,7 @@ func New(
 	)
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
+func homeHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	err := views.UserList(w, []*domain.User{
 		{
@@ -74,7 +75,10 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err != nil {
-		views.Error(w, err.Error())
+		if err = views.Error(w, err.Error()); err != nil {
+			slog.Error(err.Error())
+			http.Error(w, "could not render view", http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -110,7 +114,10 @@ func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 
 			s, err := a.Authenticate(r.Context(), email, password)
 			if err != nil {
-				views.Error(w, err.Error())
+				if err = views.Error(w, err.Error()); err != nil {
+					slog.Error(err.Error())
+					http.Error(w, "could not render view", http.StatusInternalServerError)
+				}
 				return
 			}
 
@@ -124,25 +131,4 @@ func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 
 		fmt.Fprint(w, loginTemplate)
 	}
-}
-
-func adminHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Admin</title>
-        </head>
-        <body>
-            <h1>Welcome to the Admin Page</h1>
-            <nav>
-                <a href="/">Home</a> |
-                <a href="/about">About</a> |
-                <a href="/contact">Contact</a>
-            </nav>
-            Welkom!
-        </body>
-        </html>
-    `)
 }

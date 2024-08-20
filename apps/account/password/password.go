@@ -9,7 +9,7 @@ const (
 )
 
 func Hash(password []byte) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(password), defaultCost)
+	return bcrypt.GenerateFromPassword(password, defaultCost)
 }
 
 func Check(password, hash []byte) error {

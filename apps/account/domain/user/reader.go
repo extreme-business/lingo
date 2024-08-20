@@ -52,7 +52,7 @@ func (r *Reader) List(ctx context.Context, page uint) ([]*domain.User, error) {
 	var out []*domain.User
 	for _, user := range users {
 		var u domain.User
-		if err := u.FromStorage(user); err != nil {
+		if err = u.FromStorage(user); err != nil {
 			return nil, err
 		}
 

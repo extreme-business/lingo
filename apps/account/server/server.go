@@ -108,11 +108,6 @@ func (s *Server) LoginUser(ctx context.Context, req *protoaccount.LoginUserReque
 		return nil, err
 	}
 
-	// grpc.SendHeader(ctx, metadata.Pairs(
-	// 	"token", login.Token,
-	// 	"refresh_token", login.RefreshToken,
-	// ))
-
 	return &protoaccount.LoginUserResponse{
 		User:         &user,
 		AccessToken:  login.AccessToken,

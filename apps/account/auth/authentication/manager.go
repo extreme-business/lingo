@@ -70,7 +70,7 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 		return nil, err
 	}
 
-	if err := password.Check([]byte(c.Password), []byte(u.HashedPassword)); err != nil {
+	if err = password.Check([]byte(c.Password), []byte(u.HashedPassword)); err != nil {
 		return nil, fmt.Errorf("could not validate: %w", err)
 	}
 
@@ -85,7 +85,7 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 	}
 
 	domainUser := &domain.User{}
-	if err := domainUser.FromStorage(u); err != nil {
+	if err = domainUser.FromStorage(u); err != nil {
 		return nil, err
 	}
 

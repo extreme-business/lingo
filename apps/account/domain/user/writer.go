@@ -41,7 +41,7 @@ func (w *Writer) Create(ctx context.Context, u *domain.User) (*domain.User, erro
 func (w *Writer) Update(ctx context.Context, u *domain.User) (*domain.User, error) {
 	u.UpdateTime = w.c()
 	var err error
-	var s *storage.User = &storage.User{}
+	s := &storage.User{}
 	if err = u.ToStorage(s); err != nil {
 		return nil, err
 	}

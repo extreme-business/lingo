@@ -40,7 +40,7 @@ func (r *Reader) List(ctx context.Context, page uint) ([]*domain.Organization, e
 	var out []*domain.Organization
 	for _, organization := range organizations {
 		var o domain.Organization
-		if err := o.FromStorage(organization); err != nil {
+		if err = o.FromStorage(organization); err != nil {
 			return nil, err
 		}
 		out = append(out, &o)

@@ -41,7 +41,7 @@ func (w *Writer) Create(ctx context.Context, o *domain.Organization) (*domain.Or
 func (w *Writer) Update(ctx context.Context, o *domain.Organization) (*domain.Organization, error) {
 	o.UpdateTime = w.c()
 	var err error
-	var s *storage.Organization = &storage.Organization{}
+	s := &storage.Organization{}
 	if err = o.ToStorage(s); err != nil {
 		return nil, err
 	}

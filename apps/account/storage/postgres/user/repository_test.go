@@ -332,7 +332,8 @@ func TestRepository_Update(t *testing.T) {
 		// check if only the username was updated
 		query := recorder.RowQueries[0].Query
 		query = strings.TrimSpace(strings.ReplaceAll(query, "\n", " "))
-		expectedQuery := "UPDATE users SET organization_id = $1, display_name = $2, email = $3, status = $4, hashed_password = $5, update_time = $6 WHERE id = $7 RETURNING id, organization_id,  display_name, email, status, create_time, update_time, delete_time;"
+		expectedQuery := "UPDATE users SET organization_id = $1, display_name = $2, email = $3, status = $4, hashed_password = $5, update_time = $6 "
+		expectedQuery += "WHERE id = $7 RETURNING id, organization_id,  display_name, email, status, create_time, update_time, delete_time;"
 
 		if query != expectedQuery {
 			t.Errorf("expected %q, got %q", expectedQuery, query)

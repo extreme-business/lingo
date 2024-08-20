@@ -32,7 +32,7 @@ func TestAuthCookie(t *testing.T) {
 			name:        "Valid cookie",
 			cookieName:  "auth",
 			cookieValue: "valid_token",
-			validateFunc: func(ctx context.Context, value string) error {
+			validateFunc: func(_ context.Context, _ string) error {
 				return nil
 			},
 			expectedStatus: http.StatusOK,
@@ -42,7 +42,7 @@ func TestAuthCookie(t *testing.T) {
 			name:        "Missing cookie",
 			cookieName:  "auth",
 			cookieValue: "",
-			validateFunc: func(ctx context.Context, value string) error {
+			validateFunc: func(_ context.Context, _ string) error {
 				return nil
 			},
 			expectedStatus: http.StatusSeeOther,
@@ -52,7 +52,7 @@ func TestAuthCookie(t *testing.T) {
 			name:        "Invalid cookie",
 			cookieName:  "auth",
 			cookieValue: "invalid_token",
-			validateFunc: func(ctx context.Context, value string) error {
+			validateFunc: func(_ context.Context, _ string) error {
 				return errors.New("invalid token")
 			},
 			expectedStatus: http.StatusSeeOther,
@@ -66,7 +66,7 @@ func TestAuthCookie(t *testing.T) {
 				ValidateFunc: tt.validateFunc,
 			}
 
-			handler := httpmiddleware.AuthCookie(tt.cookieName, validator, "/failure")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := httpmiddleware.AuthCookie(tt.cookieName, validator, "/failure")(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			}))
 

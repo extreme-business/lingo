@@ -25,7 +25,7 @@ func TestRun(t *testing.T) {
 
 			cmd := &mockCommand{
 				nameFunc: func() string { return "test" },
-				execFunc: func(ctx context.Context) error { return nil },
+				execFunc: func(_ context.Context) error { return nil },
 			}
 
 			got := cli.Run(ctx, logger, cmd)
@@ -40,7 +40,7 @@ func TestRun(t *testing.T) {
 
 			cmd := &mockCommand{
 				nameFunc: func() string { return "test" },
-				execFunc: func(ctx context.Context) error { return errors.ErrUnsupported },
+				execFunc: func(_ context.Context) error { return errors.ErrUnsupported },
 			}
 
 			got := cli.Run(ctx, logger, cmd)

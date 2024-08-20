@@ -11,7 +11,12 @@ import (
 func registerHandler(a AccountManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			r.ParseForm()
+			if err := r.ParseForm(); err != nil {
+                slog.ErrorContext(r.Context(), "failed to parse form", slog.String("error", err.Error()))
+                http.Error(w, "failed to parse form", http.StatusBadRequest)
+                return
+            }
+            
 			email := r.Form.Get("email")
 			password := r.Form.Get("password")
 

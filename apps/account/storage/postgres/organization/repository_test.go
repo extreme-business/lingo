@@ -40,7 +40,7 @@ func TestRepository_Create(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := setupTestDB(context.Background(), t, "account")
+	dbc := setupTestDB(context.Background(), t, t.Name())
 
 	t.Run("should create a new organization", func(t *testing.T) {
 		ctx := context.Background()
@@ -198,7 +198,7 @@ func TestRepository_Get(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := setupTestDB(context.Background(), t, "account")
+	dbc := setupTestDB(context.Background(), t, t.Name())
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -256,7 +256,7 @@ func TestRepository_Update(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := setupTestDB(context.Background(), t, "account")
+	dbc := setupTestDB(context.Background(), t, t.Name())
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -350,7 +350,7 @@ func TestRepository_Delete(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := setupTestDB(context.Background(), t, "account")
+	dbc := setupTestDB(context.Background(), t, t.Name())
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -386,7 +386,7 @@ func TestRepository_Delete(t *testing.T) {
 }
 
 func setupTestDatabaseForList(t *testing.T) *dbtest.PostgresContainer {
-	dbc := setupTestDB(context.Background(), t, "account")
+	dbc := setupTestDB(context.Background(), t, t.Name())
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{

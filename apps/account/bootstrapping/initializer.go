@@ -242,9 +242,9 @@ func (s *Initializer) setupUser(ctx context.Context, org *domain.Organization, r
 			u.Email = s.systemUserConfig.Email
 			u.HashedPassword = string(hashedPassword)
 
-			u, uErr := w.Update(ctx, u)
-			if uErr != nil {
-				return nil, fmt.Errorf("failed to update system user: %w", uErr)
+			u, err = w.Update(ctx, u)
+			if err != nil {
+				return nil, fmt.Errorf("failed to update system user: %w", err)
 			}
 
 			return u, nil
@@ -255,16 +255,17 @@ func (s *Initializer) setupUser(ctx context.Context, org *domain.Organization, r
 	if errors.Is(err, storage.ErrUserNotFound) {
 		s.logger.Info("system user creation triggered")
 
-		u, cErr := w.Create(ctx, &domain.User{
+		u, err = w.Create(ctx, &domain.User{
 			ID:             s.systemUserConfig.ID,
 			OrganizationID: org.ID,
 			DisplayName:    systemUserName,
 			Email:          s.systemUserConfig.Email,
+			Status:         domain.UserStatusActive,
 			HashedPassword: string(hashedPassword),
 		})
 
-		if cErr != nil {
-			return nil, fmt.Errorf("failed to create system user: %w", cErr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create system user: %w", err)
 		}
 
 		return u, nil

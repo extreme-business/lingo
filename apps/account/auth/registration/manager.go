@@ -76,7 +76,7 @@ func (m *Manager) Register(ctx context.Context, r Registration) (*domain.User, e
 
 	now := m.clock()
 	s := &storage.User{}
-	if err := r.User.ToStorage(s); err != nil {
+	if err = r.User.ToStorage(s); err != nil {
 		return nil, err
 	}
 
