@@ -9,7 +9,7 @@ CREATE TABLE organizations (
 );
 
 -- Create enum type for user status
-CREATE TYPE user_status AS ENUM ('active', 'deleted', 'inactive');
+CREATE TYPE user_status AS ENUM ('active', 'inactive');
 
 -- Create users table
 CREATE TABLE users (
@@ -26,4 +26,4 @@ CREATE TABLE users (
 );
 
 -- Create unique index with a partial condition on status
-CREATE UNIQUE INDEX users_unique_active_email ON users (email) WHERE status = 'active';
+CREATE UNIQUE INDEX users_unique_active_email ON users (email) WHERE status = 'active' AND delete_time IS NULL;

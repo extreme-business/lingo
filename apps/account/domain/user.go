@@ -21,7 +21,6 @@ func (s UserStatus) String() string { return string(s) }
 const (
 	UserStatusActive   UserStatus = "active"
 	UserStatusInactive UserStatus = "inactive"
-	UserStatusDeleted  UserStatus = "deleted"
 )
 
 // User is a user who uses or operates the system.

@@ -23,7 +23,7 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to get http port: %w", err)
 	}
 
-	authSigningKey, err := config.SigningKeyAuthentication()
+	signingKeyAuthentication, err := config.SigningKeyAuthentication()
 	if err != nil {
 		return fmt.Errorf("failed to get signing key: %w", err)
 	}
@@ -47,15 +47,15 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		grpc.WithTransportCredentials(creds),
 	}
 
-	conn, err := grpc.NewClient(accountServiceAddr, opts...)
+	accountClient, err := grpc.NewClient(accountServiceAddr, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to create account service client: %w", err)
 	}
-	defer conn.Close()
+	defer accountClient.Close()
 
-	accountService := accountproto.NewAccountServiceClient(conn)
+	accountService := accountproto.NewAccountServiceClient(accountClient)
 	authenticator := account.NewManager(accountService)
-	tokenValidator := token.NewTokenValidator([]byte(authSigningKey))
+	tokenValidator := token.NewTokenValidator([]byte(signingKeyAuthentication))
 	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login")
 
 	server := server.New(

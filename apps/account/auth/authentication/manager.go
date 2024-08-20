@@ -36,7 +36,7 @@ func NewManager(c Config) *Manager {
 		userRepo:             c.UserRepo,
 		AccountTokenManager: token.NewManager(
 			c.Clock,
-			c.SigningKeyRegistration,
+			c.SigningKeyAuthentication,
 			accountTokenDuration,
 		),
 		RefreshTokenManager: token.NewManager(
