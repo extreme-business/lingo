@@ -27,8 +27,8 @@ type DB struct {
 }
 
 // NewDB creates a new DB with the given sql.DB.
-func NewDB(sqlDB *sql.DB) *DB {
-	return NewDBWithHandler(NewSQLDBWrapper(sqlDB))
+func NewDB(db *sql.DB) *DB {
+	return NewDBWithHandler(NewSQLDBWrapper(db))
 }
 
 // NewDBWithHandler creates a new DB with a custom handler.

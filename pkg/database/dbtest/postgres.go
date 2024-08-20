@@ -62,10 +62,10 @@ func setupPostgresContainer(ctx context.Context, dbName string) (*PostgresContai
 
 // SetupPostgres sets up a test database and runs the provided setup function.
 // It also sets up a cleanup function to terminate the container after the test is complete.
-func SetupPostgres(t *testing.T, dbName string) *PostgresContainer {
+func SetupPostgres(ctx context.Context, t *testing.T, dbName string) *PostgresContainer {
 	t.Helper()
 
-	dbc, dbErr := setupPostgresContainer(context.Background(), dbName)
+	dbc, dbErr := setupPostgresContainer(ctx, dbName)
 	if dbErr != nil {
 		t.Fatal(dbErr)
 	}

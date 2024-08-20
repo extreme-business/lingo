@@ -17,14 +17,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func setupTestDB(ctx context.Context, t *testing.T, name string) (*dbtest.PostgresContainer, error) {
+func setupTestDB(ctx context.Context, t *testing.T, name string) *dbtest.PostgresContainer {
 	t.Helper()
-	dbc := dbtest.SetupPostgres(t, name)
+	dbc := dbtest.SetupPostgres(ctx, t, name)
 	if err := seed.RunMigrations(ctx, t, dbc.ConnectionString); err != nil {
-		return nil, err
+		t.Fatalf("failed to run migrations: %v", err)
 	}
 
-	return dbc, nil
+	return dbc
 }
 
 func TestNew(t *testing.T) {
@@ -40,10 +40,7 @@ func TestRepository_Create(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc, err := setupTestDB(context.Background(), t, "user")
-	if err != nil {
-		t.Fatalf("failed to setup test database: %v", err)
-	}
+	dbc := setupTestDB(context.Background(), t, "user")
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -165,10 +162,7 @@ func TestRepository_Get(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc, err := setupTestDB(context.Background(), t, "user")
-	if err != nil {
-		t.Fatalf("failed to setup test database: %v", err)
-	}
+	dbc := setupTestDB(context.Background(), t, "user")
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -240,10 +234,7 @@ func TestRepository_Update(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc, err := setupTestDB(context.Background(), t, "user")
-	if err != nil {
-		t.Fatalf("failed to setup test database: %v", err)
-	}
+	dbc := setupTestDB(context.Background(), t, "user")
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -376,10 +367,7 @@ func TestRepository_Update(t *testing.T) {
 }
 
 func TestRepository_Update_fields(t *testing.T) {
-	dbc, err := setupTestDB(context.Background(), t, "user")
-	if err != nil {
-		t.Fatalf("failed to setup test database: %v", err)
-	}
+	dbc := setupTestDB(context.Background(), t, "user")
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -471,10 +459,7 @@ func TestRepository_GetByEmail(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc, err := setupTestDB(context.Background(), t, "user")
-	if err != nil {
-		t.Fatalf("failed to setup test database: %v", err)
-	}
+	dbc := setupTestDB(context.Background(), t, "user")
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -546,10 +531,7 @@ func TestRepository_Delete(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc, err := setupTestDB(context.Background(), t, "user")
-	if err != nil {
-		t.Fatalf("failed to setup test database: %v", err)
-	}
+	dbc := setupTestDB(context.Background(), t, "user")
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -597,10 +579,7 @@ func TestRepository_Delete(t *testing.T) {
 }
 
 func setupTestDatabaseForList(t *testing.T) *dbtest.PostgresContainer {
-	dbc, err := setupTestDB(context.Background(), t, "user")
-	if err != nil {
-		t.Fatalf("failed to setup test database: %v", err)
-	}
+	dbc := setupTestDB(context.Background(), t, "user")
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{

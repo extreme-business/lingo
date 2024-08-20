@@ -97,8 +97,8 @@ func (m *Manager[T]) BeginOp(ctx context.Context, operation func(ctx context.Con
 	}
 
 	// Commit the transaction if all operations were successful.
-	err = tx.Commit() // set the err variable to the result of the commit operation. If it fails, the deferred function will handle the rollback.
-	if err != nil {
+	// set the err variable to the result of the commit operation. If it fails, the deferred function will handle the rollback.
+	if err = tx.Commit(); err != nil {
 		return err
 	}
 

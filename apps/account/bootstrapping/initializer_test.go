@@ -19,14 +19,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func setupTestDB(ctx context.Context, t *testing.T, name string) (*dbtest.PostgresContainer, error) {
+func setupTestDB(ctx context.Context, t *testing.T, name string) *dbtest.PostgresContainer {
 	t.Helper()
-	dbc := dbtest.SetupPostgres(t, name)
+	dbc := dbtest.SetupPostgres(ctx, t, name)
 	if err := seed.RunMigrations(ctx, t, dbc.ConnectionString); err != nil {
-		return nil, err
+		t.Fatalf("failed to run migrations: %v", err)
 	}
 
-	return dbc, nil
+	return dbc
 }
 
 func TestNew(t *testing.T) {
@@ -89,10 +89,7 @@ func TestInitializer_NewManager(t *testing.T) {
 }
 
 func TestInitializer_Setup(t *testing.T) {
-	dbc, err := setupTestDB(context.Background(), t, "bootstrapping")
-	if err != nil {
-		t.Fatalf("failed to setup test database: %v", err)
-	}
+	dbc := setupTestDB(context.Background(), t, "bootstrapping")
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{

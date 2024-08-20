@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/extreme-business/lingo/pkg/database"
+	"github.com/extreme-business/lingo/pkg/database/dbtest"
 	"github.com/extreme-business/lingo/pkg/database/mock"
 )
 
@@ -71,6 +72,10 @@ func TestOp(t *testing.T) {
 		if !calledRegister {
 			t.Error("Expected Repos to call the register function")
 		}
+	})
+
+	t.Run("should be able to run multiple operations", func(t *testing.T) {
+		dbtest.SetupPostgres(context.Background(), t, "test")
 	})
 }
 
