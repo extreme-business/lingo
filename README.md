@@ -5,6 +5,12 @@ Lingo is a web app. I don't know what it will do, but for now the goals are:
 - use proto to generate https gateways for the grpc servers.
 - add all https services to swagger ui so they can be easily discovered and tested.
 
+todo:
+- make sure 3 tokens are set:
+  - registration
+  - authentication
+  - registration
+
 # Setup
 The goal with the setup is that minimal tools are needed to run the project.
 
