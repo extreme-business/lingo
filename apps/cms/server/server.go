@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/cms/account"
 	"github.com/extreme-business/lingo/apps/cms/cookie"
 	"github.com/extreme-business/lingo/apps/cms/views"
 	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 	"github.com/extreme-business/lingo/pkg/httpserver"
+	"github.com/google/uuid"
 )
 
 const (
@@ -49,7 +51,7 @@ func New(
 	mux.Handle("/", authMiddleware(adminMux))
 
 	mux.HandleFunc("/login", loginHandler(time.Now, accountManager))
-	mux.Handle("/register", registerHandler(accountManager))
+	mux.HandleFunc("/register", registerHandler(accountManager))
 
 	return httpserver.New(
 		httpserver.WithAddr(addr),
@@ -66,22 +68,11 @@ func New(
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Home</title>
-        </head>
-        <body>
-            <h1>Welcome to the Home Page</h1>
-            <nav>
-                <a href="/">Home</a> |
-                <a href="/about">About</a> |
-                <a href="/contact">Contact</a>
-            </nav>
-        </body>
-        </html>
-    `)
+	views.UserList(w, []*domain.User{
+		{
+			ID: uuid.Max,
+		},
+	})
 }
 
 const loginTemplate = `
@@ -92,11 +83,6 @@ const loginTemplate = `
 </head>
 <body>
 	<h1>Welcome to the Home Page</h1>
-	<nav>
-		<a href="/">Home</a> |
-		<a href="/about">About</a> |
-		<a href="/contact">Contact</a>
-	</nav>
 	<div>
 		<form action="/login" method="post">
 			<label for="email">email:</label>
@@ -137,7 +123,7 @@ func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 	}
 }
 
-func adminHandler(w http.ResponseWriter, r *http.Request) {
+func adminHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprint(w, `
         <!DOCTYPE html>

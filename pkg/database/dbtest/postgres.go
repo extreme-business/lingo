@@ -84,17 +84,14 @@ func SetupPostgres(ctx context.Context, t *testing.T, dbName string) *PostgresCo
 // It also sets up a cleanup function to close the connection after the test is complete.
 func Connect(ctx context.Context, t *testing.T, connectionString string) *sql.DB {
 	t.Helper()
-
 	db, err := dbpostgres.Connect(ctx, connectionString)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	t.Cleanup(func() {
 		if err = db.Close(); err != nil {
 			t.Fatalf("failed to close db: %s", err)
 		}
 	})
-
 	return db
 }

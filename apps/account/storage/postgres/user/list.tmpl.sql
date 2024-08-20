@@ -1,4 +1,4 @@
-SELECT u.id, u.organization_id, u.display_name, u.email, u.create_time, u.update_time
+SELECT u.id, u.organization_id, u.display_name, u.email, u.status, u.create_time, u.update_time, u.delete_time
 FROM users u 
 {{- if .Predicates }}
 WHERE {{- range $i, $v := .Predicates }}

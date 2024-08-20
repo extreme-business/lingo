@@ -218,7 +218,7 @@ func (s *Initializer) setupUser(ctx context.Context, org *domain.Organization, r
 	}
 
 	// check if the user already exists
-	u, err := r.Get(ctx, s.systemUserConfig.ID)
+	u, err := r.GetByEmail(ctx, s.systemUserConfig.Email)
 	if err == nil {
 		// check if the user needs to be updated
 		changes := []storage.UserField{}

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Error Page</title>
     <style>
-        #error {
+        .error {
             display: block;
             margin: 0 auto;
             padding: 20px;
@@ -20,9 +20,7 @@
         <h1>Lingo</h1>
     </header>
     <main>
-        <code id="error">
-            {{ block "content" . }}{{ end }}
-        </code>
+        {{ block "content" . }}{{ end }}
     </main>
     <footer>
         <p>{{ .Year }}</p>

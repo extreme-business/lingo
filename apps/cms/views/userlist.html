@@ -1,0 +1,39 @@
+{{ define "content" }}
+<div class="user-list">
+    <h2>user list</h2>
+
+    {{ if .Users }}
+    <table>
+        <caption>list of users</caption>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>organization_id</th>
+                <th>display name</th>
+                <th>email</th>
+                <th>status</th>
+                <th>created</th>
+                <th>updated</th>
+                <th>deleted</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range .Users }}
+            <tr>
+                <td>{{ .ID }}</td>
+                <td>{{ .OrganizationID }}</td>
+                <td>{{ .DisplayName }}</td>
+                <td>{{ .Email }}</td>
+                <td>{{ .Status }}</td>
+                <td>{{ .Created }}</td>
+                <td>{{ .Updated }}</td>
+                <td>{{ .Deleted }}</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+    {{ else }}
+    <p>no users found</p>
+    {{ end }}
+</div>
+{{ end }}

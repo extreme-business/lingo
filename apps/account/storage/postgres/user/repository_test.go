@@ -63,10 +63,12 @@ func TestRepository_Create(t *testing.T) {
 			"35297169-89d8-444d-8499-c6341e3a0770",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"test",
+			"active",
 			"test@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		))
 
 		if err != nil {
@@ -77,10 +79,12 @@ func TestRepository_Create(t *testing.T) {
 			"35297169-89d8-444d-8499-c6341e3a0770",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"test",
+			"active",
 			"test@test.com",
 			"",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		)
 
 		if diff := cmp.Diff(expect, user); diff != "" {
@@ -97,10 +101,12 @@ func TestRepository_Create(t *testing.T) {
 			"485819f0-9e48-4d25-b07b-6de8a2076be2",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"username_300",
+			"active",
 			"test_300@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		))
 
 		if err != nil {
@@ -111,10 +117,12 @@ func TestRepository_Create(t *testing.T) {
 			"485819f0-9e48-4d25-b07b-6de8a2076be2",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"username_301",
+			"active",
 			"test_3001@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		))
 
 		if !errors.Is(err, storage.ErrConflictUserID) {
@@ -131,10 +139,12 @@ func TestRepository_Create(t *testing.T) {
 			"2e56b481-05fe-4ce3-b072-a94fbf8aeab3",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"username_400",
+			"active",
 			"test_400@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		))
 
 		if err != nil {
@@ -145,10 +155,12 @@ func TestRepository_Create(t *testing.T) {
 			"5e6f2f35-1de1-4803-8fdd-9b67706f887e",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"username_401",
+			"active",
 			"test_400@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		))
 
 		if !errors.Is(err, storage.ErrConflictUserEmail) {
@@ -179,10 +191,12 @@ func TestRepository_Get(t *testing.T) {
 				"35297169-89d8-444d-8499-c6341e3a0770",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 		},
 	})
@@ -192,8 +206,8 @@ func TestRepository_Get(t *testing.T) {
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 
 		repo := user.New(database.NewDB(db))
-		user, err := repo.Get(ctx, uuid.MustParse("35297169-89d8-444d-8499-c6341e3a0770"))
 
+		user, err := repo.Get(ctx, uuid.MustParse("35297169-89d8-444d-8499-c6341e3a0770"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -202,10 +216,12 @@ func TestRepository_Get(t *testing.T) {
 			"35297169-89d8-444d-8499-c6341e3a0770",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"test",
+			"active",
 			"test@test.com",
 			"",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		)
 
 		if diff := cmp.Diff(expect, user); diff != "" {
@@ -258,10 +274,12 @@ func TestRepository_Update(t *testing.T) {
 				"35297169-89d8-444d-8499-c6341e3a0770",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 		},
 	})
@@ -275,15 +293,18 @@ func TestRepository_Update(t *testing.T) {
 		user, err := repo.Update(ctx, seed.NewUser(
 			"35297169-89d8-444d-8499-c6341e3a0770",
 			"f226487d-61ff-4a18-a2d9-ab888b22dbc8",
-			"test2", // updated username
+			"test2",    // updated username
+			"inactive", // updated status
 			"test@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		), []storage.UserField{
 			storage.UserOrganizationID,
 			storage.UserDisplayName,
 			storage.UserEmail,
+			storage.UserStatus,
 			storage.UserHashedPassword,
 			storage.UserUpdateTime,
 		})
@@ -296,10 +317,12 @@ func TestRepository_Update(t *testing.T) {
 			"35297169-89d8-444d-8499-c6341e3a0770",
 			"f226487d-61ff-4a18-a2d9-ab888b22dbc8",
 			"test2",
+			"inactive",
 			"test@test.com",
 			"",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		)
 
 		if diff := cmp.Diff(expect, user); diff != "" {
@@ -309,8 +332,7 @@ func TestRepository_Update(t *testing.T) {
 		// check if only the username was updated
 		query := recorder.RowQueries[0].Query
 		query = strings.TrimSpace(strings.ReplaceAll(query, "\n", " "))
-		expectedQuery := "UPDATE users SET organization_id = $1, display_name = $2, email = $3, hashed_password = $4, update_time = $5 WHERE id = $6"
-		expectedQuery += " RETURNING id, organization_id, display_name, email, create_time, update_time;"
+		expectedQuery := "UPDATE users SET organization_id = $1, display_name = $2, email = $3, status = $4, hashed_password = $5, update_time = $6 WHERE id = $7 RETURNING id, organization_id,  display_name, email, status, create_time, update_time, delete_time;"
 
 		if query != expectedQuery {
 			t.Errorf("expected %q, got %q", expectedQuery, query)
@@ -326,10 +348,12 @@ func TestRepository_Update(t *testing.T) {
 			"f2e8b3cd-07a3-4d7c-9eef-cf02452d8332",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"test",
+			"active",
 			"test@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		), []storage.UserField{
 			storage.UserDisplayName,
 			storage.UserUpdateTime,
@@ -348,10 +372,12 @@ func TestRepository_Update(t *testing.T) {
 				"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 			[]storage.UserField{}, // no fields
 		)
@@ -384,10 +410,12 @@ func TestRepository_Update_fields(t *testing.T) {
 				"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 		},
 	})
@@ -404,10 +432,12 @@ func TestRepository_Update_fields(t *testing.T) {
 				"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 			fields: []storage.UserField{},
 			err:    storage.ErrNoUserFieldsToUpdate,
@@ -418,10 +448,12 @@ func TestRepository_Update_fields(t *testing.T) {
 				"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 			fields: []storage.UserField{storage.UserCreateTime},
 			err:    storage.ErrImmutableUserCreateTime,
@@ -432,10 +464,12 @@ func TestRepository_Update_fields(t *testing.T) {
 				"957b12c5-1071-40d9-8bec-6ed195c8cfbf",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 			fields: []storage.UserField{"unknown"},
 			err:    storage.ErrUserUnknownField,
@@ -476,10 +510,12 @@ func TestRepository_GetByEmail(t *testing.T) {
 				"82651da9-c2ff-4152-8eae-7555d5a42aad",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 		},
 	})
@@ -498,10 +534,12 @@ func TestRepository_GetByEmail(t *testing.T) {
 			"82651da9-c2ff-4152-8eae-7555d5a42aad",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
 			"test",
+			"active",
 			"test@test.com",
 			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		)
 
 		if diff := cmp.Diff(expect, user); diff != "" {
@@ -548,10 +586,12 @@ func TestRepository_Delete(t *testing.T) {
 				"35297169-89d8-444d-8499-c6341e3a0770",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
+				"active",
 				"test@test.com",
 				"password",
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 		},
 	})
@@ -579,8 +619,8 @@ func TestRepository_Delete(t *testing.T) {
 }
 
 func setupTestDatabaseForList(t *testing.T) *dbtest.PostgresContainer {
-	dbc := setupTestDB(context.Background(), t, "user")
-
+	t.Helper()
+	dbc := setupTestDB(context.Background(), t, "user_list")
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
 			seed.NewOrganization(
@@ -596,28 +636,34 @@ func setupTestDatabaseForList(t *testing.T) *dbtest.PostgresContainer {
 				"7f62b8ca-6c97-4081-adbc-2b4611b41617",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
 				"test",
-				"test1@test.com",
+				"active",
+				"test@test.com",
 				"password",
-				time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
-				time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
+				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 			seed.NewUser(
 				"92c02cd8-9286-4687-bb4d-60ee95c769ed",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
-				"test",
+				"test2",
+				"active",
 				"test2@test.com",
 				"password",
-				time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
-				time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
+				time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+				time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 			seed.NewUser(
 				"2198aab6-2ece-429a-8d7c-1654ab8b7d8f",
 				"7bb443e5-8974-44c2-8b7c-b95124205264",
-				"test",
-				"test3@example.com",
+				"test3",
+				"active",
+				"test3@test.com",
 				"password",
-				time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
-				time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
+				time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+				time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 		},
 	})
@@ -625,18 +671,21 @@ func setupTestDatabaseForList(t *testing.T) *dbtest.PostgresContainer {
 }
 
 func connectAndCreateRepo(t *testing.T, db database.Conn) (*user.Repository, *dbtest.Recorder) {
+	t.Helper()
 	recorder := dbtest.NewRecorder(db)
 	repo := user.New(recorder)
 	return repo, recorder
 }
 
 func assertUsers(t *testing.T, expect, actual []*storage.User) {
+	t.Helper()
 	if diff := cmp.Diff(expect, actual); diff != "" {
-		t.Errorf("Create() mismatch (-want +got):\n%s", diff)
+		t.Errorf("mismatch (-want +got):\n%s", diff)
 	}
 }
 
 func assertQuery(t *testing.T, recorder *dbtest.Recorder, expectedQuery string) {
+	t.Helper()
 	if expectedQuery != "" {
 		if len(recorder.Queries) != 1 {
 			t.Errorf("expected 1 query, got %d", len(recorder.Queries))
@@ -652,6 +701,7 @@ func assertQuery(t *testing.T, recorder *dbtest.Recorder, expectedQuery string) 
 }
 
 func assertError(t *testing.T, expected, actual error) {
+	t.Helper()
 	if expected == nil && actual != nil {
 		t.Errorf("unexpected error: %v", actual)
 	}
@@ -691,31 +741,37 @@ func TestRepository_List(t *testing.T) {
 					"7f62b8ca-6c97-4081-adbc-2b4611b41617",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
 					"test",
-					"test1@test.com",
+					"active",
+					"test@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
+					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 				seed.NewUser(
 					"92c02cd8-9286-4687-bb4d-60ee95c769ed",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
+					"test2",
+					"active",
 					"test2@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 				seed.NewUser(
 					"2198aab6-2ece-429a-8d7c-1654ab8b7d8f",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
-					"test3@example.com",
+					"test3",
+					"active",
+					"test3@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
+					time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 			},
-			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.create_time, u.update_time FROM users u;",
+			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.status, u.create_time, u.update_time, u.delete_time FROM users u;",
 		},
 		{
 			name:       "should list users with organization id predicate",
@@ -732,31 +788,37 @@ func TestRepository_List(t *testing.T) {
 					"7f62b8ca-6c97-4081-adbc-2b4611b41617",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
 					"test",
-					"test1@test.com",
+					"active",
+					"test@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
+					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 				seed.NewUser(
 					"92c02cd8-9286-4687-bb4d-60ee95c769ed",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
+					"test2",
+					"active",
 					"test2@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 				seed.NewUser(
 					"2198aab6-2ece-429a-8d7c-1654ab8b7d8f",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
-					"test3@example.com",
+					"test3",
+					"active",
+					"test3@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
+					time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 			},
-			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.create_time, u.update_time FROM users u WHERE u.organization_id = $1;",
+			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.status, u.create_time, u.update_time, u.delete_time FROM users u WHERE u.organization_id = $1;",
 		},
 		{
 			name:       "should list users with limit",
@@ -768,22 +830,26 @@ func TestRepository_List(t *testing.T) {
 					"7f62b8ca-6c97-4081-adbc-2b4611b41617",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
 					"test",
-					"test1@test.com",
+					"active",
+					"test@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
+					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 				seed.NewUser(
 					"92c02cd8-9286-4687-bb4d-60ee95c769ed",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
+					"test2",
+					"active",
 					"test2@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 			},
-			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.create_time, u.update_time FROM users u LIMIT $1;",
+			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.status, u.create_time, u.update_time, u.delete_time FROM users u LIMIT $1;",
 		},
 		{
 			name:       "should list users with offset",
@@ -794,23 +860,27 @@ func TestRepository_List(t *testing.T) {
 				seed.NewUser(
 					"92c02cd8-9286-4687-bb4d-60ee95c769ed",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
+					"test2",
+					"active",
 					"test2@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 				seed.NewUser(
 					"2198aab6-2ece-429a-8d7c-1654ab8b7d8f",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
-					"test3@example.com",
+					"test3",
+					"active",
+					"test3@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
+					time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 			},
-			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.create_time, u.update_time FROM users u OFFSET $1;",
+			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.status, u.create_time, u.update_time, u.delete_time FROM users u OFFSET $1;",
 		},
 		{
 			name:       "should list users with limit and offset",
@@ -821,14 +891,16 @@ func TestRepository_List(t *testing.T) {
 				seed.NewUser(
 					"92c02cd8-9286-4687-bb4d-60ee95c769ed",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
+					"test2",
+					"active",
 					"test2@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 			},
-			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.create_time, u.update_time FROM users u LIMIT $1 OFFSET $2;",
+			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.status, u.create_time, u.update_time, u.delete_time FROM users u LIMIT $1 OFFSET $2;",
 		},
 		{
 			name: "should list users with sort",
@@ -842,32 +914,38 @@ func TestRepository_List(t *testing.T) {
 				seed.NewUser(
 					"2198aab6-2ece-429a-8d7c-1654ab8b7d8f",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
-					"test3@example.com",
+					"test3",
+					"active",
+					"test3@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
+					time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 				seed.NewUser(
 					"92c02cd8-9286-4687-bb4d-60ee95c769ed",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
-					"test",
+					"test2",
+					"active",
 					"test2@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 				seed.NewUser(
 					"7f62b8ca-6c97-4081-adbc-2b4611b41617",
 					"7bb443e5-8974-44c2-8b7c-b95124205264",
 					"test",
-					"test1@test.com",
+					"active",
+					"test@test.com",
 					"",
-					time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
-					time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
+					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{},
 				),
 			},
-			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.create_time, u.update_time FROM users u ORDER BY u.display_name DESC, u.create_time DESC;",
+			expectedQuery: "SELECT u.id, u.organization_id, u.display_name, u.email, u.status, u.create_time, u.update_time, u.delete_time FROM users u ORDER BY u.display_name DESC, u.create_time DESC;",
 		},
 		{
 			name: "should return error if sorting field is unknown",

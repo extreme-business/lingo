@@ -106,10 +106,12 @@ func TestInitializer_Setup(t *testing.T) {
 				"7fb3d880-1db0-464e-b062-a9896cb9bf6c",
 				"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
 				"system",
+				"active",
 				"system@system.com",
 				"password123",
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Time{},
 			),
 		},
 	})
@@ -172,10 +174,12 @@ func TestInitializer_Setup(t *testing.T) {
 			"7fb3d880-1db0-464e-b062-a9896cb9bf6c",
 			"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
 			"system",
+			"active",
 			"test@test.com",
 			"",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 		)
 
 		if diff := cmp.Diff(expectedUser, u); diff != "" {

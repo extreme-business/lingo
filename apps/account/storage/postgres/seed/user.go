@@ -10,15 +10,30 @@ import (
 	"github.com/google/uuid"
 )
 
-func NewUser(id string, organizationID string, displayName string, email string, password string, createTime time.Time, updateTime time.Time) *storage.User {
+func NewUser(
+	id string,
+	organizationID string,
+	displayName string,
+	status string,
+	email string,
+	password string,
+	createTime time.Time,
+	updateTime time.Time,
+	deleteTime time.Time,
+) *storage.User {
 	return &storage.User{
 		ID:             uuid.MustParse(id),
 		OrganizationID: uuid.MustParse(organizationID),
 		DisplayName:    displayName,
+		Status:         status,
 		Email:          email,
 		HashedPassword: password,
 		CreateTime:     createTime,
 		UpdateTime:     updateTime,
+		DeleteTime: sql.NullTime{
+			Time:  deleteTime,
+			Valid: !deleteTime.IsZero(),
+		},
 	}
 }
 

@@ -30,6 +30,16 @@ func (r *Reader) Get(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	return u, u.FromStorage(user)
 }
 
+func (r *Reader) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
+	user, err := r.reader.GetByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+
+	var u = new(domain.User)
+	return u, u.FromStorage(user)
+}
+
 func (r *Reader) List(ctx context.Context, page uint) ([]*domain.User, error) {
 	users, err := r.reader.List(ctx, storage.Pagination{
 		Limit:  perPage,

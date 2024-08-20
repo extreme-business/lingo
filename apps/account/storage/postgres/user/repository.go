@@ -38,20 +38,35 @@ func New(dbConn database.Conn) *Repository {
 }
 
 // scan scans a user from a sql.Row or sql.Rows.
+// cols:
+//   - id
+//   - organization_id
+//   - display_name
+//   - email
+//   - status
+//   - create_time
+//   - update_time
+//   - delete_time
+//
+// example query:
+//
+//	SELECT id, organization_id,  display_name, email, status, create_time, update_time, delete_time FROM users;
 func scan(f func(dest ...any) error, u *storage.User) error {
 	return f(
 		&u.ID,
 		&u.OrganizationID,
 		&u.DisplayName,
 		&u.Email,
+		&u.Status,
 		&u.CreateTime,
 		&u.UpdateTime,
+		&u.DeleteTime,
 	)
 }
 
-const createQuery = `INSERT INTO users (id, organization_id,  display_name, email, hashed_password, create_time, update_time)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, organization_id, display_name, email, create_time, update_time
+const createQuery = `INSERT INTO users (id, organization_id,  display_name, email, hashed_password, status, create_time, update_time, delete_time)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, organization_id,  display_name, email, status, create_time, update_time, delete_time
 ;`
 
 // Create a new user.
@@ -64,8 +79,10 @@ func (r *Repository) Create(ctx context.Context, u *storage.User) (*storage.User
 		u.DisplayName,
 		u.Email,
 		u.HashedPassword,
+		u.Status,
 		u.CreateTime,
 		u.UpdateTime,
+		u.DeleteTime,
 	)
 
 	var n storage.User
@@ -88,7 +105,7 @@ func (r *Repository) Create(ctx context.Context, u *storage.User) (*storage.User
 	return &n, nil
 }
 
-const getByIDQuery = `SELECT id, organization_id, display_name, email, create_time, update_time
+const getByIDQuery = `SELECT id, organization_id,  display_name, email, status, create_time, update_time, delete_time
 FROM users
 WHERE id = $1
 ;`
@@ -98,14 +115,7 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*storage.User, erro
 	row := r.dbConn.QueryRow(ctx, getByIDQuery, id)
 
 	var u storage.User
-	if err := row.Scan(
-		&u.ID,
-		&u.OrganizationID,
-		&u.DisplayName,
-		&u.Email,
-		&u.CreateTime,
-		&u.UpdateTime,
-	); err != nil {
+	if err := scan(row.Scan, &u); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, storage.ErrUserNotFound
 		}
@@ -116,13 +126,13 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*storage.User, erro
 	return &u, nil
 }
 
-const getByEmailQuery = `SELECT id, organization_id, display_name, hashed_password, email, create_time, update_time
+const getByEmailQuery = `SELECT id, organization_id, display_name, hashed_password, email, status, create_time, update_time, delete_time
 FROM users
 WHERE email = $1
 ;`
 
 // GetByEmail get a user by email.
-// This is used for accountentication and so it also returns the password.
+// This is used for authentication and so it also returns the hashed password.
 func (r *Repository) GetByEmail(ctx context.Context, email string) (*storage.User, error) {
 	row := r.dbConn.QueryRow(ctx, getByEmailQuery, email)
 
@@ -133,8 +143,10 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*storage.Use
 		&u.DisplayName,
 		&u.HashedPassword,
 		&u.Email,
+		&u.Status,
 		&u.CreateTime,
 		&u.UpdateTime,
+		&u.DeleteTime,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, storage.ErrUserNotFound
@@ -149,7 +161,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*storage.Use
 const updateQueryTemplate = `UPDATE users
 SET %s
 WHERE id = $%d
-RETURNING id, organization_id, display_name, email, create_time, update_time;`
+RETURNING id, organization_id,  display_name, email, status, create_time, update_time, delete_time;`
 
 func (r *Repository) Update(ctx context.Context, in *storage.User, fields []storage.UserField) (*storage.User, error) {
 	if len(fields) == 0 {
