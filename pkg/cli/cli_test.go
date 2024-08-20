@@ -1,10 +1,12 @@
-package cli
+package cli_test
 
 import (
 	"context"
 	"errors"
 	"log/slog"
 	"testing"
+
+	"github.com/extreme-business/lingo/pkg/cli"
 )
 
 type mockCommand struct {
@@ -26,7 +28,7 @@ func TestRun(t *testing.T) {
 				execFunc: func(ctx context.Context) error { return nil },
 			}
 
-			got := Run(ctx, logger, cmd)
+			got := cli.Run(ctx, logger, cmd)
 			if want := 0; got != want {
 				t.Errorf("got %v, want %v", got, want)
 			}
@@ -41,7 +43,7 @@ func TestRun(t *testing.T) {
 				execFunc: func(ctx context.Context) error { return errors.ErrUnsupported },
 			}
 
-			got := Run(ctx, logger, cmd)
+			got := cli.Run(ctx, logger, cmd)
 			if want := 1; got != want {
 				t.Errorf("got %v, want %v", got, want)
 			}

@@ -23,7 +23,7 @@ func runCms(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to get http port: %w", err)
 	}
 
-	signingKeyAuthentication, err := config.SigningKeyAuthentication()
+	signingKeyAuthentication, err := config.SigningKeyRefreshToken()
 	if err != nil {
 		return fmt.Errorf("failed to get signing key: %w", err)
 	}

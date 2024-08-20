@@ -97,12 +97,12 @@ func setupAccount(
 	config *config.Config,
 	db *sql.DB,
 ) (*app.Account, error) {
-	signingKeyRegistration, err := config.SigningKeyRegistration()
+	signingKeyAccessToken, err := config.SigningKeyAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	signingKeyAuthentication, err := config.SigningKeyAuthentication()
+	signingKeyRefreshToken, err := config.SigningKeyRefreshToken()
 	if err != nil {
 		return nil, err
 	}
@@ -135,10 +135,10 @@ func setupAccount(
 
 	app := app.New(logger, i,
 		authentication.NewManager(authentication.Config{
-			Clock:                    clock,
-			SigningKeyRegistration:   []byte(signingKeyRegistration),
-			SigningKeyAuthentication: []byte(signingKeyAuthentication),
-			UserRepo:                 repos.User,
+			Clock:                  clock,
+			SigningKeyAccessToken:  []byte(signingKeyAccessToken),
+			SigningKeyRefreshToken: []byte(signingKeyRefreshToken),
+			UserRepo:               repos.User,
 		}),
 		registration.NewManager(registration.Config{
 			UUIDgen:  uuidgen,

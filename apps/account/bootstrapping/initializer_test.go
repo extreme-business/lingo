@@ -409,6 +409,6 @@ func TestConfig_Validate(t *testing.T) {
 	}
 }
 
-func TestInitializer_setup(t *testing.T) {
+func TestInitializer_setup(_ *testing.T) {
 
 }

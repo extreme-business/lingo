@@ -7,12 +7,12 @@ import (
 	accountproto "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
 )
 
-// Manager is the account manager
+// Manager is the account manager.
 type Manager struct {
 	client accountproto.AccountServiceClient
 }
 
-// SuccessResponse is the success response struct
+// SuccessResponse is the success response struct.
 type SuccessResponse struct {
 	AccessToken  string
 	RefreshToken string
@@ -31,12 +31,12 @@ func (a *Manager) Authenticate(ctx context.Context, email, password string) (*Su
 	}
 
 	return &SuccessResponse{
-		AccessToken:  r.AccessToken,
-		RefreshToken: r.RefreshToken,
+		AccessToken:  r.GetAccessToken(),
+		RefreshToken: r.GetRefreshToken(),
 	}, nil
 }
 
-// Registration is the registration struct
+// Registration is the registration struct.
 type Registration struct {
 	OrganizationID string
 	Email          string

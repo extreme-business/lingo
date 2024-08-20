@@ -45,31 +45,31 @@ func TestConfig_DatabaseURL(t *testing.T) {
 	})
 }
 
-func TestConfig_SigningKeyRegistration(t *testing.T) {
+func TestConfig_SigningKeyAccessToken(t *testing.T) {
 	t.Cleanup(func() {
 		viper.Reset()
 	})
 
 	t.Run("should return error if LINGO_SIGNING_KEY_REGISTRATION is not set", func(t *testing.T) {
-		v, err := config.New().SigningKeyRegistration()
+		v, err := config.New().SigningKeyAccessToken()
 		if err == nil {
-			t.Errorf("SigningKeyRegistration() error = %v, wantErr %v", err, true)
+			t.Errorf("SigningKeyAccessToken() error = %v, wantErr %v", err, true)
 		}
 
 		if v != "" {
-			t.Errorf("SigningKeyRegistration() = %v, want %v", v, "")
+			t.Errorf("SigningKeyAccessToken() = %v, want %v", v, "")
 		}
 	})
 
 	t.Run("should return the value of LINGO_SIGNING_KEY_REGISTRATION", func(t *testing.T) {
 		t.Setenv("LINGO_SIGNING_KEY_REGISTRATION", "test")
 		c := config.New()
-		got, err := c.SigningKeyRegistration()
+		got, err := c.SigningKeyAccessToken()
 		if err != nil {
-			t.Errorf("SigningKeyRegistration() error = %v, wantErr %v", err, nil)
+			t.Errorf("SigningKeyAccessToken() error = %v, wantErr %v", err, nil)
 		}
 		if got != "test" {
-			t.Errorf("SigningKeyRegistration() = %v, want %v", got, "test")
+			t.Errorf("SigningKeyAccessToken() = %v, want %v", got, "test")
 		}
 	})
 }
@@ -80,7 +80,7 @@ func TestConfig_SigningKeyAuthentication(t *testing.T) {
 	})
 
 	t.Run("should return error if LINGO_SIGNING_KEY_AUTHENTICATION is not set", func(t *testing.T) {
-		v, err := config.New().SigningKeyAuthentication()
+		v, err := config.New().SigningKeyRefreshToken()
 		if err == nil {
 			t.Errorf("SigningKeyAuthentication() error = %v, wantErr %v", err, true)
 		}
@@ -93,7 +93,7 @@ func TestConfig_SigningKeyAuthentication(t *testing.T) {
 	t.Run("should return the value of LINGO_SIGNING_KEY_AUTHENTICATION", func(t *testing.T) {
 		t.Setenv("LINGO_SIGNING_KEY_AUTHENTICATION", "test")
 		c := config.New()
-		got, err := c.SigningKeyAuthentication()
+		got, err := c.SigningKeyRefreshToken()
 		if err != nil {
 			t.Errorf("SigningKeyAuthentication() error = %v, wantErr %v", err, nil)
 		}

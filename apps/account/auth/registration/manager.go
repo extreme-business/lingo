@@ -52,7 +52,6 @@ func (m *Manager) configured() error {
 	}
 
 	return nil
-
 }
 
 type Registration struct {

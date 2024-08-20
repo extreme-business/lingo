@@ -8,8 +8,8 @@ import (
 
 const ( // env keys.
 	databaseURL               = "DB_URL"
-	signingKeyRegistration    = "SIGNING_KEY_REGISTRATION"
-	signingKeyAuth            = "SIGNING_KEY_AUTHENTICATION"
+	signingKeyAccessToken     = "SIGNING_KEY_ACCESS_TOKEN"
+	signingKeyRefreshToken    = "SIGNING_KEY_REFRESH_TOKEN"
 	httpPort                  = "HTTP_PORT"
 	grpcPort                  = "GRPC_PORT"
 	accountServiceTLSCertFile = "ACCOUNT_TLS_CERT_FILE"
@@ -58,8 +58,8 @@ func (c *Config) int(key string) (int, error) {
 }
 
 func (c *Config) DatabaseURL() (string, error)                 { return c.str(databaseURL) }
-func (c *Config) SigningKeyRegistration() (string, error)      { return c.str(signingKeyRegistration) }
-func (c *Config) SigningKeyAuthentication() (string, error)    { return c.str(signingKeyAuth) }
+func (c *Config) SigningKeyAccessToken() (string, error)       { return c.str(signingKeyAccessToken) }
+func (c *Config) SigningKeyRefreshToken() (string, error)      { return c.str(signingKeyRefreshToken) }
 func (c *Config) HTTPPort() (int, error)                       { return c.int(httpPort) }
 func (c *Config) GRPCPort() (int, error)                       { return c.int(grpcPort) }
 func (c *Config) AccountServiceTLSCertFile() (string, error)   { return c.str(accountServiceTLSCertFile) }

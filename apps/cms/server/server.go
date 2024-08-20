@@ -32,13 +32,13 @@ type Registration struct {
 	Password string
 }
 
-// AccountManager is the interface for authenticating users
+// AccountManager is the interface for authenticating users.
 type AccountManager interface {
 	Authenticate(ctx context.Context, email, password string) (*account.SuccessResponse, error)
 	Register(ctx context.Context, r account.Registration) error
 }
 
-// New creates a new Server instance
+// New creates a new Server instance.
 func New(
 	addr string,
 	accountManager AccountManager,
@@ -68,11 +68,14 @@ func New(
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	views.UserList(w, []*domain.User{
+	err := views.UserList(w, []*domain.User{
 		{
 			ID: uuid.Max,
 		},
 	})
+	if err != nil {
+		views.Error(w, err.Error())
+	}
 }
 
 const loginTemplate = `
