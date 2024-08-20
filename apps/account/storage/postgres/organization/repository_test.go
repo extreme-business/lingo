@@ -17,6 +17,16 @@ import (
 	"github.com/google/uuid"
 )
 
+func setupTestDB(ctx context.Context, t *testing.T, name string) (*dbtest.PostgresContainer, error) {
+	t.Helper()
+	dbc := dbtest.SetupPostgres(t, name)
+	if err := seed.RunMigrations(ctx, t, dbc.ConnectionString); err != nil {
+		return nil, err
+	}
+
+	return dbc, nil
+}
+
 func TestNew(t *testing.T) {
 	t.Run("should return a new repository", func(t *testing.T) {
 		if got := organization.New(nil); got == nil {
@@ -30,7 +40,10 @@ func TestRepository_Create(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtest.SetupPostgres(t, "account", seed.RunMigrations)
+	dbc, err := setupTestDB(context.Background(), t, "account")
+	if err != nil {
+		t.Fatalf("failed to setup test database: %v", err)
+	}
 
 	t.Run("should create a new organization", func(t *testing.T) {
 		ctx := context.Background()
@@ -188,7 +201,10 @@ func TestRepository_Get(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtest.SetupPostgres(t, "account", seed.RunMigrations)
+	dbc, err := setupTestDB(context.Background(), t, "account")
+	if err != nil {
+		t.Fatalf("failed to setup test database: %v", err)
+	}
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -246,7 +262,10 @@ func TestRepository_Update(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtest.SetupPostgres(t, "account", seed.RunMigrations)
+	dbc, err := setupTestDB(context.Background(), t, "account")
+	if err != nil {
+		t.Fatalf("failed to setup test database: %v", err)
+	}
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -340,7 +359,10 @@ func TestRepository_Delete(t *testing.T) {
 		t.Skip()
 	}
 
-	dbc := dbtest.SetupPostgres(t, "account", seed.RunMigrations)
+	dbc, err := setupTestDB(context.Background(), t, "account")
+	if err != nil {
+		t.Fatalf("failed to setup test database: %v", err)
+	}
 
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
@@ -376,7 +398,11 @@ func TestRepository_Delete(t *testing.T) {
 }
 
 func setupTestDatabaseForList(t *testing.T) *dbtest.PostgresContainer {
-	dbc := dbtest.SetupPostgres(t, "account", seed.RunMigrations)
+	dbc, err := setupTestDB(context.Background(), t, "account")
+	if err != nil {
+		t.Fatalf("failed to setup test database: %v", err)
+	}
+
 	seed.Run(t, dbc.ConnectionString, seed.State{
 		Organizations: []*storage.Organization{
 			seed.NewOrganization(

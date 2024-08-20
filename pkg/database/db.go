@@ -27,18 +27,14 @@ type DB struct {
 }
 
 // NewDB creates a new DB with the given sql.DB.
-func NewDB(sqlDB *sql.DB, opt ...Option) *DB {
-	return NewDBWithHandler(NewSQLDBWrapper(sqlDB), opt...)
+func NewDB(sqlDB *sql.DB) *DB {
+	return NewDBWithHandler(NewSQLDBWrapper(sqlDB))
 }
 
 // NewDBWithHandler creates a new DB with a custom handler.
-func NewDBWithHandler(handler DBHandler, opt ...Option) *DB {
+func NewDBWithHandler(handler DBHandler) *DB {
 	db := &DB{
 		handler: handler, // handler is the database handler.
-	}
-
-	for _, o := range opt {
-		o(db)
 	}
 
 	return db

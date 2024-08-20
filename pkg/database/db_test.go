@@ -26,22 +26,6 @@ func TestNewDB(t *testing.T) {
 			t.Error("Expected NewDB to return a non-nil DB instance")
 		}
 	})
-
-	t.Run("should return a new DB instance and apply options", func(t *testing.T) {
-		var called bool
-		handler := &mock.DBHandler{}
-		db := database.NewDBWithHandler(handler, func(_ *database.DB) {
-			called = true
-		})
-
-		if db == nil {
-			t.Error("Expected NewDB to return a non-nil DB instance")
-		}
-
-		if !called {
-			t.Error("Expected option to be called")
-		}
-	})
 }
 
 func TestDB_Query(t *testing.T) {

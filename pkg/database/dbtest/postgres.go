@@ -24,7 +24,7 @@ type PostgresContainer struct {
 	ConnectionString string
 }
 
-func setupPostgresContainer(ctx context.Context, dbName string, setup func(connectionString string) error) (*PostgresContainer, error) {
+func setupPostgresContainer(ctx context.Context, dbName string) (*PostgresContainer, error) {
 	dbUser := "postgres"
 	dbPassword := "postgres"
 
@@ -48,10 +48,6 @@ func setupPostgresContainer(ctx context.Context, dbName string, setup func(conne
 		return nil, err
 	}
 
-	if err = setup(connectionString); err != nil {
-		return nil, err
-	}
-
 	// Create a snapshot of the database to restore later
 	err = container.Snapshot(ctx, postgres.WithSnapshotName("test-snapshot"))
 	if err != nil {
@@ -66,11 +62,10 @@ func setupPostgresContainer(ctx context.Context, dbName string, setup func(conne
 
 // SetupPostgres sets up a test database and runs the provided setup function.
 // It also sets up a cleanup function to terminate the container after the test is complete.
-func SetupPostgres(t *testing.T, dbName string, setup func(connectionString string) error) *PostgresContainer {
+func SetupPostgres(t *testing.T, dbName string) *PostgresContainer {
 	t.Helper()
 
-	dbc, dbErr := setupPostgresContainer(context.Background(), dbName, setup)
-
+	dbc, dbErr := setupPostgresContainer(context.Background(), dbName)
 	if dbErr != nil {
 		t.Fatal(dbErr)
 	}

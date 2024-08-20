@@ -8,7 +8,7 @@ import (
 	"ariga.io/atlas-go-sdk/atlasexec"
 )
 
-func Migrate(url string, dir fs.FS) error {
+func Migrate(ctx context.Context, url string, dir fs.FS) error {
 	// Define the execution context, supplying a migration directory
 	// and potentially an `atlas.hcl` configuration file using `atlasexec.WithHCL`.
 	workdir, err := atlasexec.NewWorkingDir(
@@ -28,7 +28,7 @@ func Migrate(url string, dir fs.FS) error {
 	}
 
 	// Run `atlas migrate apply`
-	_, err = client.MigrateApply(context.Background(), &atlasexec.MigrateApplyParams{
+	_, err = client.MigrateApply(ctx, &atlasexec.MigrateApplyParams{
 		URL: url,
 	})
 	if err != nil {
