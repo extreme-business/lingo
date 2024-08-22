@@ -113,7 +113,6 @@ WHERE id = $1
 // GetByID get a user by id.
 func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*storage.User, error) {
 	row := r.dbConn.QueryRow(ctx, getByIDQuery, id)
-
 	var u storage.User
 	if err := scan(row.Scan, &u); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -122,7 +121,6 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*storage.User, erro
 
 		return nil, err
 	}
-
 	return &u, nil
 }
 
@@ -135,7 +133,6 @@ WHERE email = $1
 // This is used for authentication and so it also returns the hashed password.
 func (r *Repository) GetByEmail(ctx context.Context, email string) (*storage.User, error) {
 	row := r.dbConn.QueryRow(ctx, getByEmailQuery, email)
-
 	var u storage.User
 	if err := row.Scan(
 		&u.ID,
@@ -151,10 +148,8 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*storage.Use
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, storage.ErrUserNotFound
 		}
-
 		return nil, err
 	}
-
 	return &u, nil
 }
 

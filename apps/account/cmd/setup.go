@@ -13,6 +13,7 @@ import (
 	"github.com/extreme-business/lingo/apps/account/auth/registration"
 	"github.com/extreme-business/lingo/apps/account/bootstrapping"
 	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/extreme-business/lingo/apps/account/domain/user"
 	"github.com/extreme-business/lingo/apps/account/server"
 	"github.com/extreme-business/lingo/apps/account/storage/postgres"
 	"github.com/extreme-business/lingo/pkg/config"
@@ -136,18 +137,20 @@ func setupAccount(
 		return nil, fmt.Errorf("failed to setup system user and organization: %w", err)
 	}
 
+	userReader := user.NewReader(repos.User)
+	userWriter := user.NewWriter(clock, repos.User)
+
 	app := app.New(
 		logger,
 		authentication.NewManager(authentication.Config{
 			Clock:                  clock,
 			SigningKeyAccessToken:  []byte(signingKeyAccessToken),
 			SigningKeyRefreshToken: []byte(signingKeyRefreshToken),
-			UserRepo:               repos.User,
+			UserReader:             userReader,
 		}),
 		registration.NewManager(registration.Config{
-			UUIDgen:  uuidgen,
-			Clock:    clock,
-			UserRepo: repos.User,
+			GenUUID:    uuidgen,
+			UserWriter: userWriter,
 		}),
 	)
 

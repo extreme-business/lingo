@@ -7,6 +7,7 @@ import (
 	"github.com/extreme-business/lingo/apps/account/auth/authentication"
 	"github.com/extreme-business/lingo/apps/account/auth/registration"
 	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/google/uuid"
 )
 
 type Account struct {
@@ -27,16 +28,22 @@ func New(
 	}
 }
 
-func (r *Account) CreateUser(ctx context.Context, u *domain.User, password string) (*domain.User, error) {
-	r.logger.Info("Register")
+type RegisterUser struct {
+	OrganizationID uuid.UUID
+	DisplayName    string
+	Email          string
+	Password       string
+}
 
+func (r *Account) RegisterUser(ctx context.Context, i RegisterUser) (*domain.User, error) {
 	user, err := r.registrationManager.Register(ctx, registration.Registration{
-		User:     u,
-		Password: password,
+		OrganizationID: i.OrganizationID,
+		DisplayName:    i.DisplayName,
+		Email:          i.Email,
+		Password:       i.Password,
 	})
 	if err != nil {
 		return nil, err
 	}
-
 	return user, nil
 }

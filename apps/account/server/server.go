@@ -59,16 +59,12 @@ func (s *Server) CreateUser(ctx context.Context, req *protoaccount.CreateUserReq
 		})
 	}
 
-	user, err := s.account.CreateUser(
-		ctx,
-		&domain.User{
-			OrganizationID: orgID,
-			DisplayName:    userIn.GetDisplayName(),
-			Email:          userIn.GetEmail(),
-			Status:         domain.UserStatusActive,
-		},
-		userIn.GetPassword(),
-	)
+	user, err := s.account.RegisterUser(ctx, app.RegisterUser{
+		OrganizationID: orgID,
+		DisplayName:    userIn.GetDisplayName(),
+		Email:          userIn.GetEmail(),
+		Password:       userIn.GetPassword(),
+	})
 	if err != nil {
 		var vErr *validate.Error
 		if errors.As(err, &vErr) {

@@ -25,7 +25,6 @@ func (a *Manager) Authenticate(ctx context.Context, email, password string) (*Su
 		},
 		Password: password,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to authenticate: %w", err)
 	}

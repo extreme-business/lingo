@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/extreme-business/lingo/apps/account/domain/user"
 	"github.com/extreme-business/lingo/apps/account/password"
-	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/pkg/token"
 )
 
@@ -18,7 +18,7 @@ const (
 
 type Manager struct {
 	credentialsValidator *credentialsValidator
-	userRepo             storage.UserRepository
+	userReader           *user.Reader
 	AccessTokenManager   *token.Manager
 	RefreshTokenManager  *token.Manager
 }
@@ -27,13 +27,13 @@ type Config struct {
 	Clock                  func() time.Time
 	SigningKeyAccessToken  []byte
 	SigningKeyRefreshToken []byte
-	UserRepo               storage.UserRepository
+	UserReader             *user.Reader
 }
 
 func NewManager(c Config) *Manager {
 	return &Manager{
 		credentialsValidator: newCredentialsValidator(),
-		userRepo:             c.UserRepo,
+		userReader:           c.UserReader,
 		AccessTokenManager: token.NewManager(
 			c.Clock,
 			c.SigningKeyAccessToken,
@@ -62,35 +62,30 @@ type Authentication struct {
 // Authenticate a user with the given credentials.
 func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authentication, error) {
 	if err := m.credentialsValidator.Validate(c); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not validate: %w", err)
 	}
 
-	u, err := m.userRepo.GetByEmail(ctx, c.Email) // refactor to user.Reader
+	u, err := m.userReader.GetByEmail(ctx, c.Email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user by email: %w", err)
 	}
 
 	if err = password.Check([]byte(c.Password), []byte(u.HashedPassword)); err != nil {
-		return nil, fmt.Errorf("could not validate: %w", err)
+		return nil, fmt.Errorf("failed to check password: %w", err)
 	}
 
 	accountToken, err := m.AccessTokenManager.Create(u.ID.String())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create account token: %w", err)
 	}
 
 	refreshToken, err := m.RefreshTokenManager.Create(u.ID.String())
 	if err != nil {
-		return nil, err
-	}
-
-	domainUser := &domain.User{}
-	if err = domainUser.FromStorage(u); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create refresh token: %w", err)
 	}
 
 	return &Authentication{
-		User:         domainUser,
+		User:         u,
 		AccessToken:  accountToken,
 		RefreshToken: refreshToken,
 	}, nil

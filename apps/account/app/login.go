@@ -23,7 +23,6 @@ func (r *Account) LoginUser(ctx context.Context, email, password string) (*Login
 	if err != nil {
 		return nil, err
 	}
-
 	return &LoginResult{
 		User:         a.User,
 		AccessToken:  a.AccessToken,

@@ -53,11 +53,11 @@ func newRegistrationValidator() *registrationValidator {
 }
 
 func (v *registrationValidator) Validate(r Registration) error {
-	if err := v.displayNameValidator.Validate(r.User.DisplayName); err != nil {
+	if err := v.displayNameValidator.Validate(r.DisplayName); err != nil {
 		return err
 	}
 
-	if err := v.emailValidator.Validate(r.User.Email); err != nil {
+	if err := v.emailValidator.Validate(r.Email); err != nil {
 		return err
 	}
 

@@ -3,48 +3,43 @@ package registration
 import (
 	"context"
 	"errors"
-	"time"
+	"fmt"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/extreme-business/lingo/apps/account/domain/user"
 	"github.com/extreme-business/lingo/apps/account/password"
-	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
+	"github.com/google/uuid"
 )
 
 // Manager is a manager for registration.
 type Manager struct {
-	uuidgen               uuidgen.Generator
-	clock                 func() time.Time
-	userRepo              storage.UserRepository
+	genUUID               uuidgen.Generator
+	userWriter            *user.Writer
 	registrationValidator *registrationValidator
 }
 
 // Config is the configuration for the manager.
 type Config struct {
-	UUIDgen  uuidgen.Generator
-	Clock    func() time.Time
-	UserRepo storage.UserRepository
+	GenUUID    uuidgen.Generator
+	UserWriter *user.Writer
 }
 
 // NewManager creates a new manager.
 func NewManager(c Config) *Manager {
 	return &Manager{
-		uuidgen:               c.UUIDgen,
-		clock:                 c.Clock,
-		userRepo:              c.UserRepo,
+		genUUID:               c.GenUUID,
+		userWriter:            c.UserWriter,
 		registrationValidator: newRegistrationValidator(),
 	}
 }
 
 // configured checks if the manager is configured.
 func (m *Manager) configured() error {
-	if m.uuidgen == nil {
+	if m.genUUID == nil {
 		return errors.New("uuidgen is nil")
 	}
-	if m.clock == nil {
-		return errors.New("clock is nil")
-	}
-	if m.userRepo == nil {
+	if m.userWriter == nil {
 		return errors.New("user repository is nil")
 	}
 	if m.registrationValidator == nil {
@@ -55,43 +50,35 @@ func (m *Manager) configured() error {
 }
 
 type Registration struct {
-	User     *domain.User
-	Password string
+	OrganizationID uuid.UUID
+	DisplayName    string
+	Email          string
+	Password       string
 }
 
 // CreateUser creates a new user.
 func (m *Manager) Register(ctx context.Context, r Registration) (*domain.User, error) {
 	if err := m.configured(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("manager not configured: %w", err)
 	}
-
 	if err := m.registrationValidator.Validate(r); err != nil {
 		return nil, err
 	}
-
 	hashedPassword, err := password.Hash([]byte(r.Password))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not hash password: %w", err)
 	}
-
-	now := m.clock()
-	s := &storage.User{}
-	if err = r.User.ToStorage(s); err != nil {
-		return nil, err
+	u := &domain.User{
+		ID:             m.genUUID(),
+		Email:          r.Email,
+		DisplayName:    r.DisplayName,
+		OrganizationID: r.OrganizationID,
+		HashedPassword: string(hashedPassword),
 	}
-
-	s.ID = m.uuidgen()
-	s.HashedPassword = string(hashedPassword)
-	s.CreateTime = now
-	s.UpdateTime = now
-
-	user, err := m.userRepo.Create(ctx, s)
+	user, err := m.userWriter.Create(ctx, u)
 	if err != nil {
 		return nil, err
 	}
-
 	user.HashedPassword = "" // Do not return the password
-
-	u := &domain.User{}
-	return u, u.FromStorage(user)
+	return user, nil
 }

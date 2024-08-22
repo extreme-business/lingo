@@ -23,6 +23,8 @@ func NewWriter(c func() time.Time, w storage.UserWriter) *Writer {
 }
 
 func (w *Writer) Create(ctx context.Context, u *domain.User) (*domain.User, error) {
+	u.CreateTime = w.c()
+	u.UpdateTime = u.CreateTime
 	var err error
 	var s = new(storage.User)
 	if err = u.ToStorage(s); err != nil {

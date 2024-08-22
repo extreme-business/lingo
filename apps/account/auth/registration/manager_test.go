@@ -3,11 +3,13 @@ package registration_test
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/extreme-business/lingo/apps/account/auth/registration"
 	"github.com/extreme-business/lingo/apps/account/domain"
+	"github.com/extreme-business/lingo/apps/account/domain/user"
 	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/extreme-business/lingo/pkg/uuidgen"
 	"github.com/extreme-business/lingo/pkg/validate"
@@ -44,32 +46,33 @@ func TestManager_Register(t *testing.T) {
 			},
 		}
 
+		clock := func() time.Time { return now }
+
 		m := registration.NewManager(registration.Config{
-			UserRepo: &userRepo,
-			Clock:    func() time.Time { return now.Add(time.Second) },
-			UUIDgen: func() uuid.UUID {
+			UserWriter: user.NewWriter(clock, &userRepo),
+			GenUUID: func() uuid.UUID {
 				return uuid.MustParse("c5172a66-3dbe-4415-bbf9-9921d9798698")
 			},
 		})
 
 		u, err := m.Register(context.TODO(), registration.Registration{
-			User: &domain.User{
-				DisplayName: "username",
-				Email:       "email",
-			},
-			Password: "password!1",
+			OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+			DisplayName:    "username",
+			Email:          "email",
+			Password:       "password!1",
 		})
 		if err != nil {
 			t.Fatalf("Register() = %v, want nil", err)
 		}
 
 		expected := &domain.User{
-			ID:           uuid.MustParse("c5172a66-3dbe-4415-bbf9-9921d9798698"),
-			DisplayName:  "username",
-			Email:        "email",
-			CreateTime:   now.Add(time.Second),
-			UpdateTime:   now.Add(time.Second),
-			Organization: nil,
+			ID:             uuid.MustParse("c5172a66-3dbe-4415-bbf9-9921d9798698"),
+			OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+			DisplayName:    "username",
+			Email:          "email",
+			CreateTime:     now,
+			UpdateTime:     now,
+			Organization:   nil,
 		}
 
 		if u == nil {
@@ -91,19 +94,17 @@ func TestManager_Register(t *testing.T) {
 		}
 
 		m := registration.NewManager(registration.Config{
-			UserRepo: &userRepo,
-			Clock:    func() time.Time { return now },
-			UUIDgen: func() uuid.UUID {
+			UserWriter: user.NewWriter(func() time.Time { return now }, &userRepo),
+			GenUUID: func() uuid.UUID {
 				return uuid.MustParse("c5172a66-3dbe-4415-bbf9-9921d9798698")
 			},
 		})
 
 		u, err := m.Register(context.TODO(), registration.Registration{
-			User: &domain.User{
-				DisplayName: "username",
-				Email:       "email",
-			},
-			Password: "password!1",
+			OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+			DisplayName:    "username",
+			Email:          "email",
+			Password:       "password!1",
 		})
 
 		if err == nil {
@@ -136,19 +137,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "display name too short",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "u",
-							Email:       "email",
-						},
-						Password: "password!1",
+						DisplayName:    "u",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "email@test.com",
+						Password:       "password!1",
 					},
 				},
 				want:  nil,
@@ -158,19 +157,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "display name too long",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
-							Email:       "email",
-						},
-						Password: "password!1",
+						DisplayName:    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "email@test.com",
+						Password:       "password!1",
 					},
 				},
 				want:  nil,
@@ -180,19 +177,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "display name contains non allowed special char",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "username!",
-							Email:       "email",
-						},
-						Password: "password!1",
+						DisplayName:    "username!",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "email@test.com",
+						Password:       "password!1",
 					},
 				},
 				want:  nil,
@@ -202,19 +197,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "email too short",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "username",
-							Email:       "e",
-						},
-						Password: "password!1",
+						DisplayName:    "username",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "e",
+						Password:       "password!1",
 					},
 				},
 				want:  nil,
@@ -224,19 +217,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "email too long",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "abcdefghijklmnopqrstuvwxyz",
-							Email:       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
-						},
-						Password: "password!1",
+						DisplayName:    "username",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "emailemailemailemailemailemailemailemailemailemailemailemailemailemailemail@test.com",
+						Password:       "password!1",
 					},
 				},
 				want:  nil,
@@ -246,19 +237,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "password too short",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "username",
-							Email:       "email",
-						},
-						Password: "a",
+						DisplayName:    "username",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "email@test.com",
+						Password:       "a",
 					},
 				},
 				want:  nil,
@@ -268,19 +257,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "password too long",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "username",
-							Email:       "email",
-						},
-						Password: "1@Aabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+						DisplayName:    "username",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "email@test.com",
+						Password:       strings.Repeat("password!1", 100),
 					},
 				},
 				want:  nil,
@@ -290,19 +277,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "password does not contain special char",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "username",
-							Email:       "email",
-						},
-						Password: "password1",
+						DisplayName:    "username",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "email@test.com",
+						Password:       "password1",
 					},
 				},
 				want:  nil,
@@ -312,19 +297,17 @@ func TestManager_Register_validations(t *testing.T) {
 				name: "password does not contain digit",
 				fields: fields{
 					config: registration.Config{
-						UUIDgen:  uuidgen.Default(),
-						Clock:    time.Now,
-						UserRepo: &userMock.Repository{},
+						GenUUID:    uuidgen.Default(),
+						UserWriter: user.NewWriter(func() time.Time { return time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) }, &userMock.Repository{}),
 					},
 				},
 				args: args{
 					ctx: context.TODO(),
 					registration: registration.Registration{
-						User: &domain.User{
-							DisplayName: "username",
-							Email:       "email",
-						},
-						Password: "password!",
+						DisplayName:    "username",
+						OrganizationID: uuid.MustParse("0463e149-e143-4033-b617-7867824deb0d"),
+						Email:          "email@test.com",
+						Password:       "password!",
 					},
 				},
 				want:  nil,
