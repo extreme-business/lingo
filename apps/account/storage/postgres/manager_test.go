@@ -31,7 +31,7 @@ func checkIfAllReposAreNotNil(t *testing.T, repos storage.Repositories) {
 
 func TestNew(t *testing.T) {
 	t.Run("New repository should have all repositories set", func(t *testing.T) {
-		got := postgres.NewManager(database.NewDB(&sql.DB{}))
+		got := postgres.NewManager(&sql.DB{})
 		if got == nil {
 			t.Error("Expected New to return a non-nil manager instance")
 			return
@@ -50,7 +50,7 @@ func TestNew(t *testing.T) {
 			},
 		})
 
-		got := postgres.NewManager(db)
+		got := postgres.NewManagerWithWrapper(db)
 
 		if got == nil {
 			t.Error("Expected New to return a non-nil manager instance")

@@ -21,7 +21,7 @@ const (
 )
 
 type PostgresContainer struct {
-	*postgres.PostgresContainer
+	c                *postgres.PostgresContainer
 	ConnectionString string
 }
 
@@ -56,8 +56,8 @@ func setupPostgresContainer(ctx context.Context, dbName string) (*PostgresContai
 	}
 
 	return &PostgresContainer{
-		PostgresContainer: container,
-		ConnectionString:  connectionString,
+		c:                container,
+		ConnectionString: connectionString,
 	}, nil
 }
 
@@ -73,7 +73,7 @@ func SetupPostgres(ctx context.Context, t *testing.T, dbName string) *PostgresCo
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		if err := dbc.Terminate(context.Background()); err != nil {
+		if err := dbc.c.Terminate(context.Background()); err != nil {
 			t.Fatalf("failed to terminate container: %s", err)
 		}
 	})

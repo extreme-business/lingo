@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	_ Conn = (*DB)(nil) // Ensure *DB complies with the Conn interface.
-	_ Conn = (*Tx)(nil) // Ensure *Tx complies with the Conn interface.
+	_ Conn = (*DBWrapper)(nil) // Ensure *DB complies with the Conn interface.
+	_ Conn = (*Tx)(nil)        // Ensure *Tx complies with the Conn interface.
 )
 
 // Conn is a database connection or transaction.
@@ -26,7 +26,7 @@ type Factory[T any] func(c Conn) T
 // Manager manages database connections and transactions for a specific type of repository.
 type Manager[T any] struct {
 	// db is the database connection.
-	db *DB
+	db *DBWrapper
 	// factory is a function that initializes an operation with a database connection.
 	factory Factory[T]
 	// failingRollbackHandler is a function that is called when a transaction failed to roll back.
@@ -35,7 +35,7 @@ type Manager[T any] struct {
 
 // NewManager creates a new Manager instance, initializing it with a database connection,
 // a transaction manager, and a slice of repository registration functions.
-func NewManager[T any](db *DB, f Factory[T]) *Manager[T] {
+func NewManager[T any](db *DBWrapper, f Factory[T]) *Manager[T] {
 	return &Manager[T]{
 		db:      db,
 		factory: f,

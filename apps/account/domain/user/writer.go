@@ -22,7 +22,7 @@ func NewWriter(c func() time.Time, w storage.UserWriter) *Writer {
 	}
 }
 
-func (w *Writer) Create(ctx context.Context, u *domain.User) (*domain.User, error) {
+func (w *Writer) Create(ctx context.Context, u *domain.User) (*domain.User, Error) {
 	u.CreateTime = w.c()
 	u.UpdateTime = u.CreateTime
 	var err error
@@ -44,7 +44,7 @@ func (w *Writer) Create(ctx context.Context, u *domain.User) (*domain.User, erro
 // Update updates the user.
 // its sets the update time to the current time before updating the user.
 // fields are sorted before updating the user and deduplicated.
-func (w *Writer) Update(ctx context.Context, u *domain.User, fields []storage.UserField) (*domain.User, error) {
+func (w *Writer) Update(ctx context.Context, u *domain.User, fields []storage.UserField) (*domain.User, Error) {
 	u.UpdateTime = w.c()
 	var err error
 	s := &storage.User{}
@@ -64,6 +64,6 @@ func (w *Writer) Update(ctx context.Context, u *domain.User, fields []storage.Us
 	return result, nil
 }
 
-func (w *Writer) Delete(ctx context.Context, id uuid.UUID) error {
+func (w *Writer) Delete(ctx context.Context, id uuid.UUID) Error {
 	return w.uw.Delete(ctx, id)
 }

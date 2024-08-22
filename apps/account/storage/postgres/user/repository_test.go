@@ -58,7 +58,7 @@ func TestRepository_Create(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		user, err := repo.Create(ctx, seed.NewUser(
 			"35297169-89d8-444d-8499-c6341e3a0770",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
@@ -96,7 +96,7 @@ func TestRepository_Create(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		_, err := repo.Create(ctx, seed.NewUser(
 			"485819f0-9e48-4d25-b07b-6de8a2076be2",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
@@ -134,7 +134,7 @@ func TestRepository_Create(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		_, err := repo.Create(ctx, seed.NewUser(
 			"2e56b481-05fe-4ce3-b072-a94fbf8aeab3",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
@@ -205,7 +205,7 @@ func TestRepository_Get(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 
 		user, err := repo.Get(ctx, uuid.MustParse("35297169-89d8-444d-8499-c6341e3a0770"))
 		if err != nil {
@@ -218,7 +218,7 @@ func TestRepository_Get(t *testing.T) {
 			"test",
 			"active",
 			"test@test.com",
-			"",
+			"password",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Time{},
@@ -232,7 +232,7 @@ func TestRepository_Get(t *testing.T) {
 	t.Run("should return an error if the user does not exist", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		u, err := repo.Get(ctx, uuid.MustParse("946adb15-195e-44df-922b-4a45b9505684"))
 
 		if !errors.Is(err, storage.ErrUserNotFound) {
@@ -287,7 +287,7 @@ func TestRepository_Update(t *testing.T) {
 	t.Run("should update a user", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		recorder := dbtest.NewRecorder(database.NewDB(db))
+		recorder := dbtest.NewRecorder(database.NewDBWrapper(db))
 		repo := user.New(recorder)
 
 		user, err := repo.Update(ctx, seed.NewUser(
@@ -344,7 +344,7 @@ func TestRepository_Update(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		_, err := repo.Update(ctx, seed.NewUser(
 			"f2e8b3cd-07a3-4d7c-9eef-cf02452d8332",
 			"7bb443e5-8974-44c2-8b7c-b95124205264",
@@ -524,7 +524,7 @@ func TestRepository_GetByEmail(t *testing.T) {
 	t.Run("should get a user by email", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		user, err := repo.GetByEmail(ctx, "test@test.com")
 
 		if err != nil {
@@ -552,7 +552,7 @@ func TestRepository_GetByEmail(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		u, err := repo.GetByEmail(ctx, "test2@test.com")
 
 		if err == nil || !errors.Is(err, storage.ErrUserNotFound) {
@@ -600,7 +600,7 @@ func TestRepository_Delete(t *testing.T) {
 	t.Run("Delete should delete a user", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		if err := repo.Delete(ctx, uuid.MustParse("35297169-89d8-444d-8499-c6341e3a0770")); err != nil {
 			t.Fatal(err)
 		}
@@ -610,7 +610,7 @@ func TestRepository_Delete(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 
-		repo := user.New(database.NewDB(db))
+		repo := user.New(database.NewDBWrapper(db))
 		err := repo.Delete(ctx, uuid.MustParse("82651da9-c2ff-4152-8eae-7555d5a42aad"))
 
 		if !errors.Is(err, storage.ErrUserNotFound) {
@@ -735,7 +735,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should list users",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{Limit: 0, Offset: 0},
 			expectedUsers: []*storage.User{
 				seed.NewUser(
@@ -777,7 +777,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should list users with organization id predicate",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{Limit: 0, Offset: 0},
 			conditions: []storage.Condition{
 				storage.UserByOrganizationIDCondition{
@@ -824,7 +824,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should list users with limit",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{Limit: 2, Offset: 0},
 			expectedUsers: []*storage.User{
 				seed.NewUser(
@@ -855,7 +855,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should list users with offset",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{Limit: 0, Offset: 1},
 			expectedUsers: []*storage.User{
 				seed.NewUser(
@@ -886,7 +886,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should list users with limit and offset",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{Limit: 1, Offset: 1},
 			expectedUsers: []*storage.User{
 				seed.NewUser(
@@ -906,7 +906,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name: "should list users with sort",
 			ctx:  context.Background(),
-			db:   database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:   database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			orderBy: storage.UserOrderBy{
 				{Field: storage.UserDisplayName, Direction: storage.DESC},
 				{Field: storage.UserCreateTime, Direction: storage.DESC},
@@ -951,7 +951,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name: "should return error if sorting field is unknown",
 			ctx:  context.Background(),
-			db:   database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:   database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			orderBy: storage.UserOrderBy{
 				{Field: storage.UserField("unknown field"), Direction: storage.DESC},
 			},

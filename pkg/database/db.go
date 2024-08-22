@@ -21,19 +21,19 @@ type DBHandler interface {
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error)
 }
 
-// DB is a database connection that uses a DBHandler.
-type DB struct {
+// DBWrapper is wrapper for a database handler and should comply with *sql.DB.
+type DBWrapper struct {
 	handler DBHandler // handler is the database handler.
 }
 
-// NewDB creates a new DB with the given sql.DB.
-func NewDB(db *sql.DB) *DB {
+// NewDBWrapper creates a new DB with the given sql.DB.
+func NewDBWrapper(db *sql.DB) *DBWrapper {
 	return NewDBWithHandler(NewSQLDBWrapper(db))
 }
 
 // NewDBWithHandler creates a new DB with a custom handler.
-func NewDBWithHandler(handler DBHandler) *DB {
-	db := &DB{
+func NewDBWithHandler(handler DBHandler) *DBWrapper {
+	db := &DBWrapper{
 		handler: handler, // handler is the database handler.
 	}
 
@@ -41,22 +41,22 @@ func NewDBWithHandler(handler DBHandler) *DB {
 }
 
 // Query executes a query that returns rows, typically a SELECT statement.
-func (d *DB) Query(ctx context.Context, query string, args ...interface{}) (*Rows, error) {
+func (d *DBWrapper) Query(ctx context.Context, query string, args ...interface{}) (*Rows, error) {
 	return d.handler.QueryContext(ctx, query, args...)
 }
 
 // QueryRow executes a query that is expected to return at most one row.
-func (d *DB) QueryRow(ctx context.Context, query string, args ...interface{}) *Row {
+func (d *DBWrapper) QueryRow(ctx context.Context, query string, args ...interface{}) *Row {
 	return d.handler.QueryRowContext(ctx, query, args...)
 }
 
 // Exec executes a query without returning any rows.
-func (d *DB) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+func (d *DBWrapper) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	return d.handler.ExecContext(ctx, query, args...)
 }
 
 // Begin starts a new transaction.
-func (d *DB) Begin(ctx context.Context) (*Tx, error) {
+func (d *DBWrapper) Begin(ctx context.Context) (*Tx, error) {
 	return d.handler.BeginTx(ctx, nil)
 }
 

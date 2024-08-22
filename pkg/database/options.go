@@ -1,3 +1,3 @@
 package database
 
-type Option func(*DB)
+type Option func(*DBWrapper)

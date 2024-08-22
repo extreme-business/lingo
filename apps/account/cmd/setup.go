@@ -17,7 +17,6 @@ import (
 	"github.com/extreme-business/lingo/apps/account/server"
 	"github.com/extreme-business/lingo/apps/account/storage/postgres"
 	"github.com/extreme-business/lingo/pkg/config"
-	"github.com/extreme-business/lingo/pkg/database"
 	"github.com/extreme-business/lingo/pkg/grpcserver"
 	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 	"github.com/extreme-business/lingo/pkg/httpserver"
@@ -98,7 +97,7 @@ func setupAccount(
 	logger *slog.Logger,
 	config *config.Config,
 	db *sql.DB,
-) (*app.Account, error) {
+) (*app.App, error) {
 	signingKeyAccessToken, err := config.SigningKeyAccessToken()
 	if err != nil {
 		return nil, err
@@ -111,7 +110,7 @@ func setupAccount(
 
 	clock := time.Now
 	uuidgen := uuidgen.Default()
-	dbManager := postgres.NewManager(database.NewDB(db))
+	dbManager := postgres.NewManager(db)
 	repos := dbManager.Op()
 
 	suc, err := getSystemUserConfig(config)
@@ -158,7 +157,7 @@ func setupAccount(
 }
 
 // setupRelayGrpcServer sets up a gRPC server for the relay service.
-func setupService(account *app.Account) *server.Server {
+func setupService(account *app.App) *server.Server {
 	resourceParser := resource.NewParser()
 	resourceParser.RegisterChild(domain.OrganizationCollection, domain.UserCollection)
 	return server.New(account, resourceParser)

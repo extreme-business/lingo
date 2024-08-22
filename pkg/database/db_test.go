@@ -12,7 +12,7 @@ import (
 
 func TestNewDB(t *testing.T) {
 	t.Run("should return a new DB instance", func(t *testing.T) {
-		db := database.NewDB(&sql.DB{})
+		db := database.NewDBWrapper(&sql.DB{})
 		if db == nil {
 			t.Error("Expected NewDB to return a non-nil DB instance")
 		}

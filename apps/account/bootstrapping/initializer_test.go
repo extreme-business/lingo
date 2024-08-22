@@ -37,6 +37,8 @@ func dbUserDiff(t *testing.T, r storage.UserRepository, u *storage.User) string 
 		t.Fatalf("failed to get user: %v", err)
 	}
 
+	u.HashedPassword = user.HashedPassword
+
 	return cmp.Diff(u, user)
 }
 
@@ -121,7 +123,7 @@ func TestInitializer_Setup(t *testing.T) {
 		ctx := context.Background()
 		dbc := setupTestDB(ctx, t, t.Name())
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		dbManager := postgres.NewManager(database.NewDB(db))
+		dbManager := postgres.NewManager(db)
 		seedSystem(t, dbc.ConnectionString)
 
 		initializer, err := bootstrapping.New(bootstrapping.Config{
@@ -181,7 +183,7 @@ func TestInitializer_Setup(t *testing.T) {
 		ctx := context.Background()
 		dbc := setupTestDB(ctx, t, t.Name())
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		dbManager := postgres.NewManager(database.NewDB(db))
+		dbManager := postgres.NewManager(db)
 
 		initializer, err := bootstrapping.New(bootstrapping.Config{
 			Logger:    slog.Default(),
@@ -253,7 +255,7 @@ func TestInitializer_Setup(t *testing.T) {
 			"system",
 			"active",
 			"updated-test@test.com",
-			"",
+			"$2a$14$M6on6PH4BSD1J.Tkx6rwU.q9VANkun1/LWHJntPruCaCjhmgKqHBG",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC),
 			time.Time{},

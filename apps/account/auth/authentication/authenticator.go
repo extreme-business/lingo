@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -16,7 +17,16 @@ const (
 	refreshTokenDuration = 30 * time.Minute
 )
 
-type Manager struct {
+// Error type allows the linter to force the user to check all errors.
+type Error error
+
+var (
+	ErrUserNotFound       Error = errors.New("user not found")
+	ErrInvalidCredentials Error = errors.New("invalid credentials")
+)
+
+// Authenticator is responsible for authenticating users.
+type Authenticator struct {
 	credentialsValidator *credentialsValidator
 	userReader           *user.Reader
 	AccessTokenManager   *token.Manager
@@ -30,8 +40,8 @@ type Config struct {
 	UserReader             *user.Reader
 }
 
-func NewManager(c Config) *Manager {
-	return &Manager{
+func NewManager(c Config) *Authenticator {
+	return &Authenticator{
 		credentialsValidator: newCredentialsValidator(),
 		userReader:           c.UserReader,
 		AccessTokenManager: token.NewManager(
@@ -49,7 +59,7 @@ func NewManager(c Config) *Manager {
 
 type Credentials struct {
 	Email    string
-	Password string
+	Password []byte
 }
 
 // Authentication is the process of verifying whether someone is who they claim to be when accessing a system.
@@ -60,17 +70,23 @@ type Authentication struct {
 }
 
 // Authenticate a user with the given credentials.
-func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authentication, error) {
+func (m *Authenticator) Authenticate(ctx context.Context, c Credentials) (*Authentication, error) {
 	if err := m.credentialsValidator.Validate(c); err != nil {
 		return nil, fmt.Errorf("could not validate: %w", err)
 	}
 
 	u, err := m.userReader.GetByEmail(ctx, c.Email)
 	if err != nil {
+		if err == user.ErrUserNotFound {
+			return nil, ErrUserNotFound
+		}
 		return nil, fmt.Errorf("failed to get user by email: %w", err)
 	}
 
 	if err = password.Check([]byte(c.Password), []byte(u.HashedPassword)); err != nil {
+		if err == password.ErrMismatchedHashAndPassword {
+			return nil, ErrInvalidCredentials
+		}
 		return nil, fmt.Errorf("failed to check password: %w", err)
 	}
 
@@ -83,6 +99,8 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 	if err != nil {
 		return nil, fmt.Errorf("failed to create refresh token: %w", err)
 	}
+
+	u.HashedPassword = ""
 
 	return &Authentication{
 		User:         u,

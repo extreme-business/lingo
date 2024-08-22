@@ -2,10 +2,15 @@ package organization
 
 import (
 	"context"
+	"errors"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/account/storage"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrOrganizationNotFound Error = errors.New("organization not found")
 )
 
 const (
@@ -23,6 +28,9 @@ func NewReader(storage storage.OrganizationReader) *Reader {
 func (r *Reader) Get(ctx context.Context, id uuid.UUID) (*domain.Organization, error) {
 	organization, err := r.reader.Get(ctx, id)
 	if err != nil {
+		if errors.Is(err, storage.ErrOrganizationNotFound) {
+			return nil, ErrOrganizationNotFound
+		}
 		return nil, err
 	}
 	var o = new(domain.Organization)

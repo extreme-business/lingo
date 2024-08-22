@@ -147,12 +147,18 @@ func (s *Bootstrapper) setupOrganization(ctx context.Context, r *organization.Re
 	if err == nil {
 		// check if the organization needs to be updated
 		changes := []storage.OrganizationField{}
-		for check, diff := range map[storage.OrganizationField]func(*domain.Organization) bool{
-			storage.OrganizationSlug:      func(o *domain.Organization) bool { return o.Slug != c.Slug },
-			storage.OrganizationLegalName: func(o *domain.Organization) bool { return o.LegalName != c.LegalName },
+		type check struct {
+			field storage.OrganizationField
+			diff  func(*domain.Organization) bool
+		}
+		for _, check := range []check{
+			{storage.OrganizationLegalName, func(o *domain.Organization) bool { return o.LegalName != c.LegalName }},
+			{storage.OrganizationSlug, func(o *domain.Organization) bool { return o.Slug != c.Slug }},
+			{storage.OrganizationUpdateTime, func(o *domain.Organization) bool { return false }},
+			{storage.OrganizationCreateTime, func(o *domain.Organization) bool { return false }},
 		} {
-			if diff(org) {
-				changes = append(changes, check)
+			if check.diff(org) {
+				changes = append(changes, check.field)
 			}
 		}
 
@@ -171,7 +177,7 @@ func (s *Bootstrapper) setupOrganization(ctx context.Context, r *organization.Re
 	}
 
 	// if the organization does not exist, create it
-	if errors.Is(err, storage.ErrOrganizationNotFound) {
+	if errors.Is(err, organization.ErrOrganizationNotFound) {
 		s.logger.Info("system organization creation triggered")
 		now := s.clock()
 
@@ -201,25 +207,27 @@ func (s *Bootstrapper) setupUser(ctx context.Context, org *domain.Organization, 
 		return nil, hErr
 	}
 
-	// check if the user already exists
 	u, err := r.Get(ctx, c.ID)
-	// also get by email because we need to get the password and that is not possible with the id
-	if pu, err := r.GetByEmail(ctx, c.Email); err == nil {
-		u.HashedPassword = pu.HashedPassword
-	}
-
 	if err == nil {
+		if u.ID != c.ID {
+			return nil, fmt.Errorf("system user id mismatch: expected %s, got %s", c.ID, u.ID)
+		}
 		// check if the user needs to be updated
 		changes := []storage.UserField{}
-
-		for check, diff := range map[storage.UserField]func(*domain.User) bool{
-			storage.UserOrganizationID: func(u *domain.User) bool { return u.OrganizationID != org.ID },
-			storage.UserDisplayName:    func(u *domain.User) bool { return u.DisplayName != systemUserName },
-			storage.UserEmail:          func(u *domain.User) bool { return u.Email != c.Email },
-			storage.UserHashedPassword: func(u *domain.User) bool { return password.Check(currentPassword, []byte(u.HashedPassword)) != nil },
+		type check struct {
+			field storage.UserField
+			diff  func(*domain.User) bool
+		}
+		for _, check := range []check{
+			{storage.UserOrganizationID, func(u *domain.User) bool { return u.OrganizationID != org.ID }},
+			{storage.UserDisplayName, func(u *domain.User) bool { return u.DisplayName != systemUserName }},
+			{storage.UserEmail, func(u *domain.User) bool { return u.Email != c.Email }},
+			{storage.UserHashedPassword, func(u *domain.User) bool { return password.Check(currentPassword, []byte(u.HashedPassword)) != nil }},
+			{storage.UserUpdateTime, func(u *domain.User) bool { return false }},
+			{storage.UserCreateTime, func(u *domain.User) bool { return false }},
 		} {
-			if diff(u) {
-				changes = append(changes, check)
+			if check.diff(u) {
+				changes = append(changes, check.field)
 			}
 		}
 
@@ -241,7 +249,7 @@ func (s *Bootstrapper) setupUser(ctx context.Context, org *domain.Organization, 
 	}
 
 	// if the user does not exist, create it
-	if errors.Is(err, storage.ErrUserNotFound) {
+	if errors.Is(err, user.ErrUserNotFound) {
 		s.logger.Info("system user creation triggered")
 		now := s.clock()
 		u, err = w.Create(ctx, &domain.User{

@@ -1,8 +1,9 @@
-package grpcerrors
+package grpcerrors_test
 
 import (
 	"testing"
 
+	"github.com/extreme-business/lingo/pkg/grpcerrors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -11,7 +12,7 @@ func TestNewNotFoundErr(t *testing.T) {
 	t.Run("error should match expected", func(t *testing.T) {
 		msg := "resource not found"
 
-		err := NewNotFoundErr(msg)
+		err := grpcerrors.NewNotFoundErr(msg)
 		st, ok := status.FromError(err)
 		if !ok {
 			t.Fatalf("expected a gRPC status error, got %v", err)

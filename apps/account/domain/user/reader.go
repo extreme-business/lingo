@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
 	"github.com/extreme-business/lingo/apps/account/storage"
@@ -12,6 +13,10 @@ const (
 	perPage = 25
 )
 
+var (
+	ErrUserNotFound Error = errors.New("user not found")
+)
+
 type Reader struct {
 	reader storage.UserReader
 }
@@ -20,27 +25,31 @@ func NewReader(storage storage.UserReader) *Reader {
 	return &Reader{reader: storage}
 }
 
-func (r *Reader) Get(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+func (r *Reader) Get(ctx context.Context, id uuid.UUID) (*domain.User, Error) {
 	user, err := r.reader.Get(ctx, id)
 	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
-
 	var u = new(domain.User)
 	return u, u.FromStorage(user)
 }
 
-func (r *Reader) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
+func (r *Reader) GetByEmail(ctx context.Context, email string) (*domain.User, Error) {
 	user, err := r.reader.GetByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
-
 	var u = new(domain.User)
 	return u, u.FromStorage(user)
 }
 
-func (r *Reader) List(ctx context.Context, page uint) ([]*domain.User, error) {
+func (r *Reader) List(ctx context.Context, page uint) ([]*domain.User, Error) {
 	users, err := r.reader.List(ctx, storage.Pagination{
 		Limit:  perPage,
 		Offset: int(page) * perPage,

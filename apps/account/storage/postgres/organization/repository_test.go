@@ -45,7 +45,7 @@ func TestRepository_Create(t *testing.T) {
 	t.Run("should create a new organization", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		r := organization.New(database.NewDB(db))
+		r := organization.New(database.NewDBWrapper(db))
 
 		o := seed.NewOrganization(
 			"268d2306-030a-43d5-9269-8afe666a8cf8",
@@ -76,7 +76,7 @@ func TestRepository_Create(t *testing.T) {
 	t.Run("should return an error if the organization id already exists", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		r := organization.New(database.NewDB(db))
+		r := organization.New(database.NewDBWrapper(db))
 
 		o := seed.NewOrganization(
 			"1a707dff-65a3-4cb7-83ee-1b4e7a0ae29e",
@@ -115,7 +115,7 @@ func TestRepository_Create(t *testing.T) {
 	t.Run("should return an error if the organization legal name already exists", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		r := organization.New(database.NewDB(db))
+		r := organization.New(database.NewDBWrapper(db))
 
 		o := seed.NewOrganization(
 			"2f5c8650-2913-41f1-a196-343c4a27ed75",
@@ -155,7 +155,7 @@ func TestRepository_Create(t *testing.T) {
 	t.Run("should return an error if the organization slug already exists", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		r := organization.New(database.NewDB(db))
+		r := organization.New(database.NewDBWrapper(db))
 
 		o := seed.NewOrganization(
 			"a5994bc8-2f07-4630-9d30-f4860b4dac11",
@@ -215,7 +215,7 @@ func TestRepository_Get(t *testing.T) {
 	t.Run("should return an organization", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		r := organization.New(database.NewDB(db))
+		r := organization.New(database.NewDBWrapper(db))
 
 		expected := seed.NewOrganization(
 			"95d2f153-bbb9-4104-8f82-d619f0df5ca9",
@@ -238,7 +238,7 @@ func TestRepository_Get(t *testing.T) {
 	t.Run("should return an error if the organization does not exist", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		r := organization.New(database.NewDB(db))
+		r := organization.New(database.NewDBWrapper(db))
 
 		_, err := r.Get(ctx, uuid.MustParse("b12428a7-f5b0-49a1-b1a5-2f6a6cf3baf5"))
 		if err == nil {
@@ -273,7 +273,7 @@ func TestRepository_Update(t *testing.T) {
 	t.Run("should update an organization", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		recorder := dbtest.NewRecorder(database.NewDB(db))
+		recorder := dbtest.NewRecorder(database.NewDBWrapper(db))
 		r := organization.New(recorder)
 
 		o := seed.NewOrganization(
@@ -317,7 +317,7 @@ func TestRepository_Update(t *testing.T) {
 	t.Run("should return an error if the organization does not exist", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		r := organization.New(database.NewDB(db))
+		r := organization.New(database.NewDBWrapper(db))
 
 		o := seed.NewOrganization(
 			"a1f67eb8-f2f6-4321-85d5-34690ce9ec5d",
@@ -367,7 +367,7 @@ func TestRepository_Delete(t *testing.T) {
 	t.Run("should delete an organization", func(t *testing.T) {
 		ctx := context.Background()
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
-		recorder := dbtest.NewRecorder(database.NewDB(db))
+		recorder := dbtest.NewRecorder(database.NewDBWrapper(db))
 		r := organization.New(recorder)
 
 		err := r.Delete(ctx, uuid.MustParse("debf1bcc-55c6-4816-9ff4-bf53a00084be"))
@@ -472,7 +472,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should return all organizations",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{},
 			orderBy:    storage.OrganizationOrderBy{},
 			conditions: []storage.Condition{},
@@ -498,7 +498,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should return all organizations with pagination",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{Limit: 1, Offset: 1},
 			orderBy:    storage.OrganizationOrderBy{},
 			conditions: []storage.Condition{},
@@ -518,7 +518,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should return all organizations with order by",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{},
 			orderBy: storage.OrganizationOrderBy{
 				{Field: storage.OrganizationUpdateTime, Direction: storage.DESC},
@@ -546,7 +546,7 @@ func TestRepository_List(t *testing.T) {
 		{
 			name:       "should return all organizations with conditions",
 			ctx:        context.Background(),
-			db:         database.NewDB(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
+			db:         database.NewDBWrapper(dbtest.Connect(context.Background(), t, dbc.ConnectionString)),
 			pagination: storage.Pagination{},
 			orderBy:    storage.OrganizationOrderBy{},
 			conditions: []storage.Condition{

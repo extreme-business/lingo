@@ -15,11 +15,11 @@ import (
 
 type Server struct {
 	protoaccount.UnimplementedAccountServiceServer
-	account        *app.Account
+	account        *app.App
 	resourceParser *resource.Parser
 }
 
-func New(account *app.Account, resourceParser *resource.Parser) *Server {
+func New(account *app.App, resourceParser *resource.Parser) *Server {
 	return &Server{
 		account:        account,
 		resourceParser: resourceParser,

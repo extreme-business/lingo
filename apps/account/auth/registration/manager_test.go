@@ -37,6 +37,7 @@ func TestManager_Register(t *testing.T) {
 			CreateFunc: func(_ context.Context, u *storage.User) (*storage.User, error) {
 				return &storage.User{
 					ID:             u.ID,
+					OrganizationID: u.OrganizationID,
 					DisplayName:    u.DisplayName,
 					Email:          u.Email,
 					HashedPassword: u.HashedPassword,

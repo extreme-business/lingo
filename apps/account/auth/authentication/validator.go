@@ -17,7 +17,7 @@ const (
 
 type credentialsValidator struct {
 	emailValidator    validate.StringValidator
-	passwordValidator validate.StringValidator
+	passwordValidator validate.BytesValidator
 }
 
 func newCredentialsValidator() *credentialsValidator {
@@ -26,9 +26,9 @@ func newCredentialsValidator() *credentialsValidator {
 			validate.StringMinLength("email", minEmailLength),
 			validate.StringMaxLength("email", maxEmailLength),
 		},
-		passwordValidator: validate.StringValidator{
-			validate.StringMinLength("password", minPasswordLength),
-			validate.StringMaxLength("password", maxPasswordLength),
+		passwordValidator: validate.BytesValidator{
+			validate.BytesMinLength("password", minPasswordLength),
+			validate.ByteMaxLength("password", maxPasswordLength),
 		},
 	}
 }

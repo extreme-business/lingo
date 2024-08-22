@@ -10,20 +10,21 @@ import (
 	"github.com/google/uuid"
 )
 
-type Account struct {
+// App is the application service for the account domain.
+type App struct {
 	logger              *slog.Logger
-	accountManager      *authentication.Manager
+	authenticator       *authentication.Authenticator
 	registrationManager *registration.Manager
 }
 
 func New(
 	logger *slog.Logger,
-	accountManager *authentication.Manager,
+	authenticator *authentication.Authenticator,
 	registrationManager *registration.Manager,
-) *Account {
-	return &Account{
+) *App {
+	return &App{
 		logger:              logger,
-		accountManager:      accountManager,
+		authenticator:       authenticator,
 		registrationManager: registrationManager,
 	}
 }
@@ -35,7 +36,7 @@ type RegisterUser struct {
 	Password       string
 }
 
-func (r *Account) RegisterUser(ctx context.Context, i RegisterUser) (*domain.User, error) {
+func (r *App) RegisterUser(ctx context.Context, i RegisterUser) (*domain.User, error) {
 	user, err := r.registrationManager.Register(ctx, registration.Registration{
 		OrganizationID: i.OrganizationID,
 		DisplayName:    i.DisplayName,

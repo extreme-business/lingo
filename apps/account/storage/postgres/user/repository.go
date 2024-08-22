@@ -64,7 +64,7 @@ func scan(f func(dest ...any) error, u *storage.User) error {
 	)
 }
 
-const createQuery = `INSERT INTO users (id, organization_id,  display_name, email, hashed_password, status, create_time, update_time, delete_time)
+const createQuery = `INSERT INTO users (id, organization_id, display_name, email, hashed_password, status, create_time, update_time, delete_time)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id, organization_id,  display_name, email, status, create_time, update_time, delete_time
 ;`
@@ -105,7 +105,7 @@ func (r *Repository) Create(ctx context.Context, u *storage.User) (*storage.User
 	return &n, nil
 }
 
-const getByIDQuery = `SELECT id, organization_id, display_name, email, status, create_time, update_time, delete_time
+const getByIDQuery = `SELECT id, organization_id, display_name, hashed_password, email, status, create_time, update_time, delete_time
 FROM users
 WHERE id = $1
 ;`
@@ -114,7 +114,17 @@ WHERE id = $1
 func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*storage.User, error) {
 	row := r.dbConn.QueryRow(ctx, getByIDQuery, id)
 	var u storage.User
-	if err := scan(row.Scan, &u); err != nil {
+	if err := row.Scan(
+		&u.ID,
+		&u.OrganizationID,
+		&u.DisplayName,
+		&u.HashedPassword,
+		&u.Email,
+		&u.Status,
+		&u.CreateTime,
+		&u.UpdateTime,
+		&u.DeleteTime,
+	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, storage.ErrUserNotFound
 		}
