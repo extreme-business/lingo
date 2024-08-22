@@ -21,7 +21,7 @@ func TestChain(t *testing.T) {
 
 	// Test handler that writes "OK"
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		if err := w.Write([]byte("OK")); err != nil {
+		if _, err := w.Write([]byte("OK")); err != nil {
 			t.Logf("error writing response: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

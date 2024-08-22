@@ -33,7 +33,6 @@ func New() *Config {
 	v := viper.New()
 	v.SetEnvPrefix("lingo")
 	v.AutomaticEnv()
-
 	return &Config{
 		viper: v,
 	}

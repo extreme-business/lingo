@@ -2,6 +2,7 @@ package organization
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
@@ -38,16 +39,19 @@ func (w *Writer) Create(ctx context.Context, o *domain.Organization) (*domain.Or
 	return result, nil
 }
 
-func (w *Writer) Update(ctx context.Context, o *domain.Organization) (*domain.Organization, error) {
+// Update updates the organization.
+// its sets the update time to the current time before updating the organization.
+// fields are sorted before updating the organization and deduplicated.
+func (w *Writer) Update(ctx context.Context, o *domain.Organization, fields []storage.OrganizationField) (*domain.Organization, error) {
 	o.UpdateTime = w.c()
 	var err error
 	s := &storage.Organization{}
 	if err = o.ToStorage(s); err != nil {
 		return nil, err
 	}
-	s, err = w.uw.Update(ctx, s, []storage.OrganizationField{
-		storage.OrganizationLegalName,
-	})
+	fields = append(fields, storage.OrganizationUpdateTime)
+	slices.Sort(fields)
+	s, err = w.uw.Update(ctx, s, slices.Compact(fields))
 	if err != nil {
 		return nil, err
 	}

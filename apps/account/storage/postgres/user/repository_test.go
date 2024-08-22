@@ -19,7 +19,7 @@ import (
 
 func setupTestDB(ctx context.Context, t *testing.T, name string) *dbtest.PostgresContainer {
 	t.Helper()
-	dbc := dbtest.SetupPostgres(ctx, t, name)
+	dbc := dbtest.SetupPostgres(ctx, t, dbtest.SanitizeDBName(name))
 	if err := seed.RunMigrations(ctx, t, dbc.ConnectionString); err != nil {
 		t.Fatalf("failed to run migrations: %v", err)
 	}

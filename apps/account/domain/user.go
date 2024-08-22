@@ -44,7 +44,6 @@ func (u *User) FromProto(in *protoaccount.User) error {
 	if len(namePairs)%2 != 0 {
 		return fmt.Errorf("invalid name %q", in.GetName())
 	}
-
 	for i := 0; i < len(namePairs); i += 2 {
 		switch namePairs[i] {
 		case "organizations":

@@ -105,7 +105,7 @@ func (r *Repository) Create(ctx context.Context, u *storage.User) (*storage.User
 	return &n, nil
 }
 
-const getByIDQuery = `SELECT id, organization_id,  display_name, email, status, create_time, update_time, delete_time
+const getByIDQuery = `SELECT id, organization_id, display_name, email, status, create_time, update_time, delete_time
 FROM users
 WHERE id = $1
 ;`

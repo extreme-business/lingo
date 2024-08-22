@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
@@ -87,21 +88,17 @@ func (c *SystemOrgConfig) Validate() error {
 	return nil
 }
 
-// Initializer is responsible for setting up the system user and organization.
-type Initializer struct {
-	logger                   *slog.Logger
-	systemUserConfig         SystemUserConfig
-	systemOrganizationConfig SystemOrgConfig
-	clock                    func() time.Time
-	dbManager                storage.DBManager
+// Bootstrapper is responsible for setting up the system user and organization.
+type Bootstrapper struct {
+	logger    *slog.Logger
+	clock     func() time.Time
+	dbManager storage.DBManager
 }
 
 type Config struct {
-	Logger                   *slog.Logger
-	SystemUserConfig         SystemUserConfig
-	SystemOrganizationConfig SystemOrgConfig
-	Clock                    func() time.Time
-	DBManager                storage.DBManager
+	Logger    *slog.Logger
+	Clock     func() time.Time
+	DBManager storage.DBManager
 }
 
 func (c Config) Validate() error {
@@ -117,29 +114,19 @@ func (c Config) Validate() error {
 		return errors.New("db manager is required")
 	}
 
-	if err := c.SystemUserConfig.Validate(); err != nil {
-		return fmt.Errorf("invalid system user config: %w", err)
-	}
-
-	if err := c.SystemOrganizationConfig.Validate(); err != nil {
-		return fmt.Errorf("invalid system organization config: %w", err)
-	}
-
 	return nil
 }
 
-func New(config Config) (*Initializer, error) {
-	return &Initializer{
-		logger:                   config.Logger,
-		systemUserConfig:         config.SystemUserConfig,
-		systemOrganizationConfig: config.SystemOrganizationConfig,
-		clock:                    config.Clock,
-		dbManager:                config.DBManager,
+func New(config Config) (*Bootstrapper, error) {
+	return &Bootstrapper{
+		logger:    config.Logger,
+		clock:     config.Clock,
+		dbManager: config.DBManager,
 	}, config.Validate()
 }
 
 // Setup sets up the system user and organization.
-func (s *Initializer) Setup(ctx context.Context) error {
+func (s *Bootstrapper) Setup(ctx context.Context, systemUserConfig SystemUserConfig, systemOrganizationConfig SystemOrgConfig) error {
 	return s.dbManager.BeginOp(ctx, func(ctx context.Context, r storage.Repositories) error {
 		if r.User == nil {
 			return errors.New("user repository is required")
@@ -149,36 +136,32 @@ func (s *Initializer) Setup(ctx context.Context) error {
 			return errors.New("organization repository is required")
 		}
 
-		return s.setup(ctx, &r)
+		return s.setup(ctx, &r, systemUserConfig, systemOrganizationConfig)
 	})
 }
 
 // setupOrganization sets up the system organization. If the organization already exists, it will be updated if necessary.
-func (s *Initializer) setupOrganization(ctx context.Context, r *organization.Reader, w *organization.Writer) (*domain.Organization, error) {
-	now := s.clock()
-
+func (s *Bootstrapper) setupOrganization(ctx context.Context, r *organization.Reader, w *organization.Writer, c SystemOrgConfig) (*domain.Organization, error) {
 	// check if the organization already exists
-	org, err := r.Get(ctx, s.systemOrganizationConfig.ID)
+	org, err := r.Get(ctx, c.ID)
 	if err == nil {
 		// check if the organization needs to be updated
 		changes := []storage.OrganizationField{}
 		for check, diff := range map[storage.OrganizationField]func(*domain.Organization) bool{
-			storage.OrganizationLegalName: func(o *domain.Organization) bool { return o.LegalName != s.systemOrganizationConfig.LegalName },
+			storage.OrganizationSlug:      func(o *domain.Organization) bool { return o.Slug != c.Slug },
+			storage.OrganizationLegalName: func(o *domain.Organization) bool { return o.LegalName != c.LegalName },
 		} {
 			if diff(org) {
 				changes = append(changes, check)
-				break
 			}
 		}
 
 		if len(changes) > 0 {
 			s.logger.Info("system organization update triggered", slog.Any("changes", changes))
+			org.LegalName = c.LegalName
+			org.Slug = c.Slug
 
-			org.LegalName = s.systemOrganizationConfig.LegalName
-			org.UpdateTime = now
-
-			o, uErr := w.Update(ctx, org)
-
+			o, uErr := w.Update(ctx, org, changes)
 			if uErr != nil {
 				return nil, fmt.Errorf("failed to update system organization: %w", uErr)
 			}
@@ -190,11 +173,12 @@ func (s *Initializer) setupOrganization(ctx context.Context, r *organization.Rea
 	// if the organization does not exist, create it
 	if errors.Is(err, storage.ErrOrganizationNotFound) {
 		s.logger.Info("system organization creation triggered")
+		now := s.clock()
 
 		o, cErr := w.Create(ctx, &domain.Organization{
-			ID:         s.systemOrganizationConfig.ID,
-			LegalName:  s.systemOrganizationConfig.LegalName,
-			Slug:       s.systemOrganizationConfig.Slug,
+			ID:         c.ID,
+			LegalName:  c.LegalName,
+			Slug:       c.Slug,
 			UpdateTime: now,
 			CreateTime: now,
 		})
@@ -210,15 +194,20 @@ func (s *Initializer) setupOrganization(ctx context.Context, r *organization.Rea
 }
 
 // setupUser sets up the system user. If the user already exists, it will be updated if necessary.
-func (s *Initializer) setupUser(ctx context.Context, org *domain.Organization, r *user.Reader, w *user.Writer) (*domain.User, error) {
-	currentPassword := []byte(s.systemUserConfig.Password)
+func (s *Bootstrapper) setupUser(ctx context.Context, org *domain.Organization, r *user.Reader, w *user.Writer, c SystemUserConfig) (*domain.User, error) {
+	currentPassword := []byte(c.Password)
 	hashedPassword, hErr := password.Hash(currentPassword)
 	if hErr != nil {
 		return nil, hErr
 	}
 
 	// check if the user already exists
-	u, err := r.GetByEmail(ctx, s.systemUserConfig.Email)
+	u, err := r.Get(ctx, c.ID)
+	// also get by email because we need to get the password and that is not possible with the id
+	if pu, err := r.GetByEmail(ctx, c.Email); err == nil {
+		u.HashedPassword = pu.HashedPassword
+	}
+
 	if err == nil {
 		// check if the user needs to be updated
 		changes := []storage.UserField{}
@@ -226,7 +215,7 @@ func (s *Initializer) setupUser(ctx context.Context, org *domain.Organization, r
 		for check, diff := range map[storage.UserField]func(*domain.User) bool{
 			storage.UserOrganizationID: func(u *domain.User) bool { return u.OrganizationID != org.ID },
 			storage.UserDisplayName:    func(u *domain.User) bool { return u.DisplayName != systemUserName },
-			storage.UserEmail:          func(u *domain.User) bool { return u.Email != s.systemUserConfig.Email },
+			storage.UserEmail:          func(u *domain.User) bool { return u.Email != c.Email },
 			storage.UserHashedPassword: func(u *domain.User) bool { return password.Check(currentPassword, []byte(u.HashedPassword)) != nil },
 		} {
 			if diff(u) {
@@ -235,14 +224,14 @@ func (s *Initializer) setupUser(ctx context.Context, org *domain.Organization, r
 		}
 
 		if len(changes) > 0 {
+			slices.Sort(changes)
 			s.logger.Info("system user update triggered", slog.Any("changes", changes))
-
 			u.OrganizationID = org.ID
 			u.DisplayName = systemUserName
-			u.Email = s.systemUserConfig.Email
+			u.Email = c.Email
 			u.HashedPassword = string(hashedPassword)
 
-			u, err = w.Update(ctx, u)
+			u, err = w.Update(ctx, u, changes)
 			if err != nil {
 				return nil, fmt.Errorf("failed to update system user: %w", err)
 			}
@@ -254,14 +243,17 @@ func (s *Initializer) setupUser(ctx context.Context, org *domain.Organization, r
 	// if the user does not exist, create it
 	if errors.Is(err, storage.ErrUserNotFound) {
 		s.logger.Info("system user creation triggered")
-
+		now := s.clock()
 		u, err = w.Create(ctx, &domain.User{
-			ID:             s.systemUserConfig.ID,
+			ID:             c.ID,
 			OrganizationID: org.ID,
 			DisplayName:    systemUserName,
-			Email:          s.systemUserConfig.Email,
+			Email:          c.Email,
 			Status:         domain.UserStatusActive,
 			HashedPassword: string(hashedPassword),
+			CreateTime:     now,
+			UpdateTime:     now,
+			DeleteTime:     time.Time{},
 		})
 
 		if err != nil {
@@ -274,9 +266,17 @@ func (s *Initializer) setupUser(ctx context.Context, org *domain.Organization, r
 	return nil, err
 }
 
-func (s *Initializer) setup(ctx context.Context, r *storage.Repositories) error {
+func (s *Bootstrapper) setup(ctx context.Context, r *storage.Repositories, u SystemUserConfig, o SystemOrgConfig) error {
 	if s.clock == nil {
 		return errors.New("clock is required")
+	}
+
+	if err := u.Validate(); err != nil {
+		return fmt.Errorf("invalid system user config: %w", err)
+	}
+
+	if err := o.Validate(); err != nil {
+		return fmt.Errorf("invalid system organization config: %w", err)
 	}
 
 	// Create the system organization and user.
@@ -284,6 +284,7 @@ func (s *Initializer) setup(ctx context.Context, r *storage.Repositories) error 
 		ctx,
 		organization.NewReader(r.Organization),
 		organization.NewWriter(s.clock, r.Organization),
+		o,
 	)
 	if err != nil {
 		return err
@@ -294,6 +295,7 @@ func (s *Initializer) setup(ctx context.Context, r *storage.Repositories) error 
 		org,
 		user.NewReader(r.User),
 		user.NewWriter(s.clock, r.User),
+		u,
 	); err != nil {
 		return err
 	}

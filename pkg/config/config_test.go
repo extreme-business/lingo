@@ -50,7 +50,8 @@ func TestConfig_SigningKeyAccessToken(t *testing.T) {
 		viper.Reset()
 	})
 
-	t.Run("should return error if LINGO_SIGNING_KEY_REGISTRATION is not set", func(t *testing.T) {
+	t.Run("should return error if LINGO_SIGNING_KEY_ACCESS_TOKEN is not set", func(t *testing.T) {
+		t.Setenv("LINGO_SIGNING_KEY_ACCESS_TOKEN", "")
 		v, err := config.New().SigningKeyAccessToken()
 		if err == nil {
 			t.Errorf("SigningKeyAccessToken() error = %v, wantErr %v", err, true)
@@ -61,8 +62,8 @@ func TestConfig_SigningKeyAccessToken(t *testing.T) {
 		}
 	})
 
-	t.Run("should return the value of LINGO_SIGNING_KEY_REGISTRATION", func(t *testing.T) {
-		t.Setenv("LINGO_SIGNING_KEY_REGISTRATION", "test")
+	t.Run("should return the value of LINGO_SIGNING_KEY_ACCESS_TOKEN", func(t *testing.T) {
+		t.Setenv("LINGO_SIGNING_KEY_ACCESS_TOKEN", "test")
 		c := config.New()
 		got, err := c.SigningKeyAccessToken()
 		if err != nil {
@@ -74,31 +75,32 @@ func TestConfig_SigningKeyAccessToken(t *testing.T) {
 	})
 }
 
-func TestConfig_SigningKeyAuthentication(t *testing.T) {
+func TestConfig_SigningKeyRefreshToken(t *testing.T) {
 	t.Cleanup(func() {
 		viper.Reset()
 	})
 
-	t.Run("should return error if LINGO_SIGNING_KEY_AUTHENTICATION is not set", func(t *testing.T) {
+	t.Run("should return error if LINGO_SIGNING_KEY_REFRESH_TOKEN is not set", func(t *testing.T) {
+		t.Setenv("LINGO_SIGNING_KEY_REFRESH_TOKEN", "")
 		v, err := config.New().SigningKeyRefreshToken()
 		if err == nil {
-			t.Errorf("SigningKeyAuthentication() error = %v, wantErr %v", err, true)
+			t.Errorf("SigningKeyRefreshToken() error = %v, wantErr %v", err, true)
 		}
 
 		if v != "" {
-			t.Errorf("SigningKeyAuthentication() = %v, want %v", v, "")
+			t.Errorf("SigningKeyRefreshToken() = %v, want %v", v, "")
 		}
 	})
 
-	t.Run("should return the value of LINGO_SIGNING_KEY_AUTHENTICATION", func(t *testing.T) {
-		t.Setenv("LINGO_SIGNING_KEY_AUTHENTICATION", "test")
+	t.Run("should return the value of LINGO_SIGNING_KEY_REFRESH_TOKEN", func(t *testing.T) {
+		t.Setenv("LINGO_SIGNING_KEY_REFRESH_TOKEN", "test")
 		c := config.New()
 		got, err := c.SigningKeyRefreshToken()
 		if err != nil {
-			t.Errorf("SigningKeyAuthentication() error = %v, wantErr %v", err, nil)
+			t.Errorf("SigningKeyRefreshToken() error = %v, wantErr %v", err, nil)
 		}
 		if got != "test" {
-			t.Errorf("SigningKeyAuthentication() = %v, want %v", got, "test")
+			t.Errorf("SigningKeyRefreshToken() = %v, want %v", got, "test")
 		}
 	})
 }
@@ -370,6 +372,7 @@ func TestConfig_SystemUserPassword(t *testing.T) {
 	})
 
 	t.Run("should return error if LINGO_SYSTEM_USER_PASSWORD is not set", func(t *testing.T) {
+		t.Setenv("LINGO_SYSTEM_USER_PASSWORD", "")
 		v, err := config.New().SystemUserPassword()
 		if err == nil {
 			t.Errorf("SystemUserPassword() error = %v, wantErr %v", err, true)

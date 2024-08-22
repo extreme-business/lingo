@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"regexp"
 	"testing"
 	"time"
 
@@ -94,4 +95,9 @@ func Connect(ctx context.Context, t *testing.T, connectionString string) *sql.DB
 		}
 	})
 	return db
+}
+
+func SanitizeDBName(name string) string {
+	reg := regexp.MustCompile(`[^a-zA-Z0-9-]`)
+	return reg.ReplaceAllString(name, "_")
 }

@@ -93,6 +93,7 @@ func getSystemOrgConfig(c *config.Config) (bootstrapping.SystemOrgConfig, error)
 
 // setupAccount sets up the account application.
 func setupAccount(
+	ctx context.Context,
 	logger *slog.Logger,
 	config *config.Config,
 	db *sql.DB,
@@ -123,17 +124,20 @@ func setupAccount(
 	}
 
 	i, err := bootstrapping.New(bootstrapping.Config{
-		Logger:                   logger,
-		SystemUserConfig:         suc,
-		SystemOrganizationConfig: soc,
-		Clock:                    clock,
-		DBManager:                dbManager,
+		Logger:    logger,
+		Clock:     clock,
+		DBManager: dbManager,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create bootstrapping initializer: %w", err)
 	}
 
-	app := app.New(logger, i,
+	if err = i.Setup(ctx, suc, soc); err != nil {
+		return nil, fmt.Errorf("failed to setup system user and organization: %w", err)
+	}
+
+	app := app.New(
+		logger,
 		authentication.NewManager(authentication.Config{
 			Clock:                  clock,
 			SigningKeyAccessToken:  []byte(signingKeyAccessToken),

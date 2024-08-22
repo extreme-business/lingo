@@ -18,9 +18,9 @@ import (
 )
 
 // runAccount runs the account server.
-func runAccount(_ *cobra.Command, _ []string) error {
+func runAccount(cmd *cobra.Command, _ []string) error {
 	logger := slog.Default()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(cmd.Context())
 
 	// Set up channel to receive signals
 	sigs := make(chan os.Signal, 1)
@@ -49,7 +49,7 @@ func runAccount(_ *cobra.Command, _ []string) error {
 		}
 	}()
 
-	account, err := setupAccount(logger, config, db)
+	account, err := setupAccount(ctx, logger, config, db)
 	if err != nil {
 		return fmt.Errorf("failed to setup relay app: %w", err)
 	}
@@ -61,10 +61,6 @@ func runAccount(_ *cobra.Command, _ []string) error {
 	})
 	if err != nil {
 		return fmt.Errorf("failed to setup grpc server: %w", err)
-	}
-
-	if err = account.Init(ctx); err != nil {
-		return fmt.Errorf("failed to init account app: %w", err)
 	}
 
 	g := new(errgroup.Group)

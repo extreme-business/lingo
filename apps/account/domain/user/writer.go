@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
@@ -38,20 +39,19 @@ func (w *Writer) Create(ctx context.Context, u *domain.User) (*domain.User, erro
 	return result, nil
 }
 
-func (w *Writer) Update(ctx context.Context, u *domain.User) (*domain.User, error) {
+// Update updates the user.
+// its sets the update time to the current time before updating the user.
+// fields are sorted before updating the user and deduplicated.
+func (w *Writer) Update(ctx context.Context, u *domain.User, fields []storage.UserField) (*domain.User, error) {
 	u.UpdateTime = w.c()
 	var err error
 	s := &storage.User{}
 	if err = u.ToStorage(s); err != nil {
 		return nil, err
 	}
-	s, err = w.uw.Update(ctx, s, []storage.UserField{
-		storage.UserOrganizationID,
-		storage.UserDisplayName,
-		storage.UserEmail,
-		storage.UserHashedPassword,
-		storage.UserUpdateTime,
-	})
+	fields = append(fields, storage.UserUpdateTime)
+	slices.Sort(fields)
+	s, err = w.uw.Update(ctx, s, slices.Compact(fields))
 	if err != nil {
 		return nil, err
 	}

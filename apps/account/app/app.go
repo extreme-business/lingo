@@ -6,33 +6,25 @@ import (
 
 	"github.com/extreme-business/lingo/apps/account/auth/authentication"
 	"github.com/extreme-business/lingo/apps/account/auth/registration"
-	"github.com/extreme-business/lingo/apps/account/bootstrapping"
 	"github.com/extreme-business/lingo/apps/account/domain"
 )
 
 type Account struct {
 	logger              *slog.Logger
-	bootstrapping       *bootstrapping.Initializer
 	accountManager      *authentication.Manager
 	registrationManager *registration.Manager
 }
 
 func New(
 	logger *slog.Logger,
-	bootstrapping *bootstrapping.Initializer,
 	accountManager *authentication.Manager,
 	registrationManager *registration.Manager,
 ) *Account {
 	return &Account{
 		logger:              logger,
-		bootstrapping:       bootstrapping,
 		accountManager:      accountManager,
 		registrationManager: registrationManager,
 	}
-}
-
-func (r *Account) Init(ctx context.Context) error {
-	return r.bootstrapping.Setup(ctx)
 }
 
 func (r *Account) CreateUser(ctx context.Context, u *domain.User, password string) (*domain.User, error) {

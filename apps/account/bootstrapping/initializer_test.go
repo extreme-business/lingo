@@ -21,7 +21,8 @@ import (
 
 func setupTestDB(ctx context.Context, t *testing.T, name string) *dbtest.PostgresContainer {
 	t.Helper()
-	dbc := dbtest.SetupPostgres(ctx, t, name)
+	// replace special characters with underscores
+	dbc := dbtest.SetupPostgres(ctx, t, dbtest.SanitizeDBName(name))
 	if err := seed.RunMigrations(ctx, t, dbc.ConnectionString); err != nil {
 		t.Fatalf("failed to run migrations: %v", err)
 	}
@@ -29,21 +30,31 @@ func setupTestDB(ctx context.Context, t *testing.T, name string) *dbtest.Postgre
 	return dbc
 }
 
+func dbUserDiff(t *testing.T, r storage.UserRepository, u *storage.User) string {
+	t.Helper()
+	user, err := r.Get(context.Background(), u.ID)
+	if err != nil {
+		t.Fatalf("failed to get user: %v", err)
+	}
+
+	return cmp.Diff(u, user)
+}
+
+func dbOrgDiff(t *testing.T, r storage.OrganizationRepository, o *storage.Organization) string {
+	t.Helper()
+	org, err := r.Get(context.Background(), o.ID)
+	if err != nil {
+		t.Fatalf("failed to get organization: %v", err)
+	}
+
+	return cmp.Diff(o, org)
+}
+
 func TestNew(t *testing.T) {
 	t.Run("New", func(t *testing.T) {
 		b, err := bootstrapping.New(bootstrapping.Config{
 			Logger: slog.Default(),
-			SystemUserConfig: bootstrapping.SystemUserConfig{
-				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
-				Email:    "test@test.nl",
-				Password: "password",
-			},
-			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
-				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
-				LegalName: "Test Organization",
-				Slug:      "test-organization",
-			},
-			Clock: time.Now,
+			Clock:  time.Now,
 			DBManager: database.NewManager(database.NewDBWithHandler(&dbmock.DBHandler{}), func(_ database.Conn) storage.Repositories {
 				return storage.Repositories{}
 			}),
@@ -62,17 +73,7 @@ func TestInitializer_NewManager(t *testing.T) {
 	t.Run("NewManager", func(t *testing.T) {
 		b, err := bootstrapping.New(bootstrapping.Config{
 			Logger: slog.Default(),
-			SystemUserConfig: bootstrapping.SystemUserConfig{
-				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
-				Email:    "test@test.nl",
-				Password: "password",
-			},
-			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
-				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
-				LegalName: "Test Organization",
-				Slug:      "test-organization",
-			},
-			Clock: time.Now,
+			Clock:  time.Now,
 			DBManager: database.NewManager(database.NewDBWithHandler(&dbmock.DBHandler{}), func(_ database.Conn) storage.Repositories {
 				return storage.Repositories{}
 			}),
@@ -88,10 +89,8 @@ func TestInitializer_NewManager(t *testing.T) {
 	})
 }
 
-func TestInitializer_Setup(t *testing.T) {
-	dbc := setupTestDB(context.Background(), t, "bootstrapping")
-
-	seed.Run(t, dbc.ConnectionString, seed.State{
+func seedSystem(t *testing.T, connectionString string) {
+	seed.Run(t, connectionString, seed.State{
 		Organizations: []*storage.Organization{
 			seed.NewOrganization(
 				"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
@@ -115,24 +114,18 @@ func TestInitializer_Setup(t *testing.T) {
 			),
 		},
 	})
+}
 
+func TestInitializer_Setup(t *testing.T) {
 	t.Run("Setup", func(t *testing.T) {
 		ctx := context.Background()
+		dbc := setupTestDB(ctx, t, t.Name())
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 		dbManager := postgres.NewManager(database.NewDB(db))
+		seedSystem(t, dbc.ConnectionString)
 
 		initializer, err := bootstrapping.New(bootstrapping.Config{
-			Logger: slog.Default(),
-			SystemUserConfig: bootstrapping.SystemUserConfig{
-				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
-				Email:    "test@test.com",
-				Password: "password",
-			},
-			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
-				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
-				LegalName: "Test Organization",
-				Slug:      "test-organization",
-			},
+			Logger:    slog.Default(),
 			Clock:     func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) },
 			DBManager: dbManager,
 		})
@@ -141,37 +134,36 @@ func TestInitializer_Setup(t *testing.T) {
 			t.Errorf("New() error = %v, want %v", err, nil)
 		}
 
-		if err = initializer.Setup(ctx); err != nil {
+		suc := bootstrapping.SystemUserConfig{
+			ID:       uuid.MustParse("44756c0a-28b7-40c7-a066-f8db23d7dbe3"),
+			Email:    "test@test.com",
+			Password: "password",
+		}
+
+		soc := bootstrapping.SystemOrgConfig{
+			ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+			LegalName: "Test Organization",
+			Slug:      "test-organization",
+		}
+
+		if err = initializer.Setup(ctx, suc, soc); err != nil {
 			t.Errorf("Setup() error = %v, want %v", err, nil)
 		}
 
 		// Check if the system user and organization were created
 		repos := dbManager.Op()
-
-		o, err := repos.Organization.Get(ctx, uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"))
-		if err != nil {
-			t.Errorf("Organization.Get() error = %v, want %v", err, nil)
-		}
-
-		expectedOrganization := seed.NewOrganization(
+		if diff := dbOrgDiff(t, repos.Organization, seed.NewOrganization(
 			"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
 			"Test Organization",
 			"test-organization",
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-		)
-
-		if diff := cmp.Diff(expectedOrganization, o); diff != "" {
+		)); diff != "" {
 			t.Errorf("Organization.Get() mismatch (-want +got):\n%s", diff)
 		}
 
-		u, err := repos.User.Get(ctx, uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"))
-		if err != nil {
-			t.Errorf("User.Get() error = %v, want %v", err, nil)
-		}
-
-		expectedUser := seed.NewUser(
-			"7fb3d880-1db0-464e-b062-a9896cb9bf6c",
+		if diff := dbUserDiff(t, repos.User, seed.NewUser(
+			"44756c0a-28b7-40c7-a066-f8db23d7dbe3",
 			"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
 			"system",
 			"active",
@@ -180,30 +172,19 @@ func TestInitializer_Setup(t *testing.T) {
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Time{},
-		)
-
-		if diff := cmp.Diff(expectedUser, u); diff != "" {
+		)); diff != "" {
 			t.Errorf("User.Get() mismatch (-want +got):\n%s", diff)
 		}
 	})
 
-	t.Run("Setup with existing organization", func(t *testing.T) {
+	t.Run("Setup with an already existing system user and organization should update new changes", func(t *testing.T) {
 		ctx := context.Background()
+		dbc := setupTestDB(ctx, t, t.Name())
 		db := dbtest.Connect(ctx, t, dbc.ConnectionString)
 		dbManager := postgres.NewManager(database.NewDB(db))
 
 		initializer, err := bootstrapping.New(bootstrapping.Config{
-			Logger: slog.Default(),
-			SystemUserConfig: bootstrapping.SystemUserConfig{
-				ID:       uuid.MustParse("7fb3d880-1db0-464e-b062-a9896cb9bf6c"),
-				Email:    "test@test.nl",
-				Password: "password",
-			},
-			SystemOrganizationConfig: bootstrapping.SystemOrgConfig{
-				ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
-				LegalName: "Test Organization",
-				Slug:      "test-organization",
-			},
+			Logger:    slog.Default(),
 			Clock:     func() time.Time { return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) },
 			DBManager: dbManager,
 		})
@@ -212,8 +193,72 @@ func TestInitializer_Setup(t *testing.T) {
 			t.Errorf("New() error = %v, want %v", err, nil)
 		}
 
-		if err = initializer.Setup(ctx); err != nil {
+		suc := bootstrapping.SystemUserConfig{
+			ID:       uuid.MustParse("44756c0a-28b7-40c7-a066-f8db23d7dbe3"),
+			Email:    "test@test.com",
+			Password: "password",
+		}
+
+		soc := bootstrapping.SystemOrgConfig{
+			ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+			LegalName: "Test Organization",
+			Slug:      "test-organization",
+		}
+
+		if err = initializer.Setup(ctx, suc, soc); err != nil {
 			t.Errorf("Setup() error = %v, want %v", err, nil)
+		}
+
+		initializer2, err := bootstrapping.New(bootstrapping.Config{
+			Logger:    slog.Default(),
+			Clock:     func() time.Time { return time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC) },
+			DBManager: dbManager,
+		})
+		if err != nil {
+			t.Errorf("New() error = %v, want %v", err, nil)
+		}
+
+		suc = bootstrapping.SystemUserConfig{
+			ID:       uuid.MustParse("44756c0a-28b7-40c7-a066-f8db23d7dbe3"),
+			Email:    "updated-test@test.com",
+			Password: "password",
+		}
+
+		soc = bootstrapping.SystemOrgConfig{
+			ID:        uuid.MustParse("c105ca54-68f0-4bc4-aca1-b54065b4e9b4"),
+			LegalName: "updated-Test Organization",
+			Slug:      "updated-test-organization",
+		}
+
+		if err = initializer2.Setup(ctx, suc, soc); err != nil {
+			t.Errorf("Setup() error = %v, want %v", err, nil)
+		}
+
+		// Check if the system user and organization were created
+		repos := dbManager.Op()
+
+		if diff := dbOrgDiff(t, repos.Organization, seed.NewOrganization(
+			"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
+			"updated-Test Organization",
+			"updated-test-organization",
+			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC),
+		)); diff != "" {
+			t.Errorf("Organization.Get() mismatch (-want +got):\n%s", diff)
+		}
+
+		if diff := dbUserDiff(t, repos.User, seed.NewUser(
+			"44756c0a-28b7-40c7-a066-f8db23d7dbe3",
+			"c105ca54-68f0-4bc4-aca1-b54065b4e9b4",
+			"system",
+			"active",
+			"updated-test@test.com",
+			"",
+			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC),
+			time.Time{},
+		)); diff != "" {
+			t.Errorf("User.Get() mismatch (-want +got):\n%s", diff)
 		}
 	})
 }
@@ -379,34 +424,7 @@ func TestSystemOrgConfig_Validate(t *testing.T) {
 }
 
 func TestConfig_Validate(t *testing.T) {
-	type fields struct {
-		Logger                   *slog.Logger
-		SystemUserConfig         bootstrapping.SystemUserConfig
-		SystemOrganizationConfig bootstrapping.SystemOrgConfig
-		Clock                    func() time.Time
-		DBManager                storage.DBManager
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := bootstrapping.Config{
-				Logger:                   tt.fields.Logger,
-				SystemUserConfig:         tt.fields.SystemUserConfig,
-				SystemOrganizationConfig: tt.fields.SystemOrganizationConfig,
-				Clock:                    tt.fields.Clock,
-				DBManager:                tt.fields.DBManager,
-			}
-			if err := c.Validate(); (err != nil) != tt.wantErr {
-				t.Errorf("Config.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+
 }
 
 func TestInitializer_setup(_ *testing.T) {
