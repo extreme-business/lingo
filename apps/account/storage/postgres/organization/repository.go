@@ -122,7 +122,7 @@ RETURNING id, legal_name, slug, create_time, update_time;`
 
 func (r *Repository) Update(ctx context.Context, in *storage.Organization, fields []storage.OrganizationField) (*storage.Organization, error) {
 	if len(fields) == 0 {
-		return nil, storage.ErrNoUserFieldsToUpdate
+		return nil, storage.ErrNoOrganizationFieldsToUpdate
 	}
 
 	set := make([]string, 0, len(fields)) // set clauses, e.g. "legal_name = $1"

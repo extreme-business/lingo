@@ -10,22 +10,24 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserError error
+
 var (
-	ErrUserNotFound = errors.New("user not found")
+	ErrUserNotFound UserError = errors.New("user not found")
 	// Update.
-	ErrNoUserFieldsToUpdate = errors.New("no fields to update")
+	ErrNoUserFieldsToUpdate UserError = errors.New("no fields to update")
 	// Fields.
-	ErrUserUnknownField = errors.New("unknown user field")
+	ErrUserUnknownField UserError = errors.New("unknown user field")
 	// sort errors.
-	ErrEmptyUserSortField       = errors.New("user field is empty")
-	ErrInvalidUserSortDirection = errors.New("invalid user sort direction")
+	ErrEmptyUserSortField       UserError = errors.New("user field is empty")
+	ErrInvalidUserSortDirection UserError = errors.New("invalid user sort direction")
 	// Unique constraint errors.
-	ErrConflictUserID          = errors.New("unique id conflict")
-	ErrConflictUserDisplayName = errors.New("unique display_name conflict")
-	ErrConflictUserEmail       = errors.New("unique email conflict")
+	ErrConflictUserID          UserError = errors.New("unique id conflict")
+	ErrConflictUserDisplayName UserError = errors.New("unique display_name conflict")
+	ErrConflictUserEmail       UserError = errors.New("unique email conflict")
 	// Immutable errors.
-	ErrImmutableUserID         = errors.New("field id is read-only")
-	ErrImmutableUserCreateTime = errors.New("field create_time is read-only")
+	ErrImmutableUserID         UserError = errors.New("field id is read-only")
+	ErrImmutableUserCreateTime UserError = errors.New("field create_time is read-only")
 )
 
 type UserField string

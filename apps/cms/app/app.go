@@ -1,15 +1,23 @@
-package account
+package app
 
 import (
 	"context"
 	"fmt"
 
 	accountproto "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-// Manager is the account manager.
-type Manager struct {
+// App is the account manager.
+type App struct {
 	client accountproto.AccountServiceClient
+}
+
+func New(client accountproto.AccountServiceClient) *App {
+	return &App{
+		client: client,
+	}
 }
 
 // SuccessResponse is the success response struct.
@@ -18,7 +26,7 @@ type SuccessResponse struct {
 	RefreshToken string
 }
 
-func (a *Manager) Authenticate(ctx context.Context, email, password string) (*SuccessResponse, error) {
+func (a *App) Authenticate(ctx context.Context, email, password string) (*SuccessResponse, error) {
 	r, err := a.client.LoginUser(ctx, &accountproto.LoginUserRequest{
 		Login: &accountproto.LoginUserRequest_Email{
 			Email: email,
@@ -26,6 +34,10 @@ func (a *Manager) Authenticate(ctx context.Context, email, password string) (*Su
 		Password: password,
 	})
 	if err != nil {
+		if status.Code(err) == codes.Unauthenticated {
+			return nil, fmt.Errorf("invalid email or password")
+		}
+
 		return nil, fmt.Errorf("failed to authenticate: %w", err)
 	}
 
@@ -42,7 +54,7 @@ type Registration struct {
 	Password       string
 }
 
-func (a *Manager) Register(ctx context.Context, r Registration) error {
+func (a *App) Register(ctx context.Context, r Registration) error {
 	_, err := a.client.CreateUser(ctx, &accountproto.CreateUserRequest{
 		Parent: fmt.Sprintf("organizations/%s", r.OrganizationID),
 		User: &accountproto.User{
@@ -52,10 +64,4 @@ func (a *Manager) Register(ctx context.Context, r Registration) error {
 	})
 
 	return err
-}
-
-func NewManager(client accountproto.AccountServiceClient) *Manager {
-	return &Manager{
-		client: client,
-	}
 }

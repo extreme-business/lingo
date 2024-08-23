@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 
-	"github.com/extreme-business/lingo/apps/cms/account"
+	"github.com/extreme-business/lingo/apps/cms/app"
 	"github.com/extreme-business/lingo/apps/cms/server"
 	"github.com/extreme-business/lingo/apps/cms/server/token"
 	"github.com/extreme-business/lingo/pkg/config"
@@ -16,6 +17,7 @@ import (
 
 func runCms(cmd *cobra.Command, _ []string) error {
 	ctx := cmd.Context()
+	logger := slog.Default()
 	config := config.New()
 
 	port, err := config.HTTPPort()
@@ -54,15 +56,20 @@ func runCms(cmd *cobra.Command, _ []string) error {
 	defer accountClient.Close()
 
 	accountService := accountproto.NewAccountServiceClient(accountClient)
-	authenticator := account.NewManager(accountService)
+	app := app.New(accountService)
+
 	tokenValidator := token.NewTokenValidator([]byte(signingKeyAccessToken))
 	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login")
 
-	server := server.New(
+	server, err := server.New(
+		logger,
 		fmt.Sprintf(":%d", port),
-		authenticator,
+		app,
 		authMiddleware,
 	)
+	if err != nil {
+		return fmt.Errorf("failed to create server: %w", err)
+	}
 	if err = server.Serve(ctx); err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}

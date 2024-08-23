@@ -1,14 +1,13 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/extreme-business/lingo/apps/account/domain"
-	"github.com/extreme-business/lingo/apps/cms/account"
+	"github.com/extreme-business/lingo/apps/cms/app"
 	"github.com/extreme-business/lingo/apps/cms/cookie"
 	"github.com/extreme-business/lingo/apps/cms/views"
 	"github.com/extreme-business/lingo/pkg/httpmiddleware"
@@ -33,26 +32,28 @@ type Registration struct {
 	Password string
 }
 
-// AccountManager is the interface for authenticating users.
-type AccountManager interface {
-	Authenticate(ctx context.Context, email, password string) (*account.SuccessResponse, error)
-	Register(ctx context.Context, r account.Registration) error
-}
-
 // New creates a new Server instance.
 func New(
+	logger *slog.Logger,
 	addr string,
-	accountManager AccountManager,
+	app *app.App,
 	authMiddleware httpmiddleware.Middleware,
-) *httpserver.Server {
+) (*httpserver.Server, error) {
+	vw, err := views.New()
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, fmt.Errorf("failed to create views writer: %w", err)
+	}
+
 	adminMux := http.NewServeMux()
-	adminMux.HandleFunc("/", homeHandler)
+	adminMux.HandleFunc("/", homeHandler(vw))
 
 	mux := http.NewServeMux()
 	mux.Handle("/", authMiddleware(adminMux))
 
-	mux.HandleFunc("/login", loginHandler(time.Now, accountManager))
-	mux.HandleFunc("/register", registerHandler(accountManager))
+	mux.HandleFunc("/login", loginHandler(vw, logger, time.Now, app))
+	mux.HandleFunc("POST /logout", logoutHandler(vw))
+	mux.HandleFunc("/register", registerHandler(vw, logger, app))
 
 	return httpserver.New(
 		httpserver.WithAddr(addr),
@@ -64,58 +65,50 @@ func New(
 			ShutdownTimeout: shutdownTimeout,
 		}),
 		httpserver.WithMiddleware(httpmiddleware.SetCorsHeaders),
-	)
+	), nil
 }
 
-func homeHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	err := views.UserList(w, []*domain.User{
-		{
-			ID: uuid.Max,
-		},
-	})
-	if err != nil {
-		if err = views.Error(w, err.Error()); err != nil {
-			slog.Error(err.Error())
-			http.Error(w, "could not render view", http.StatusInternalServerError)
+func homeHandler(vw *views.Writer) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		err := vw.UserList(w, []*domain.User{
+			{
+				ID: uuid.Max,
+			},
+		})
+		if err != nil {
+			if err = vw.Error(w, err.Error()); err != nil {
+				slog.Error(err.Error())
+				http.Error(w, "could not render view", http.StatusInternalServerError)
+			}
 		}
 	}
 }
 
-const loginTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Home</title>
-</head>
-<body>
-	<h1>Welcome to the Home Page</h1>
-	<div>
-		<form action="/login" method="post">
-			<label for="email">email:</label>
-			<input type="email" id="email" name="email">
-			<label for="password">Password:</label>
-			<input type="password" id="password" name="password">
-			<button type="submit">Login</button>
-		</form>
-	</div>
-</body>
-</html>
-`
-
-func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
+func loginHandler(
+	vw *views.Writer,
+	logger *slog.Logger,
+	c func() time.Time,
+	app *app.App,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 
 		if r.Method == http.MethodPost {
-			r.ParseForm()
+			if err := r.ParseForm(); err != nil {
+				logger.Error(err.Error())
+				http.Error(w, "failed to parse form", http.StatusBadRequest)
+				return
+			}
+
 			email := r.Form.Get("email")
 			password := r.Form.Get("password")
 
-			s, err := a.Authenticate(r.Context(), email, password)
+			s, err := app.Authenticate(r.Context(), email, password)
 			if err != nil {
-				if err = views.Error(w, err.Error()); err != nil {
-					slog.Error(err.Error())
+				logger.Error(err.Error())
+				if err = vw.Error(w, "could not login"); err != nil {
+					logger.Error(err.Error())
 					http.Error(w, "could not render view", http.StatusInternalServerError)
 				}
 				return
@@ -129,6 +122,16 @@ func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 			return
 		}
 
-		fmt.Fprint(w, loginTemplate)
+		if err := vw.Login(w); err != nil {
+			logger.Error(err.Error())
+			http.Error(w, "could not render view", http.StatusInternalServerError)
+		}
+	}
+}
+
+func logoutHandler(vw *views.Writer) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		vw.Logout(w)
 	}
 }

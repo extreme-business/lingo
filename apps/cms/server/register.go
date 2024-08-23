@@ -5,14 +5,15 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/extreme-business/lingo/apps/cms/account"
+	"github.com/extreme-business/lingo/apps/cms/app"
+	"github.com/extreme-business/lingo/apps/cms/views"
 )
 
-func registerHandler(a AccountManager) http.HandlerFunc {
+func registerHandler(_ *views.Writer, logger *slog.Logger, a *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			if err := r.ParseForm(); err != nil {
-				slog.ErrorContext(r.Context(), "failed to parse form", slog.String("error", err.Error()))
+				logger.ErrorContext(r.Context(), "failed to parse form", slog.String("error", err.Error()))
 				http.Error(w, "failed to parse form", http.StatusBadRequest)
 				return
 			}
@@ -20,13 +21,13 @@ func registerHandler(a AccountManager) http.HandlerFunc {
 			email := r.Form.Get("email")
 			password := r.Form.Get("password")
 
-			err := a.Register(r.Context(), account.Registration{
+			err := a.Register(r.Context(), app.Registration{
 				Email:    email,
 				Password: password,
 			})
 
 			if err != nil {
-				slog.ErrorContext(r.Context(), "failed to create user", slog.String("error", err.Error()))
+				logger.ErrorContext(r.Context(), "failed to create user", slog.String("error", err.Error()))
 			}
 
 			http.Redirect(w, r, "/login", http.StatusSeeOther)

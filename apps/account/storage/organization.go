@@ -21,7 +21,8 @@ type Organization struct {
 var (
 	ErrOrganizationNotFound = errors.New("organization not found")
 	// Fields.
-	ErrUnknownOrganizationField = errors.New("unknown organization field")
+	ErrNoOrganizationFieldsToUpdate = errors.New("no fields to update")
+	ErrUnknownOrganizationField     = errors.New("unknown organization field")
 	// Sort.
 	ErrEmptyOrganizationSortField       = errors.New("invalid organization sort field")
 	ErrInvalidOrganizationSortDirection = errors.New("invalid organization sort direction")
