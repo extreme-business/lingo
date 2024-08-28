@@ -62,27 +62,27 @@ func TestApp_LoginUser(t *testing.T) {
 
 	t.Run("should return the user if the credentials are valid", func(t *testing.T) {
 		now := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
-
-		app := app.New(
-			slog.Default(),
-			authentication.NewManager(authentication.Config{
+		app, err := app.New(app.Config{
+			Logger: slog.Default(),
+			Authenticator: authentication.NewManager(authentication.Config{
 				Clock:                  func() time.Time { return now },
 				SigningKeyAccessToken:  []byte("access"),
 				SigningKeyRefreshToken: []byte("refresh"),
 				UserReader:             user.NewReader(dbManager.Op().User),
 			}),
-			registration.NewManager(registration.Config{}),
-		)
-
+			UserReader:          user.NewReader(dbManager.Op().User),
+			RegistrationManager: registration.NewManager(registration.Config{}),
+		})
+		if err != nil {
+			t.Errorf("Expected no error, but got %v", err)
+		}
 		result, err := app.LoginUser(context.Background(), "buguser@test.com", "thisismypassword")
 		if err != nil {
 			t.Errorf("Expected no error, but got %v", err)
-			return
 		}
 
 		if result == nil {
 			t.Error("Expected a result, but got nil")
-			return
 		}
 
 		expect := &domain.User{
@@ -110,22 +110,22 @@ func TestApp_LoginUser(t *testing.T) {
 
 	t.Run("should return an error if the credentials are invalid", func(t *testing.T) {
 		now := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
-
-		a := app.New(
-			slog.Default(),
-			authentication.NewManager(authentication.Config{
+		a, err := app.New(app.Config{
+			Logger: slog.Default(),
+			Authenticator: authentication.NewManager(authentication.Config{
 				Clock:                  func() time.Time { return now },
 				SigningKeyAccessToken:  []byte("access"),
 				SigningKeyRefreshToken: []byte("refresh"),
 				UserReader:             user.NewReader(dbManager.Op().User),
 			}),
-			registration.NewManager(registration.Config{}),
-		)
-
-		_, err := a.LoginUser(context.Background(), "buguser@test.com", "invalid")
-		if err == nil {
+			UserReader:          user.NewReader(dbManager.Op().User),
+			RegistrationManager: registration.NewManager(registration.Config{}),
+		})
+		if err != nil {
+			t.Errorf("Expected no error, but got %v", err)
+		}
+		if _, err = a.LoginUser(context.Background(), "buguser@test.com", "invalid"); err == nil {
 			t.Error("Expected an error, but got nil")
-			return
 		} else if !errors.Is(err, app.ErrInvalidCredentials) {
 			t.Errorf("Expected an ErrInvalidCredentials error, but got %v", err)
 		}
@@ -134,19 +134,22 @@ func TestApp_LoginUser(t *testing.T) {
 	t.Run("should return an error if the user does not exist", func(t *testing.T) {
 		now := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		a := app.New(
-			slog.Default(),
-			authentication.NewManager(authentication.Config{
+		a, err := app.New(app.Config{
+			Logger: slog.Default(),
+			Authenticator: authentication.NewManager(authentication.Config{
 				Clock:                  func() time.Time { return now },
 				SigningKeyAccessToken:  []byte("access"),
 				SigningKeyRefreshToken: []byte("refresh"),
 				UserReader:             user.NewReader(dbManager.Op().User),
 			}),
-			registration.NewManager(registration.Config{}),
-		)
+			UserReader:          user.NewReader(dbManager.Op().User),
+			RegistrationManager: registration.NewManager(registration.Config{}),
+		})
+		if err != nil {
+			t.Errorf("Expected no error, but got %v", err)
+		}
 
-		_, err := a.LoginUser(context.Background(), "invalid", "invalid")
-		if err == nil {
+		if _, err = a.LoginUser(context.Background(), "invalid", "invalid"); err == nil {
 			t.Error("Expected an error, but got nil")
 			return
 		} else if !errors.Is(err, app.ErrUserNotFound) {

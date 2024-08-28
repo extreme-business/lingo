@@ -139,19 +139,23 @@ func setupAccount(
 	userReader := user.NewReader(repos.User)
 	userWriter := user.NewWriter(clock, repos.User)
 
-	app := app.New(
-		logger,
-		authentication.NewManager(authentication.Config{
+	app, err := app.New(app.Config{
+		Logger:     logger,
+		UserReader: userReader,
+		Authenticator: authentication.NewManager(authentication.Config{
 			Clock:                  clock,
 			SigningKeyAccessToken:  []byte(signingKeyAccessToken),
 			SigningKeyRefreshToken: []byte(signingKeyRefreshToken),
 			UserReader:             userReader,
 		}),
-		registration.NewManager(registration.Config{
+		RegistrationManager: registration.NewManager(registration.Config{
 			GenUUID:    uuidgen,
 			UserWriter: userWriter,
 		}),
-	)
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create app: %w", err)
+	}
 
 	return app, nil
 }

@@ -104,7 +104,7 @@ func loginHandler(
 			email := r.Form.Get("email")
 			password := r.Form.Get("password")
 
-			s, err := app.Authenticate(r.Context(), email, password)
+			s, err := app.AuthenticateUser(r.Context(), email, password)
 			if err != nil {
 				logger.Error(err.Error())
 				if err = vw.Error(w, "could not login"); err != nil {

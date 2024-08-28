@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	perPage = 25
+	perPage = 25 // perPage is the number of users per page.
 )
 
 var (
@@ -49,6 +49,8 @@ func (r *Reader) GetByEmail(ctx context.Context, email string) (*domain.User, Er
 	return u, u.FromStorage(user)
 }
 
+// List lists users.
+// page starts from 0.
 func (r *Reader) List(ctx context.Context, page uint) ([]*domain.User, Error) {
 	users, err := r.reader.List(ctx, storage.Pagination{
 		Limit:  perPage,

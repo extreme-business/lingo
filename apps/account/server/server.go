@@ -96,6 +96,9 @@ func (s *Server) LoginUser(ctx context.Context, req *protoaccount.LoginUserReque
 		req.GetPassword(),
 	)
 	if err != nil {
+		if errors.Is(err, app.ErrUserNotFound) {
+			return nil, grpcerrors.NewNotFoundErr("user not found")
+		}
 		return nil, err
 	}
 
@@ -108,5 +111,27 @@ func (s *Server) LoginUser(ctx context.Context, req *protoaccount.LoginUserReque
 		User:         &user,
 		AccessToken:  login.AccessToken,
 		RefreshToken: login.RefreshToken,
+	}, nil
+}
+
+func (s *Server) RefreshToken(ctx context.Context, req *protoaccount.RefreshTokenRequest) (*protoaccount.RefreshTokenResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (s *Server) ListUsers(ctx context.Context, req *protoaccount.ListUsersRequest) (*protoaccount.ListUsersResponse, error) {
+	users, err := s.account.ListUsers(ctx, 0)
+	if err != nil {
+		return nil, err
+	}
+	var usersOut []*protoaccount.User
+	for _, user := range users {
+		var userOut protoaccount.User
+		if err = user.ToProto(&userOut); err != nil {
+			return nil, err
+		}
+		usersOut = append(usersOut, &userOut)
+	}
+	return &protoaccount.ListUsersResponse{
+		Users: usersOut,
 	}, nil
 }

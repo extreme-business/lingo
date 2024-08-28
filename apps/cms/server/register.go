@@ -21,7 +21,7 @@ func registerHandler(_ *views.Writer, logger *slog.Logger, a *app.App) http.Hand
 			email := r.Form.Get("email")
 			password := r.Form.Get("password")
 
-			err := a.Register(r.Context(), app.Registration{
+			err := a.RegisterUser(r.Context(), app.Registration{
 				Email:    email,
 				Password: password,
 			})
