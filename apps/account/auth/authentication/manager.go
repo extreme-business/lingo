@@ -19,29 +19,29 @@ const (
 type Manager struct {
 	credentialsValidator *credentialsValidator
 	userRepo             storage.UserRepository
-	AccountTokenManager  *token.Manager
+	AccessTokenManager   *token.Manager
 	RefreshTokenManager  *token.Manager
 }
 
 type Config struct {
-	Clock                    func() time.Time
-	SigningKeyRegistration   []byte
-	SigningKeyAuthentication []byte
-	UserRepo                 storage.UserRepository
+	Clock             func() time.Time
+	RefreshSigningKey []byte
+	AccessSigningKey  []byte
+	UserRepo          storage.UserRepository
 }
 
 func NewManager(c Config) *Manager {
 	return &Manager{
 		credentialsValidator: newCredentialsValidator(),
 		userRepo:             c.UserRepo,
-		AccountTokenManager: token.NewManager(
+		AccessTokenManager: token.NewManager(
 			c.Clock,
-			c.SigningKeyRegistration,
+			c.AccessSigningKey,
 			accountTokenDuration,
 		),
 		RefreshTokenManager: token.NewManager(
 			c.Clock,
-			c.SigningKeyAuthentication,
+			c.RefreshSigningKey,
 			refreshTokenDuration,
 		),
 	}
@@ -74,7 +74,7 @@ func (m *Manager) Authenticate(ctx context.Context, c Credentials) (*Authenticat
 		return nil, fmt.Errorf("could not validate: %w", err)
 	}
 
-	accountToken, err := m.AccountTokenManager.Create(u.ID.String())
+	accountToken, err := m.AccessTokenManager.Create(u.ID.String())
 	if err != nil {
 		return nil, err
 	}

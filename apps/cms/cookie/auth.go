@@ -18,6 +18,8 @@ func SetAccessToken(w http.ResponseWriter, token string, expires time.Time) {
 	Set(w, "access_token", token, expires, true, "/")
 }
 
+func ClearAccessToken(w http.ResponseWriter) { Clear(w, "access_token") }
+
 func RefreshToken(r *http.Request) (string, error) {
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
@@ -30,3 +32,5 @@ func RefreshToken(r *http.Request) (string, error) {
 func SetRefreshToken(w http.ResponseWriter, token string, expires time.Time) {
 	Set(w, "refresh_token", token, expires, true, "/")
 }
+
+func ClearRefreshToken(w http.ResponseWriter) { Clear(w, "refresh_token") }

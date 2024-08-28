@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/extreme-business/lingo/apps/cms/account"
 	"github.com/extreme-business/lingo/apps/cms/server"
@@ -56,7 +57,10 @@ func runCms(cmd *cobra.Command, _ []string) error {
 	accountService := accountproto.NewAccountServiceClient(conn)
 	authenticator := account.NewManager(accountService)
 	tokenValidator := token.NewTokenValidator([]byte(authSigningKey))
-	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login")
+	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login", map[string][]string{
+		"/login":    {http.MethodPost, http.MethodGet},
+		"/register": {http.MethodPost, http.MethodGet},
+	})
 
 	server := server.New(
 		fmt.Sprintf(":%d", port),

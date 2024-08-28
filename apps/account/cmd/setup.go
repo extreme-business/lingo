@@ -135,10 +135,10 @@ func setupAccount(
 
 	app := app.New(logger, i,
 		authentication.NewManager(authentication.Config{
-			Clock:                    clock,
-			SigningKeyRegistration:   []byte(signingKeyRegistration),
-			SigningKeyAuthentication: []byte(signingKeyAuthentication),
-			UserRepo:                 repos.User,
+			Clock:             clock,
+			RefreshSigningKey: []byte(signingKeyRegistration),
+			AccessSigningKey:  []byte(signingKeyAuthentication),
+			UserRepo:          repos.User,
 		}),
 		registration.NewManager(registration.Config{
 			UUIDgen:  uuidgen,

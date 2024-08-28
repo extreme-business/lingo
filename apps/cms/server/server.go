@@ -36,17 +36,33 @@ type AccountManager interface {
 	Register(ctx context.Context, r account.Registration) error
 }
 
+type Route struct {
+	Path   string
+	Handle http.HandlerFunc
+}
+
 // New creates a new Server instance
 func New(
 	addr string,
 	accountManager AccountManager,
 	authMiddleware httpmiddleware.Middleware,
 ) *httpserver.Server {
-	adminMux := http.NewServeMux()
-	adminMux.HandleFunc("/", homeHandler)
-
 	mux := http.NewServeMux()
-	mux.Handle("/", authMiddleware(adminMux))
+
+	adminRoutes := []Route{
+		{
+			Path:   "/",
+			Handle: homeHandler(),
+		},
+		{
+			Path:   "/about",
+			Handle: aboutHandler(),
+		},
+	}
+
+	for _, route := range adminRoutes {
+		mux.Handle(route.Path, authMiddleware(route.Handle))
+	}
 
 	mux.HandleFunc("/login", loginHandler(time.Now, accountManager))
 	mux.Handle("/register", registerHandler(accountManager))
@@ -64,24 +80,53 @@ func New(
 	)
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Home</title>
-        </head>
-        <body>
-            <h1>Welcome to the Home Page</h1>
-            <nav>
-                <a href="/">Home</a> |
-                <a href="/about">About</a> |
-                <a href="/contact">Contact</a>
-            </nav>
-        </body>
-        </html>
-    `)
+func homeHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			NotFoundHandler(w, r)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprint(w, `
+			<!DOCTYPE html>
+			<html>
+			<head>
+				<title>Home</title>
+			</head>
+			<body>
+				<h1>Welcome to the Home Page of lingo</h1>
+				<nav>
+					<a href="/">Home</a> |
+					<a href="/about">About</a> |
+					<a href="/contact">Contact</a>
+				</nav>
+			</body>
+			</html>
+		`)
+	}
+}
+
+func aboutHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprint(w, `
+			<!DOCTYPE html>
+			<html>
+			<head>
+				<title>ABOUT</title>
+			</head>
+			<body>
+				<h1>Welcome to the about Page of lingo</h1>
+				<nav>
+					<a href="/">Home</a> |
+					<a href="/about">About</a> |
+					<a href="/contact">Contact</a>
+				</nav>
+			</body>
+			</html>
+		`)
+	}
 }
 
 const loginTemplate = `
@@ -91,12 +136,7 @@ const loginTemplate = `
 	<title>Home</title>
 </head>
 <body>
-	<h1>Welcome to the Home Page</h1>
-	<nav>
-		<a href="/">Home</a> |
-		<a href="/about">About</a> |
-		<a href="/contact">Contact</a>
-	</nav>
+	<h1>login</h1>
 	<div>
 		<form action="/login" method="post">
 			<label for="email">email:</label>
@@ -121,7 +161,7 @@ func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 
 			s, err := a.Authenticate(r.Context(), email, password)
 			if err != nil {
-				views.Error(w, err.Error())
+				views.Error(w, "could not authenticate user")
 				return
 			}
 
@@ -135,25 +175,4 @@ func loginHandler(c func() time.Time, a AccountManager) http.HandlerFunc {
 
 		fmt.Fprint(w, loginTemplate)
 	}
-}
-
-func adminHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Admin</title>
-        </head>
-        <body>
-            <h1>Welcome to the Admin Page</h1>
-            <nav>
-                <a href="/">Home</a> |
-                <a href="/about">About</a> |
-                <a href="/contact">Contact</a>
-            </nav>
-            Welkom!
-        </body>
-        </html>
-    `)
 }
