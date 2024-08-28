@@ -18,7 +18,7 @@ func TestNew(t *testing.T) {
 		c := Config{
 			Logger:              slog.Default(),
 			UserReader:          user.NewReader(nil),
-			Authenticator:       authentication.NewManager(authentication.Config{}),
+			Authenticator:       authentication.New(authentication.Config{}),
 			RegistrationManager: registration.NewManager(registration.Config{}),
 		}
 

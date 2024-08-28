@@ -132,7 +132,6 @@ func setupAccount(
 		return nil, fmt.Errorf("failed to create bootstrapping initializer: %w", err)
 	}
 
-<<<<<<< HEAD
 	if err = i.Setup(ctx, suc, soc); err != nil {
 		return nil, fmt.Errorf("failed to setup system user and organization: %w", err)
 	}
@@ -143,19 +142,11 @@ func setupAccount(
 	app, err := app.New(app.Config{
 		Logger:     logger,
 		UserReader: userReader,
-		Authenticator: authentication.NewManager(authentication.Config{
+		Authenticator: authentication.New(authentication.Config{
 			Clock:                  clock,
 			SigningKeyAccessToken:  []byte(signingKeyAccessToken),
 			SigningKeyRefreshToken: []byte(signingKeyRefreshToken),
 			UserReader:             userReader,
-=======
-	app := app.New(logger, i,
-		authentication.NewManager(authentication.Config{
-			Clock:             clock,
-			RefreshSigningKey: []byte(signingKeyRegistration),
-			AccessSigningKey:  []byte(signingKeyAuthentication),
-			UserRepo:          repos.User,
->>>>>>> cms-fixes
 		}),
 		RegistrationManager: registration.NewManager(registration.Config{
 			GenUUID:    uuidgen,

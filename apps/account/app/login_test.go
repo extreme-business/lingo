@@ -64,7 +64,7 @@ func TestApp_LoginUser(t *testing.T) {
 		now := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		app, err := app.New(app.Config{
 			Logger: slog.Default(),
-			Authenticator: authentication.NewManager(authentication.Config{
+			Authenticator: authentication.New(authentication.Config{
 				Clock:                  func() time.Time { return now },
 				SigningKeyAccessToken:  []byte("access"),
 				SigningKeyRefreshToken: []byte("refresh"),
@@ -112,7 +112,7 @@ func TestApp_LoginUser(t *testing.T) {
 		now := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		a, err := app.New(app.Config{
 			Logger: slog.Default(),
-			Authenticator: authentication.NewManager(authentication.Config{
+			Authenticator: authentication.New(authentication.Config{
 				Clock:                  func() time.Time { return now },
 				SigningKeyAccessToken:  []byte("access"),
 				SigningKeyRefreshToken: []byte("refresh"),
@@ -136,7 +136,7 @@ func TestApp_LoginUser(t *testing.T) {
 
 		a, err := app.New(app.Config{
 			Logger: slog.Default(),
-			Authenticator: authentication.NewManager(authentication.Config{
+			Authenticator: authentication.New(authentication.Config{
 				Clock:                  func() time.Time { return now },
 				SigningKeyAccessToken:  []byte("access"),
 				SigningKeyRefreshToken: []byte("refresh"),
