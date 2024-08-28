@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log/slog"
+	"net/http"
 
 	"github.com/extreme-business/lingo/apps/cms/app"
 	"github.com/extreme-business/lingo/apps/cms/server"
@@ -10,6 +11,7 @@ import (
 	"github.com/extreme-business/lingo/pkg/config"
 	"github.com/extreme-business/lingo/pkg/httpmiddleware"
 	accountproto "github.com/extreme-business/lingo/proto/gen/go/public/account/v1"
+
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -59,7 +61,10 @@ func runCms(cmd *cobra.Command, _ []string) error {
 	app := app.New(accountService)
 
 	tokenValidator := token.NewTokenValidator([]byte(signingKeyAccessToken))
-	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login")
+	authMiddleware := httpmiddleware.AuthCookie("access_token", tokenValidator, "/login", map[string][]string{
+		"/login":    {http.MethodPost, http.MethodGet},
+		"/register": {http.MethodPost, http.MethodGet},
+	})
 
 	server, err := server.New(
 		logger,

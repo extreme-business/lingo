@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -32,24 +31,38 @@ type Registration struct {
 	Password string
 }
 
-// New creates a new Server instance.
+type Route struct {
+	Path   string
+	Handle http.HandlerFunc
+}
+
+// New creates a new Server instance
 func New(
 	logger *slog.Logger,
 	addr string,
 	app *app.App,
 	authMiddleware httpmiddleware.Middleware,
 ) (*httpserver.Server, error) {
+	mux := http.NewServeMux()
 	vw, err := views.New()
 	if err != nil {
-		logger.Error(err.Error())
-		return nil, fmt.Errorf("failed to create views writer: %w", err)
+		return nil, err
 	}
 
-	adminMux := http.NewServeMux()
-	adminMux.HandleFunc("/", homeHandler(vw))
+	adminRoutes := []Route{
+		{
+			Path:   "/",
+			Handle: homeHandler(vw),
+		},
+		{
+			Path:   "/about",
+			Handle: aboutHandler(),
+		},
+	}
 
-	mux := http.NewServeMux()
-	mux.Handle("/", authMiddleware(adminMux))
+	for _, route := range adminRoutes {
+		mux.Handle(route.Path, authMiddleware(route.Handle))
+	}
 
 	mux.HandleFunc("/login", loginHandler(vw, logger, time.Now, app))
 	mux.HandleFunc("POST /logout", logoutHandler(vw))
@@ -126,6 +139,13 @@ func loginHandler(
 			logger.Error(err.Error())
 			http.Error(w, "could not render view", http.StatusInternalServerError)
 		}
+	}
+}
+
+func aboutHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("About page"))
 	}
 }
 

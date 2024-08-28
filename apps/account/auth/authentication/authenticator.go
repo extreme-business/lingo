@@ -40,7 +40,7 @@ type Config struct {
 	UserReader             *user.Reader
 }
 
-func NewManager(c Config) *Authenticator {
+func New(c Config) *Authenticator {
 	return &Authenticator{
 		credentialsValidator: newCredentialsValidator(),
 		userReader:           c.UserReader,

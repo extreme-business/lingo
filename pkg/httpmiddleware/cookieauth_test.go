@@ -21,15 +21,18 @@ func (m *MockValidator) Validate(ctx context.Context, value string) error {
 
 func TestAuthCookie(t *testing.T) {
 	tests := []struct {
-		name           string
-		cookieName     string
-		cookieValue    string
-		validateFunc   func(ctx context.Context, value string) error
-		expectedStatus int
-		expectedURL    string
+		name                   string
+		target                 string
+		cookieName             string
+		cookieValue            string
+		validateFunc           func(ctx context.Context, value string) error
+		expectedStatus         int
+		expectedURL            string
+		excludePathsAndMethods map[string][]string
 	}{
 		{
 			name:        "Valid cookie",
+			target:      "/",
 			cookieName:  "auth",
 			cookieValue: "valid_token",
 			validateFunc: func(_ context.Context, _ string) error {
@@ -40,6 +43,7 @@ func TestAuthCookie(t *testing.T) {
 		},
 		{
 			name:        "Missing cookie",
+			target:      "/",
 			cookieName:  "auth",
 			cookieValue: "",
 			validateFunc: func(_ context.Context, _ string) error {
@@ -50,6 +54,7 @@ func TestAuthCookie(t *testing.T) {
 		},
 		{
 			name:        "Invalid cookie",
+			target:      "/",
 			cookieName:  "auth",
 			cookieValue: "invalid_token",
 			validateFunc: func(_ context.Context, _ string) error {
@@ -57,6 +62,20 @@ func TestAuthCookie(t *testing.T) {
 			},
 			expectedStatus: http.StatusSeeOther,
 			expectedURL:    "/failure",
+		},
+		{
+			name:        "Excluded path",
+			target:      "/xyz",
+			cookieName:  "",
+			cookieValue: "",
+			validateFunc: func(ctx context.Context, value string) error {
+				return errors.New("not allowed!")
+			},
+			expectedStatus: http.StatusOK,
+			expectedURL:    "", // No redirect expected, so set to ""
+			excludePathsAndMethods: map[string][]string{
+				"/xyz": {http.MethodGet},
+			},
 		},
 	}
 
@@ -66,11 +85,11 @@ func TestAuthCookie(t *testing.T) {
 				ValidateFunc: tt.validateFunc,
 			}
 
-			handler := httpmiddleware.AuthCookie(tt.cookieName, validator, "/failure")(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			handler := httpmiddleware.AuthCookie(tt.cookieName, validator, "/failure", tt.excludePathsAndMethods)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			}))
 
-			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			req := httptest.NewRequest(http.MethodGet, tt.target, nil)
 			if tt.cookieValue != "" {
 				req.AddCookie(&http.Cookie{Name: tt.cookieName, Value: tt.cookieValue})
 			}
@@ -90,6 +109,10 @@ func TestAuthCookie(t *testing.T) {
 				}
 				if location.String() != tt.expectedURL {
 					t.Errorf("expected redirect to %v, got %v", tt.expectedURL, location.String())
+				}
+			} else {
+				if location, err := rr.Result().Location(); err == nil {
+					t.Errorf("expected no redirect, but got redirect to %v", location.String())
 				}
 			}
 		})

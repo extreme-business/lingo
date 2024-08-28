@@ -20,7 +20,11 @@
             "trace": "verbose"
         },
         {
+<<<<<<< HEAD
             "name": "debug cms",
+=======
+            "name": "debug CMS",
+>>>>>>> cms-fixes
             "type": "go",
             "debugAdapter": "dlv-dap",
             "request": "attach",

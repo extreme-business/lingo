@@ -14,3 +14,11 @@ func Set(w http.ResponseWriter, name, value string, expires time.Time, httpOnly 
 		Path:     path,
 	})
 }
+
+func Clear(w http.ResponseWriter, name string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   name,
+		Value:  "",
+		MaxAge: -1,
+	})
+}
